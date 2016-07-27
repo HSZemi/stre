@@ -1,8 +1,8 @@
 from django.http import HttpResponse
 
 
-def index(request):
-    return HttpResponse("Hello, world. You're at the backend index.")
+def login(request):
+    return HttpResponse("Hello, world. You're at the backend login.")
 
 def antraege(request):
     return HttpResponse("Hello, world. You're at the antraege page.")

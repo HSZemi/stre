@@ -1,32 +1,22 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta http-equiv="x-ua-compatible" content="ie=edge">
-<title>STRE frontend</title>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.3/css/bootstrap.min.css" integrity="sha384-MIwDKRSSImVFAZCVLtU0LMDdON6KVCrZHyVQQj6e8wIEJkW4tvwqXrbMIya1vriY" crossorigin="anonymous">
-</head>
-<body>
-<div class="container">
-<h1>GUTEN TAG</h1>
-<h2>HALLO CHRISTOPF</h2>
+{% extends 'base.html' %}
+
+{% block title%}Semesterticket-Rückerstattung - Index{% endblock %}
+
+{% block content %}
 
 <ul>
-<li><a href="{% url 'register' %}">register</a></li>
 <li><a href="{% url 'info' %}">info</a></li>
 <li><a href="{% url 'status' %}">status</a></li>
 </ul>
 
-{% for grund in gruende %}
-    <h4>{{ grund }}</h4>
-    <p>{{grund.beschreibung}}</p>
-{% endfor %}
-
+<div class="row">
+	<div class="col-sm-6"><a class="btn btn-primary btn-lg btn-block" href="{% url 'register' %}">Zur erstmaligen Antragstellung</a></div>
+	<div class="col-sm-6"><a class="btn btn-secondary btn-lg btn-block" href="{% url 'loginpage' %}">Login für Antragsteller/-innen</a></div>
+</div>
+<div class="row">
+	<div class="col-sm-6">Falls du noch nie einen Antrag gestellt hast, wird dich das System durch die Antragstellung führen.</div>
+	<div class="col-sm-6">Du hast schon einmal einen Antrag auf Rückerstattung gestellt? Oder du möchtest den aktuellen Status deines Antrages einsehen? 
+	Mit Matrikelnummer und deinem Passwort kannst du dich ins System einloggen. </div>
 </div>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js" integrity="sha384-THPy051/pYDQGanwU6poAc/hOdQxjnOEXzbT+OuUAFqNqFjL+4IGLBgCJC3ZOShY" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js" integrity="sha384-Plbmg8JY28KFelvJVai01l8WyZzrYWG825m+cZ0eDDS1f7d/js6ikvy1+X+guPIB" crossorigin="anonymous"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.3/js/bootstrap.min.js" integrity="sha384-ux8v3A6CPtOTqOzMKiuo3d/DomGaaClxFYdCu2HPMBEkf6x2xiDyJ7gkXU0MWwaD" crossorigin="anonymous"></script>
-</body>
-</html>
+{% endblock %}

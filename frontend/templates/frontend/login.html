@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title%}Semesterticket-Rückerstattung - Index{% endblock %}
+
+{% block content %}
+
+<ul>
+<li><a href="{% url 'info' %}">info</a></li>
+<li><a href="{% url 'status' %}">status</a></li>
+</ul>
+
+{{ message }}
+
+<form class="form-signin" method="POST">
+	{% csrf_token %}
+	<h2 class="form-signin-heading">Bitte melde dich an, um fortzufahren</h2>
+	<label for="inputMatrikelnummer" class="sr-only">Matrikelnummer</label>
+	<input type="number" id="inputMatrikelnummer" class="form-control" placeholder="Matrikelnummer" name="matrikelnummer" required autofocus>
+	<label for="inputPassword" class="sr-only">Password</label>
+	<input type="password" id="inputPassword" class="form-control" placeholder="Passwort" name="passwort" required>
+	<button class="btn btn-lg btn-primary btn-block" type="submit">Anmelden</button>
+	<small><a href="{%url 'resetpassword'%}">Ich weiß mein Passwort nicht mehr! Zu Hülf!</a></small>
+</form>
+
+{% endblock %}

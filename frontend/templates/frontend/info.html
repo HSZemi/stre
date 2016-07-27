@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title%}Semesterticket-Rückerstattung - Index{% endblock %}
+
+{% block content %}
+
+<ul>
+<li><a href="{% url 'register' %}">register</a></li>
+<li><a href="{% url 'info' %}">info</a></li>
+<li><a href="{% url 'status' %}">status</a></li>
+</ul>
+
+{% for grund in gruende %}
+    <h4>{{ grund }}</h4>
+    <p>{{grund.beschreibung}}</p>
+{% endfor %}
+
+{% endblock %}
