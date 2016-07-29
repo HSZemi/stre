@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title%}Semesterticket-Rückerstattung - Antragstellung{% endblock %}
+
+{% block content %}
+
+<h2>Antrag auf Rückerstattung stellen</h2>
+
+<form method="POST">
+{% csrf_token %}
+<table class="table">
+<tr><th>Semester</th><td>{{semester.get_semestertyp_display}} {{semester.jahr}}</td></tr>
+<tr><th>Vorname</th><td>{{request.user.first_name}}</td></tr>
+<tr><th>Nachname</th><td>{{request.user.last_name}}</td></tr>
+<tr><th>Matrikelnummer</th><td>{{request.user.username}}</td></tr>
+{{form}}
+</table>
+
+<input type="checkbox" id="habe_gelesen" name="habe_gelesen" />
+<label for="habe_gelesen">Ich versichere, die obenstehenden Hinweise zur Rückerstattung gelesen und alle Angaben in diesem Formular wahrheitsgemäß gemacht zu haben.</label>
+<input type="submit" value="Antrag stellen" class="btn btn-primary"/>
+</form>
+
+{% endblock %}

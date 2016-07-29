@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title%}Semesterticket-Rückerstattung - Antrag{% endblock %}
+
+{% block content %}
+
+<h2>Antrag auf Rückerstattung</h2>
+
+Semester
+<p>{{antrag.semester}}</p>
+
+antragsdatum
+<p>{{antrag.antragszeitpunkt}}</p>
+
+letzte änderung
+<p>{{antrag.letzte_bearbeitung}}</p>
+
+status
+<p>{{antrag.status.name}}</p>
+
+aktionen: zurückziehen, nachweise hochladen
+<p></p>
+
+
+
+{% endblock %}

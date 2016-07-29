@@ -2,6 +2,10 @@ body{
 	padding: 1rem;
 }
 
+#content {
+	min-height: 100%;
+}
+
 #header{
 	padding: 1rem;
 	background-color: #217867;
@@ -15,6 +19,31 @@ body{
 
 #header h2{
 	font-size: 110%;
+}
+
+#navigation {
+	margin-top: 1rem;
+	margin-bottom: 2rem;
+}
+
+#footer {
+	margin-top: 2rem;
+	padding: 1rem;
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+	font-size: 70%;
+	background-color: #217867;
+	color: white;
+	text-align: right;
+}
+#footer a {
+	text-decoration: none;
+	color: white;
+}
+
+#index_action_buttons {
+	padding-top: 5rem;
+	padding-bottom: 5rem;
 }
 
 .btn, .btn-lg, .btn-sm {

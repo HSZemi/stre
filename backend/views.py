@@ -4,6 +4,9 @@ from django.http import HttpResponse
 def login(request):
     return HttpResponse("Hello, world. You're at the backend login.")
 
+def dashboard(request):
+    return HttpResponse("Hello, world. You're at the backend dashboard.")
+
 def antraege(request):
     return HttpResponse("Hello, world. You're at the antraege page.")
 

@@ -4,19 +4,16 @@
 
 {% block content %}
 
-<ul>
-<li><a href="{% url 'info' %}">info</a></li>
-<li><a href="{% url 'status' %}">status</a></li>
-</ul>
-
+<div id="index_action_buttons">
 <div class="row">
-	<div class="col-sm-6"><a class="btn btn-primary btn-lg btn-block" href="{% url 'register' %}">Zur erstmaligen Antragstellung</a></div>
-	<div class="col-sm-6"><a class="btn btn-secondary btn-lg btn-block" href="{% url 'loginpage' %}">Login für Antragsteller/-innen</a></div>
+	<div class="col-sm-4 offset-sm-1"><a class="btn btn-primary btn-lg btn-block" href="{% url 'register' %}">Zur erstmaligen Antragstellung</a></div>
+	<div class="col-sm-4 offset-sm-2"><a class="btn btn-secondary btn-lg btn-block" href="{% url 'loginpage' %}">Login für Antragsteller/-innen</a></div>
 </div>
 <div class="row">
-	<div class="col-sm-6">Falls du noch nie einen Antrag gestellt hast, wird dich das System durch die Antragstellung führen.</div>
-	<div class="col-sm-6">Du hast schon einmal einen Antrag auf Rückerstattung gestellt? Oder du möchtest den aktuellen Status deines Antrages einsehen? 
+	<div class="col-sm-4 offset-sm-1">Falls du noch nie einen Antrag gestellt hast, wird dich das System durch die Antragstellung führen.</div>
+	<div class="col-sm-4 offset-sm-2">Du hast schon einmal einen Antrag auf Rückerstattung gestellt? Oder du möchtest den aktuellen Status deines Antrages einsehen? 
 	Mit Matrikelnummer und deinem Passwort kannst du dich ins System einloggen. </div>
+</div>
 </div>
 
 {% endblock %}
