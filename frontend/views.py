@@ -99,30 +99,36 @@ def resetpassword(request):
 
 def loginpage(request, message=None):
 	
-	if('matrikelnummer' in request.POST and 'passwort' in request.POST):
-		matrikelnummer = request.POST['matrikelnummer']
-		passwort = request.POST['passwort']
-		user = authenticate(username=matrikelnummer, password=passwort)
-		if user is not None:
-			if user.is_active:
-				login(request, user)
-				if(user.groups.filter(name='Antragstellung').exists()):
-					# Redirect to a success page.
-					return redirect('index')
-				elif(user.is_staff):
-					return redirect('dashboard')
+	next_page = 'index'
+	if('next' in request.GET and len(request.GET['next']) > 0 and request.GET['next'][0] == '/'):
+		next_page = request.GET['next']
+		
+	if request.user.is_authenticated():
+		return redirect(next_page)
+	elif request.method == 'POST':
+		if('matrikelnummer' in request.POST and 'passwort' in request.POST):
+			matrikelnummer = request.POST['matrikelnummer']
+			passwort = request.POST['passwort']
+			user = authenticate(username=matrikelnummer, password=passwort)
+			if user is not None:
+				if user.is_active:
+					login(request, user)
+					if(user.groups.filter(name='Antragstellung').exists()):
+						# Redirect to a success page.
+						return redirect(next_page)
+					elif(user.is_staff):
+						return redirect('dashboard')
+					else:
+						message = 'falsche_gruppe'
 				else:
-					message = 'falsche_gruppe'
+					# Return a 'disabled account' error message
+					message = 'zugang_deaktiviert'
+					
 			else:
-				# Return a 'disabled account' error message
-				message = 'zugang_deaktiviert'
-				
-		else:
-			# Return an 'invalid login' error message.
-			message = 'ungueltige_zugangsdaten'
+				# Return an 'invalid login' error message.
+				message = 'ungueltige_zugangsdaten'
 	
-	
-	context = { 'message' : message, 'current_page' : 'loginpage' }
+	context = { 'message' : message, 'current_page' : 'loginpage'}
 	return render(request, 'frontend/login.html', context)
 
 def info(request):
@@ -175,10 +181,10 @@ def handle_uploaded_file(f, semester_id, antrag_id):
 	filedir = "nachweise/{0}/{1}".format(semester_id, antrag_id)
 	filepath = "nachweise/{0}/{1}/{2}{3}".format(semester_id, antrag_id, filename, extension) # extension enthält den Punkt
 	
-	if(not os.path.isdir(filedir)):
-		os.makedirs(filedir) #TODO permissions
+	if(not os.path.isdir(os.path.join('dokumente', filedir))):
+		os.makedirs(os.path.join('dokumente', filedir)) #TODO permissions
 	
-	with open(filepath, 'wb+') as destination:
+	with open(os.path.join('dokumente', filepath), 'wb+') as destination:
 		for chunk in f.chunks():
 			destination.write(chunk)
 	
@@ -211,6 +217,7 @@ def antrag(request, antrag_id):
 					dokument.datei = pfad[1]
 					
 					dokument.save()
+					antrag.save()
 					
 				message = pfad[1]
 				
@@ -239,20 +246,5 @@ def antrag(request, antrag_id):
 	
 	context = {'current_page' : 'antrag', 'antrag' : antrag, 'form':form, 'message':message, 'nachweise':nachweise}
 	return render(request, 'frontend/antrag.html', context)
-
-@login_required
-@group_required('Antragstellung')
-def datei(request, dokument_id):
-	dokument_id = int(dokument_id)
-	
-	dokument = get_object_or_404(Dokument, pk=dokument_id)
-	
-	if(dokument.antrag.user.user.id == request.user.id):
-		response = FileResponse(open(dokument.datei, 'rb'), content_type=mimetypes.guess_type(dokument.datei)[0])
-		#response['Content-Disposition'] = 'attachment; filename={0}'.format(os.path.basename(dokument.datei))
-		return response
-	else:
-		raise Http404("Document does not exist")
 	
 	
-

@@ -1,0 +1,37 @@
+{% extends 'backend/base.html' %}
+
+{% block title%}Semesterticket-Rückerstattung - Dashboard{% endblock %}
+
+{% block content %}
+
+
+
+<div class="card">
+	<div class="card-block">
+		<h4 class="card-title">Alle Semester</h4>
+		<p class="card-text">Eine Übersicht über die letzten Semester und der gestellten Anträge.</p>
+	</div>
+	<div class="card-block">
+	<table class="table">
+	<thead>
+		<tr>
+			<th>ID</th>
+			<th>Antragsteller/in</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for antrag in semester.antrag_set.all %}
+		<tr>
+			<td>{{antrag.grund.identifier}} {{antrag.id}}</td>
+			<td>{{antrag.user.user.first_name}} {{antrag.user.user.last_name}}</td>
+			<td><a href="{% url 'antragbackend' antrag.id %}">Anzeigen</a></td>
+			
+		</tr>
+	{% endfor %}
+	</tbody>
+	</table>
+	</div>
+</div>
+
+{% endblock %}
