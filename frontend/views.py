@@ -1,12 +1,14 @@
-from django.http import HttpResponse
-from django.shortcuts import render
+from django.http import HttpResponse, FileResponse
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import redirect
 from  django.contrib.auth.password_validation import validate_password, ValidationError
-from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings
-from .forms import PasswordChangeForm, AntragForm
-
+from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument
+from .forms import PasswordChangeForm, AntragForm, DokumentForm
+import uuid
+import os
+import mimetypes
 
 def group_required(*group_names):
 	"""Requires user membership in at least one of the groups passed in."""
@@ -137,7 +139,8 @@ def impressum(request):
 def antragstellung(request, semester_id):
 	semester_id = int(semester_id)
 	
-	semester = Semester.objects.get(id=semester_id)
+	semester = get_object_or_404(Semester, pk=semester_id)
+	
 	person = Person.objects.get(user__id=request.user.id)
 	form = None
 	
@@ -161,16 +164,95 @@ def antragstellung(request, semester_id):
 	context = {'current_page' : 'antragstellung', 'semester' : semester, 'form' : form }
 	return render(request, 'frontend/antragstellung.html', context)
 
+def handle_uploaded_file(f, semester_id, antrag_id):
+	if(f.content_type not in ('application/pdf','image/png','image/jpg','image/jpeg')):
+		return (False, 'falscher_content_type')
+	extension = f.name[-4:].lower()
+	if(extension not in ('.pdf','.png','.jpg')):
+		return (False, 'falsches_dateiformat')
+	
+	filename = str(uuid.uuid4())
+	filedir = "nachweise/{0}/{1}".format(semester_id, antrag_id)
+	filepath = "nachweise/{0}/{1}/{2}{3}".format(semester_id, antrag_id, filename, extension) # extension enthält den Punkt
+	
+	if(not os.path.isdir(filedir)):
+		os.makedirs(filedir) #TODO permissions
+	
+	with open(filepath, 'wb+') as destination:
+		for chunk in f.chunks():
+			destination.write(chunk)
+	
+	return (True, filepath)
+
 @login_required
 @group_required('Antragstellung')
 def antrag(request, antrag_id):
 	antrag_id = int(antrag_id)
+	message = None
 	
-	antrag = Antrag.objects.get(id=antrag_id)
+	antrag = get_object_or_404(Antrag, pk=antrag_id)
+	
 	person = Person.objects.get(user__id=request.user.id)
 	
-	context = {'current_page' : 'antrag', 'antrag' : antrag}
+	if request.method == 'POST':
+		# create a form instance and populate it with data from the request:
+		form = DokumentForm(request.POST, request.FILES)
+		# check whether it's valid:
+		if form.is_valid():
+			
+			if(form.cleaned_data['nachweis'] not in antrag.grund.nachweise.all()):
+				message = 'nachweis_ungueltig'
+			else:
+				pfad = handle_uploaded_file(request.FILES['userfile'], antrag.semester.id, antrag.id)
+				
+				if(pfad[0] == True):
+					dokument = form.save(commit=False)
+					dokument.antrag = antrag
+					dokument.datei = pfad[1]
+					
+					dokument.save()
+					
+				message = pfad[1]
+				
+				form = DokumentForm()
+		else:
+			message = 'form_invalid'
+	else:
+		form = DokumentForm()
+	form.fields["nachweis"].queryset = antrag.grund.nachweise.filter(hochzuladen=True)
+		
+		
+	nachweise_queryset = Nachweis.objects.raw("""SELECT n.id, n.name, n.beschreibung, n.hochzuladen, d.id AS datei_id
+		FROM backend_nachweis n LEFT OUTER JOIN (SELECT id, nachweis_id from backend_dokument bd WHERE bd.antrag_id = %s AND bd.aktiv) d ON n.id = d.nachweis_id
+		WHERE n.id in (SELECT nachweis_id FROM backend_antragsgrund_nachweise WHERE antragsgrund_id = %s) """, [antrag_id, antrag.grund.id])
+	
+	nachweise = {}
+	for nw in nachweise_queryset:
+		if(nw.id not in nachweise):
+			nachweise[nw.id] = {}
+			nachweise[nw.id]['name'] = nw.name
+			nachweise[nw.id]['beschreibung'] = nw.beschreibung
+			nachweise[nw.id]['hochzuladen'] = nw.hochzuladen
+			nachweise[nw.id]['dokumente'] = []
+		if(nw.datei_id != None):
+			nachweise[nw.id]['dokumente'].append(nw.datei_id)
+	
+	context = {'current_page' : 'antrag', 'antrag' : antrag, 'form':form, 'message':message, 'nachweise':nachweise}
 	return render(request, 'frontend/antrag.html', context)
 
-
+@login_required
+@group_required('Antragstellung')
+def datei(request, dokument_id):
+	dokument_id = int(dokument_id)
+	
+	dokument = get_object_or_404(Dokument, pk=dokument_id)
+	
+	if(dokument.antrag.user.user.id == request.user.id):
+		response = FileResponse(open(dokument.datei, 'rb'), content_type=mimetypes.guess_type(dokument.datei)[0])
+		#response['Content-Disposition'] = 'attachment; filename={0}'.format(os.path.basename(dokument.datei))
+		return response
+	else:
+		raise Http404("Document does not exist")
+	
+	
 

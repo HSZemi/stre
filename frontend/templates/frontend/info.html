@@ -7,6 +7,12 @@
 {% for grund in gruende %}
     <h4>{{ grund }}</h4>
     <p>{{grund.beschreibung}}</p>
+    <h5>Benötigte Nachweise:</h5>
+    <ul>
+    {% for nachweis in grund.nachweise.all %}
+    <li>{{nachweis.name}}{% if nachweis.beschreibung != '' %}({{nachweis.beschreibung}}){% endif %}</li>
+    {% endfor %}
+    </ul>
 {% endfor %}
 
 {% endblock %}

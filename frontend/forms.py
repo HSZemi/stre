@@ -1,5 +1,5 @@
 from django import forms
-from backend.models import Antrag
+from backend.models import Antrag, Dokument
 from django.forms import ModelForm
 
 class PasswordChangeForm(forms.Form):
@@ -23,3 +23,17 @@ class AntragForm(ModelForm):
 			'versandanschrift': 'An diese Adresse werden die Bescheide versandt.',
 			'grund': 'Bitte wähle aus, weshalb du den Antrag auf Rückerstattung stellst.<br>Im nächsten Schritt kannst du dann die benötigten Nachweise hochladen.',
 		}
+
+class DokumentForm(ModelForm):
+	class Meta:
+		model = Dokument
+		fields = ['nachweis']
+		
+		labels = {
+			'nachweis': 'Nachweis-Art',
+		}
+		
+		help_texts = {
+			'nachweis': 'Zu welchem Nachweis gehört diese Datei?',
+		}
+	userfile = forms.FileField(help_text="Erlaubte Dateitypen: PDF, JPG, PNG", label="Datei:")

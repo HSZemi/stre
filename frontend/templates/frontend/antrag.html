@@ -18,8 +18,50 @@ letzte änderung
 status
 <p>{{antrag.status.name}}</p>
 
-aktionen: zurückziehen, nachweise hochladen
-<p></p>
+grund
+<p>{{antrag.grund.name}}</p>
+
+nachweise
+<ul>
+{% for nachweis in nachweise.values %}
+	<li>
+	{{nachweis.name}}
+	{% for dokument_id in nachweis.dokumente %}
+		<a href="{% url 'dateifrontend' dokument_id=dokument_id %}" target="_blank">File</a> 
+	{% endfor %}
+	</li>
+{% endfor %}
+</ul>
+
+<h3>Nachweis hochladen</h3>
+
+{% if message %}
+{% if message == 'nachweis_ungueltig' %}
+<div class="alert alert-danger" role="alert">
+  <strong>Herrje!</strong> Das hat nicht funktioniert. Bitte nutze die vorgegebenen Nachweise.
+</div>
+{% elif message == 'form_invalid' %}
+<div class="alert alert-warning" role="alert">
+  <strong>Hoppla!</strong> Bitte fülle das Formular komplett aus.
+</div>
+{% elif message == 'falscher_content_type' or message == 'falsches_dateiformat' %}
+<div class="alert alert-warning" role="alert">
+  <strong>Hoppla!</strong> Bitte lade nur PDF-, PNG- oder JPG-Dateien hoch.
+</div>
+{% else %}
+<div class="alert alert-success" role="alert">
+  <strong>Das Dokument wurde erfolgreich hochgeladen.</strong> Er sollte jetzt hinter seinem Nachweis aufgeführt sein.
+</div>
+{% endif %}
+{% endif %}
+
+<form enctype="multipart/form-data" method="POST">
+{% csrf_token %}
+<table class="table">
+{{form}}
+</table>
+<input type="submit" value="Nachweis hochladen" class="btn btn-primary"/>
+</form>
 
 
 
