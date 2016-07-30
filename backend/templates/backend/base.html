@@ -25,6 +25,9 @@
 		<li class="nav-item{% if current_page == 'dashboard'%} active{% endif %}">
 			<a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
 		</li>
+		<li class="nav-item{% if current_page == 'history'%} active{% endif %}">
+			<a class="nav-link" href="{% url 'history' %}">Bearbeitungsverlauf</a>
+		</li>
 {% if request.user.is_authenticated and request.user.is_staff %}<li class="nav-item{% if current_page == 'logoutpage'%} active{% endif %}">
 			<a class="nav-link" href="{% url 'logout' %}">Logout</a>
 		</li>
@@ -38,7 +41,7 @@
 
 {% block content %}{% endblock %}
 
-<div id="footer"><a href="{% url 'impressum' %}">Impressum</a></div>
+<div id="footer"><a href="{% url 'index' %}">Frontend</a> · <a href="{% url 'impressum' %}">Impressum</a></div>
 </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js" integrity="sha384-THPy051/pYDQGanwU6poAc/hOdQxjnOEXzbT+OuUAFqNqFjL+4IGLBgCJC3ZOShY" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js" integrity="sha384-Plbmg8JY28KFelvJVai01l8WyZzrYWG825m+cZ0eDDS1f7d/js6ikvy1+X+guPIB" crossorigin="anonymous"></script>

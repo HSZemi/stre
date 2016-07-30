@@ -52,7 +52,9 @@ def statuspage(request):
 					
 					message = 'passwort_erfolgreich_geaendert'
 					# login user again
-					return redirect('loginpage', message=message)
+					response = redirect('loginpage')
+					response['Location'] += '?m={0}'.format(message)
+					return response
 					
 				except ValidationError as e:
 					message = 'validation_error'
@@ -97,15 +99,16 @@ def register(request):
 def resetpassword(request):
 	return HttpResponse("Hello, world. You're at the password reset page. Unfortunately, there is nothing we can do for you.")
 
-def loginpage(request, message=None):
+def loginpage(request):
+	message=None
+	if('m' in request.GET):
+		message = request.GET['m']
 	
 	next_page = 'index'
 	if('next' in request.GET and len(request.GET['next']) > 0 and request.GET['next'][0] == '/'):
 		next_page = request.GET['next']
 		
-	if request.user.is_authenticated():
-		return redirect(next_page)
-	elif request.method == 'POST':
+	if request.method == 'POST':
 		if('matrikelnummer' in request.POST and 'passwort' in request.POST):
 			matrikelnummer = request.POST['matrikelnummer']
 			passwort = request.POST['passwort']

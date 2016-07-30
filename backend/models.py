@@ -56,13 +56,21 @@ class Antragsgrund(models.Model):
 	def __str__(self):
 		return "[{0}] {1}".format(self.identifier, self.name)
 
-
 class Status(models.Model):
 	name = models.CharField(max_length=200)
 	klassen = models.CharField(max_length=200)
 	
 	def __str__(self):
 		return self.name
+
+class Aktion(models.Model):
+	name = models.CharField(max_length=200)
+	status_start = models.ForeignKey(Status, related_name='status_start')
+	status_end = models.ForeignKey(Status, related_name='status_end')
+	
+	def __str__(self):
+		return "{0} ({1}->{2})".format(self.name, self.status_start.name, self.status_end.name)
+
 
 class Antrag(models.Model):
 	semester = models.ForeignKey(Semester)
@@ -79,6 +87,9 @@ class Antrag(models.Model):
 	
 	antragszeitpunkt = models.DateTimeField(auto_now_add=True)
 	letzte_bearbeitung = models.DateTimeField(auto_now=True)
+	
+	def __str__(self):
+		return "{0} {1}".format(self.grund.identifier, self.id)
 
 class Dokument(models.Model):
 	antrag = models.ForeignKey(Antrag)
@@ -86,11 +97,12 @@ class Dokument(models.Model):
 	datei = models.CharField(max_length=1024)
 	aktiv = models.BooleanField(default=True)
 
-class Aktion(models.Model):
+	
+class History(models.Model):
 	timestamp = models.DateTimeField(auto_now_add=True)
 	akteur = models.ForeignKey(User)
 	antrag = models.ForeignKey(Antrag)
-	aktion = models.CharField(max_length=200)
+	aktion = models.ForeignKey(Aktion)
 
 class GlobalSettings(models.Model):
 	status_start = models.ForeignKey(Status)

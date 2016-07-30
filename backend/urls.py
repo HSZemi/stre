@@ -7,5 +7,8 @@ urlpatterns = [
     url(r'^login$', views.loginpage, name='loginpagebackend'),
     url(r'^antraege/(?P<semester_id>[0-9]+)$', views.antraege, name='antraege'),
     url(r'^antrag/(?P<antrag_id>[0-9]+)$', views.antrag, name='antragbackend'),
+    url(r'^antrag/(?P<antrag_id>[0-9]+)/aktion/(?P<aktion_id>[0-9]+)$', views.antragaktion, name='antragaktion'),
+    url(r'^history$', views.history, name='history'),
+    url(r'^history/(?P<antrag_id>[0-9]+)$', views.history, name='history'),
     url(r'^konfiguration$', views.konfiguration, name='konfiguration'),
 ]

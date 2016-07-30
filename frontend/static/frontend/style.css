@@ -50,6 +50,17 @@ body{
 	border-radius: 0;
 }
 
+.dokument {
+	font-size: 130%;
+}
+.dokument a {
+	color: white;
+}
+
+form {
+	margin-bottom: 2rem;
+}
+
 .form-signin {
 	max-width: 330px;
 	padding: 15px;

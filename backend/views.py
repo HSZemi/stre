@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import redirect
 from  django.contrib.auth.password_validation import validate_password, ValidationError
-from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument
+from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History
 from django.db.models import Count
 from .forms import DokumentForm
 import uuid
@@ -24,12 +24,11 @@ def group_required(*group_names):
 def loginpage(request):
 	message = None
 	next_page = 'dashboard'
+	
 	if('next' in request.GET and len(request.GET['next']) > 0 and request.GET['next'][0] == '/'):
 		next_page = request.GET['next']
 		
-	if request.user.is_authenticated():
-		return redirect(next_page)
-	elif request.method == 'POST':
+	if request.method == 'POST':
 		if('username' in request.POST and 'passwort' in request.POST):
 			username = request.POST['username']
 			passwort = request.POST['passwort']
@@ -80,7 +79,11 @@ def antraege(request, semester_id):
 @staff_member_required(login_url='/backend/login')
 def antrag(request, antrag_id):
 	antrag_id = int(antrag_id)
-	message = None
+	message=None
+	gmessage=None
+	
+	if('m' in request.GET):
+		gmessage = request.GET['m']
 	
 	antrag = get_object_or_404(Antrag, pk=antrag_id)
 	
@@ -128,8 +131,49 @@ def antrag(request, antrag_id):
 		if(nw.datei_id != None):
 			nachweise[nw.id]['dokumente'].append(nw.datei_id)
 	
-	context = {'current_page' : 'antrag', 'antrag' : antrag, 'form':form, 'message':message, 'nachweise':nachweise}
+	aktionen = Aktion.objects.filter(status_start=antrag.status)
+	
+	context = {'current_page' : 'antrag', 'antrag' : antrag, 'form':form, 'message':message, 'gmessage':gmessage, 'nachweise':nachweise, 'aktionen':aktionen}
 	return render(request, 'backend/antrag.html', context)
+
+@staff_member_required(login_url='/backend/login')
+def antragaktion(request, antrag_id, aktion_id):
+	antrag_id = int(antrag_id)
+	aktion_id = int(aktion_id)
+	message = None
+	
+	antrag = get_object_or_404(Antrag, pk=antrag_id)
+	aktion = get_object_or_404(Aktion, pk=aktion_id)
+	
+	if(Aktion.objects.filter(status_start=antrag.status).filter(pk=aktion.id).exists()):
+		antrag.status = aktion.status_end
+		antrag.save()
+		
+		history = History()
+		history.akteur = request.user
+		history.antrag = antrag
+		history.aktion = aktion
+		history.save()
+	
+		response = redirect('antragbackend', antrag_id=antrag.id)
+		response['Location'] += '?m=aktion_erfolgreich'
+		return response
+	else:
+		response = redirect('antragbackend', antrag_id=antrag.id)
+		response['Location'] += '?m=aktion_nicht_erfolgreich'
+		return response
+	
+@staff_member_required(login_url='/backend/login')
+def history(request, antrag_id=None):
+	
+	if(antrag_id != None):
+		antrag_id = int(antrag_id)
+		history = History.objects.filter(antrag=antrag_id).order_by('-timestamp')
+	else:
+		history = History.objects.all().order_by('-timestamp')
+	
+	context = {'current_page' : 'history', 'history' : history}
+	return render(request, 'backend/history.html', context)
 
 @staff_member_required(login_url='/backend/login')
 def konfiguration(request):

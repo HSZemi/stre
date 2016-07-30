@@ -7,7 +7,6 @@ urlpatterns = [
     url(r'^register$', views.register, name='register'),
     url(r'^login$', views.loginpage, name='loginpage'),
     url(r'^login/reset$', views.resetpassword, name='resetpassword'),
-    url(r'^login/(?P<message>.+)$', views.loginpage, name='loginpage'),
     url(r'^logout$', views.logoutpage, name='logout'),
     url(r'^info$', views.info, name='info'),
     url(r'^impressum', views.impressum, name='impressum'),

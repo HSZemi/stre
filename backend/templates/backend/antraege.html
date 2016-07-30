@@ -8,10 +8,12 @@
 
 <div class="card">
 	<div class="card-block">
-		<h4 class="card-title">Alle Semester</h4>
-		<p class="card-text">Eine Übersicht über die letzten Semester und der gestellten Anträge.</p>
+		<h4 class="card-title">Anträge im {{semester.get_semestertyp_display}} {{semester.jahr}}</h4>
+		<p class="card-text">Die Liste der im {{semester.get_semestertyp_display}} {{semester.jahr}} gestellten Anträge.</p>
 	</div>
 	<div class="card-block">
+	
+	{% if semester.antrag_set.count > 0 %}
 	<table class="table">
 	<thead>
 		<tr>
@@ -31,6 +33,11 @@
 	{% endfor %}
 	</tbody>
 	</table>
+	{% else %}
+	<div class="alert alert-info" role="alert">
+	<strong>Hier gibt es nichts zu sehen!</strong> Für dieses Semester wurden (noch) keine Anträge gestellt.
+	</div>
+	{% endif %}
 	</div>
 </div>
 

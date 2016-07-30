@@ -6,33 +6,41 @@
 
 <h2>Antrag auf Rückerstattung</h2>
 
-Semester
-<p>{{antrag.semester}}</p>
+{% if gmessage %}
+{{gmessage}}
+{% endif %}
 
-antragsdatum
-<p>{{antrag.antragszeitpunkt}}</p>
+<table class="table">
+<tr><th>Antragsteller/in</th><td>{{antrag.user.user.first_name}} {{antrag.user.user.last_name}} ({{antrag.user.user.username}})</td></tr>
+<tr><th>Semester</th><td>{{antrag.semester}}</td></tr>
+<tr><th>Antragszeitpunkt</th><td>{{antrag.antragszeitpunkt}}</td></tr>
+<tr><th>Antragsgrund</th><td>{{antrag.grund.name}}</td></tr>
+<tr><th>Letzte Aktivität</th><td>{{antrag.letzte_bearbeitung}}</td></tr>
+<tr><th>Antragsstatus</th><td><span class="{{antrag.status.klassen}}">{{antrag.status.name}}</span></td></tr>
+</table>
 
-letzte änderung
-<p>{{antrag.letzte_bearbeitung}}</p>
-
-status
-<p>{{antrag.status.name}}</p>
-
-grund
-<p>{{antrag.grund.name}}</p>
-
-nachweise
+<h3>Benötigte Nachweise</h3>
 <ul>
 {% for nachweis in nachweise.values %}
 	<li>
 	{{nachweis.name}}
+	<ul>
 	{% for dokument_id in nachweis.dokumente %}
-		<a href="{% url 'datei' dokument_id=dokument_id %}" target="_blank">File</a> 
+		<li><span class="tag tag-default dokument"><a href="{% url 'datei' dokument_id=dokument_id %}" target="_blank">Dokument</a></span></li>
 	{% endfor %}
+	</ul>
 	</li>
 {% endfor %}
 </ul>
 
+<hr>
+
+aktionen
+<ul>
+{% for aktion in aktionen %}
+<li><a href="{% url 'antragaktion' antrag_id=antrag.id aktion_id=aktion.id %}">{{aktion}}</a></li>
+{% endfor %}
+</ul>
 <h3>Nachweis hochladen</h3>
 
 {% if message %}

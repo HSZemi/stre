@@ -6,32 +6,30 @@
 
 <h2>Antrag auf Rückerstattung</h2>
 
-Semester
-<p>{{antrag.semester}}</p>
+<table class="table">
+<tr><th>Antragsteller/in</th><td>{{antrag.user.user.first_name}} {{antrag.user.user.last_name}} ({{antrag.user.user.username}})</td></tr>
+<tr><th>Semester</th><td>{{antrag.semester}}</td></tr>
+<tr><th>Antragszeitpunkt</th><td>{{antrag.antragszeitpunkt}}</td></tr>
+<tr><th>Antragsgrund</th><td>{{antrag.grund.name}}</td></tr>
+<tr><th>Letzte Aktivität</th><td>{{antrag.letzte_bearbeitung}}</td></tr>
+<tr><th>Antragsstatus</th><td><span class="{{antrag.status.klassen}}">{{antrag.status.name}}</span></td></tr>
+</table>
 
-antragsdatum
-<p>{{antrag.antragszeitpunkt}}</p>
-
-letzte änderung
-<p>{{antrag.letzte_bearbeitung}}</p>
-
-status
-<p>{{antrag.status.name}}</p>
-
-grund
-<p>{{antrag.grund.name}}</p>
-
-nachweise
+<h3>Benötigte Nachweise</h3>
 <ul>
 {% for nachweis in nachweise.values %}
 	<li>
 	{{nachweis.name}}
+	<ul>
 	{% for dokument_id in nachweis.dokumente %}
-		<a href="{% url 'datei' dokument_id=dokument_id %}" target="_blank">File</a> 
+		<li><span class="tag tag-default dokument"><a href="{% url 'datei' dokument_id=dokument_id %}" target="_blank">Dokument</a></span> <a href="#">entfernen</a></li>
 	{% endfor %}
+	</ul>
 	</li>
 {% endfor %}
 </ul>
+
+<hr>
 
 <h3>Nachweis hochladen</h3>
 
@@ -62,6 +60,13 @@ nachweise
 </table>
 <input type="submit" value="Nachweis hochladen" class="btn btn-primary"/>
 </form>
+
+<hr>
+
+<h3>Antrag zurückziehen</h3>
+<p>Wenn du deinen Antrag zurückziehst, wird er nicht weiter bearbeitet. Du kannst auch keinen neuen Antrag über das System stellen.</p>
+
+<a href="#">Antrag zurückziehen</a>
 
 
 
