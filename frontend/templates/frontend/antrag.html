@@ -6,6 +6,14 @@
 
 <h2>Antrag auf Rückerstattung</h2>
 
+{% if gmessage %}
+{% if gmessage == 'antrag_erstellt' %}
+<div class="alert alert-info" role="alert">
+  <strong>Glückwunsch!</strong> Dein Antrag auf Semesterticketrückerstattung wurde erstellt. Lade nun die benötigten Nachweise hoch!<br>Das Formular hierzu findest du auf dieser Seite etwas weiter unten.
+</div>
+{% endif %}
+{% endif %}
+
 <table class="table">
 <tr><th>Antragsteller/in</th><td>{{antrag.user.user.first_name}} {{antrag.user.user.last_name}} ({{antrag.user.user.username}})</td></tr>
 <tr><th>Semester</th><td>{{antrag.semester}}</td></tr>
@@ -25,7 +33,7 @@
 	{{nachweis.name}}
 	<ul>
 	{% for dokument_id in nachweis.dokumente %}
-		<li><span class="tag tag-default dokument"><a href="{% url 'datei' dokument_id=dokument_id %}" target="_blank">Dokument</a></span> <a href="#">entfernen</a></li>
+		<li><span class="tag tag-default dokument"><a href="{% url 'datei' dokument_id=dokument_id %}" target="_blank">Dokument</a></span></li>
 	{% endfor %}
 	</ul>
 	</li>
@@ -71,7 +79,7 @@
 <h3>Antrag zurückziehen</h3>
 <p>Wenn du deinen Antrag zurückziehst, wird er nicht weiter bearbeitet. Du kannst auch keinen neuen Antrag über das System stellen.</p>
 
-<a href="#">Antrag zurückziehen</a>
+<a href="{% url 'antragzurueckziehen' antrag_id=antrag.id %}">Antrag zurückziehen</a>
 
 
 

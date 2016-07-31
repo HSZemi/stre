@@ -125,12 +125,20 @@ def antrag(request, antrag_id):
 				pfad = handle_uploaded_file(request.FILES['userfile'], antrag.semester.id, antrag.id)
 				
 				if(pfad[0] == True):
+					uploadaktion = Aktion.objects.filter(status_start=antrag.status).filter(ist_upload=True)[0]
+					
 					dokument = form.save(commit=False)
 					dokument.antrag = antrag
 					dokument.datei = pfad[1]
 					
 					dokument.save()
 					antrag.save()
+					
+					history = History()
+					history.akteur = request.user
+					history.antrag = antrag
+					history.aktion = uploadaktion
+					history.save()
 					
 				message = pfad[1]
 				
@@ -249,8 +257,8 @@ def brief(request, antrag_id, briefvorlage_id):
 			
 			if(os.path.isfile(os.path.join('dokumente', filepath))):
 				# compile
-				retval = subprocess.call(['pdflatex', "{0}.tex".format(filename)], cwd=os.path.join('dokumente', filedir))
-				retval = subprocess.call(['pdflatex', "{0}.tex".format(filename)], cwd=os.path.join('dokumente', filedir))
+				retval = subprocess.call(['pdflatex', "-interaction=nonstopmode", "{0}.tex".format(filename)], cwd=os.path.join('dokumente', filedir))
+				retval = subprocess.call(['pdflatex', "-interaction=nonstopmode", "{0}.tex".format(filename)], cwd=os.path.join('dokumente', filedir))
 				if(os.path.isfile(os.path.join('dokumente', pdffilepath))):
 					brief = Brief()
 					brief.antrag = antrag

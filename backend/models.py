@@ -30,6 +30,9 @@ class Semester(models.Model):
 	
 	antragsfrist = models.DateField()
 	
+	class Meta:
+		unique_together = ('semestertyp', 'jahr',)
+	
 	def antrag_moeglich(self):
 		if(self.antragsfrist >= date.today()):
 			return True
@@ -48,7 +51,7 @@ class Nachweis(models.Model):
 		return self.name
 
 class Antragsgrund(models.Model):
-	identifier = models.CharField(max_length=2)
+	identifier = models.CharField(max_length=2,unique=True)
 	name = models.CharField(max_length=200)
 	beschreibung = models.TextField()
 	nachweise = models.ManyToManyField(Nachweis)
@@ -71,6 +74,7 @@ class Aktion(models.Model):
 	status_end = models.ForeignKey(Status, related_name='status_end')
 	user_explizit = models.BooleanField()
 	staff_explizit = models.BooleanField()
+	ist_upload = models.BooleanField()
 	
 	def __str__(self):
 		return "{0} ({1}->{2})".format(self.name, self.status_start.name, self.status_end.name)
@@ -93,6 +97,8 @@ class Antrag(models.Model):
 	antragszeitpunkt = models.DateTimeField(auto_now_add=True)
 	letzte_bearbeitung = models.DateTimeField(auto_now=True)
 	
+	class Meta:
+		unique_together = ('semester', 'user',)
 	
 	def __str__(self):
 		return "{0} {1}".format(self.grund.identifier, self.id)
@@ -127,7 +133,8 @@ class History(models.Model):
 
 class GlobalSettings(models.Model):
 	status_start = models.ForeignKey(Status)
-	aktion_ueberweisungsbetrag_aendern = models.ForeignKey(Aktion)
+	aktion_ueberweisungsbetrag_aendern = models.ForeignKey(Aktion, related_name='aktion_ueberweisungsbetrag_aendern')
+	aktion_antrag_stellen = models.ForeignKey(Aktion, related_name='aktion_antrag_stellen')
 	brief_tex = models.TextField()
 	
 	def save(self, *args, **kwargs):

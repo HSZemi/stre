@@ -1,10 +1,10 @@
-from django.http import HttpResponse, FileResponse
+from django.http import HttpResponse, FileResponse, Http404, HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import redirect
 from  django.contrib.auth.password_validation import validate_password, ValidationError
-from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument
+from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History
 from .forms import PasswordChangeForm, AntragForm, DokumentForm
 import uuid
 import os
@@ -165,6 +165,18 @@ def antragstellung(request, semester_id):
 			antrag.status = (GlobalSettings.objects.get()).status_start
 			
 			antrag.save()
+			
+			aktion = (GlobalSettings.objects.get()).aktion_antrag_stellen
+			history = History()
+			history.akteur = request.user
+			history.antrag = antrag
+			history.aktion = aktion
+			history.save()
+			
+			response = redirect('antragfrontend', antrag_id=antrag.id)
+			response['Location'] += '?m=antrag_erstellt'
+			return response
+			
 	else:
 		initial_form_values = {'kontoinhaber_in': '{0} {1}'.format(person.user.first_name, person.user.last_name),
 				'versandanschrift':person.adresse}
@@ -198,10 +210,15 @@ def handle_uploaded_file(f, semester_id, antrag_id):
 def antrag(request, antrag_id):
 	antrag_id = int(antrag_id)
 	message = None
+	gmessage = None
 	
 	antrag = get_object_or_404(Antrag, pk=antrag_id)
+	if(antrag.user.user != request.user):
+		return HttpResponseForbidden()
+		
 	
-	person = Person.objects.get(user__id=request.user.id)
+	if('m' in request.GET):
+		gmessage = request.GET['m']
 	
 	if request.method == 'POST':
 		# create a form instance and populate it with data from the request:
@@ -215,12 +232,20 @@ def antrag(request, antrag_id):
 				pfad = handle_uploaded_file(request.FILES['userfile'], antrag.semester.id, antrag.id)
 				
 				if(pfad[0] == True):
+					uploadaktion = Aktion.objects.filter(status_start=antrag.status).filter(ist_upload=True)[0]
+					
 					dokument = form.save(commit=False)
 					dokument.antrag = antrag
 					dokument.datei = pfad[1]
 					
 					dokument.save()
 					antrag.save()
+					
+					history = History()
+					history.akteur = request.user
+					history.antrag = antrag
+					history.aktion = uploadaktion
+					history.save()
 					
 				message = pfad[1]
 				
@@ -247,7 +272,13 @@ def antrag(request, antrag_id):
 		if(nw.datei_id != None):
 			nachweise[nw.id]['dokumente'].append(nw.datei_id)
 	
-	context = {'current_page' : 'antrag', 'antrag' : antrag, 'form':form, 'message':message, 'nachweise':nachweise}
+	context = {'current_page' : 'antrag', 'antrag' : antrag, 'form':form, 'message':message, 'gmessage':gmessage, 'nachweise':nachweise}
 	return render(request, 'frontend/antrag.html', context)
 	
-	
+@login_required
+@group_required('Antragstellung')
+def antragzurueckziehen(request, antrag_id):
+	antrag = get_object_or_404(Antrag, pk=antrag_id)
+	if(antrag.user.user != request.user):
+		return HttpResponseForbidden()
+	return HttpResponse("Dies ist aktuell nicht implementiert. Bitte wenden Sie sich an den Semesterticketausschuss Ihres Vertrauens.")

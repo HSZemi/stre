@@ -17,7 +17,7 @@
 {% endif %}
 {% endif %}
 
-<p>Hier kannst du den Überweisungsbetrag für Antrag {{antrag}} anpassen. Gib den gewünschten Betrag ein, und klicke dann auf »Überweisungsbetrag setzen«.</p>
+<p>Hier kannst du den Überweisungsbetrag für <a href="{% url 'antragbackend' antrag_id=antrag.id %}">Antrag {{antrag}}</a> anpassen. Gib den gewünschten Betrag ein, und klicke dann auf »Überweisungsbetrag setzen«.</p>
 
 <form method="POST">
 {% csrf_token %}

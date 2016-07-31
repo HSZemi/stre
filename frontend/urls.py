@@ -12,4 +12,5 @@ urlpatterns = [
     url(r'^impressum', views.impressum, name='impressum'),
     url(r'^antragstellung/(?P<semester_id>[0-9]+)$', views.antragstellung, name='antragstellung'),
     url(r'^antrag/(?P<antrag_id>[0-9]+)$', views.antrag, name='antragfrontend'),
+    url(r'^antrag/(?P<antrag_id>[0-9]+)/zurueckziehen$', views.antragzurueckziehen, name='antragzurueckziehen'),
 ]
