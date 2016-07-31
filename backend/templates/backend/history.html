@@ -9,7 +9,7 @@
 <div class="card">
 	<div class="card-block">
 		<h4 class="card-title">Bearbeitungsverlauf</h4>
-		<p class="card-text">Die letzten ausgeführten Aktionen, sortiert von neu nach alt.</p>
+		<p class="card-text">Die letzten ausgeführten Aktionen{% if antrag %} für <a href="{% url 'antragbackend' antrag_id=antrag.id %}">Antrag {{antrag}}</a>{% endif %}, sortiert von neu nach alt.</p>
 	</div>
 	<div class="card-block">
 	<table class="table">

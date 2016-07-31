@@ -1,0 +1,34 @@
+{% extends 'frontend/base.html' %}
+
+{% block title%}Semesterticket-Rückerstattung - Antragstellung{% endblock %}
+
+{% block content %}
+
+<h2>Antrag auf Rückerstattung stellen</h2>
+
+<h3>Schritt 1: Persönliche Angaben</h3>
+
+{% if message %}
+{% if message == 'user_existiert_bereits' %}
+<div class="alert alert-info" role="alert">
+  <strong>Hoppla!</strong> Für diese Matrikelnummer existiert bereist ein Konto. <a href="{% url 'loginpage' %}?u={{form.matrikelnummer.value}}">Melde dich bitte an</a> und stelle dann den Antrag.
+</div>
+{% endif %}
+{% if message == 'validation_error' %}
+{% for error in validation_errors %}
+	<div class="alert alert-warning" role="alert">
+		<b>Hoppla!</b> {{error}}
+	</div>
+{% endfor%}
+{% endif %}
+{% endif %}
+<form method="POST">
+{% csrf_token %}
+<p>Mit * markierte Felder sind Pflichtangaben</p>
+<table class="table">
+{{form}}
+</table>
+<input type="submit" value="Bestätigen und weiter zu Schritt 2" class="btn btn-primary"/>
+</form>
+
+{% endblock %}

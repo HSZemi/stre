@@ -22,7 +22,7 @@
 <tr><th>Letzte Aktivität</th><td>{{antrag.letzte_bearbeitung}}</td></tr>
 <tr><th>Antragsstatus</th><td><span class="{{antrag.status.klassen}}">{{antrag.status.name}}</span></td></tr>
 {% if antrag.ueberweisungsbetrag > 0 %}
-<tr><th>Überweisungsbetrag</th><td><span class="{{antrag.status.klassen}}">{{antrag.status.name}}</span></td></tr>
+<tr><th>Überweisungsbetrag</th><td>{{antrag.ueberweisungsbetrag}} €</td></tr>
 {% endif %}
 </table>
 
@@ -33,7 +33,7 @@
 	{{nachweis.name}}
 	<ul>
 	{% for dokument_id in nachweis.dokumente %}
-		<li><span class="tag tag-default dokument"><a href="{% url 'datei' dokument_id=dokument_id %}" target="_blank">Dokument</a></span></li>
+		<li><span class="tag tag-default dokument"><a href="{% url 'datei' dokument_id=dokument_id %}" target="_blank">Dokument</a></span> <a href="{% url 'datei' dokument_id=dokument_id %}" target="_blank">anzeigen</a></li>
 	{% endfor %}
 	</ul>
 	</li>
@@ -74,13 +74,16 @@
 </form>
 {% endif %}
 
-<hr>
 
+{% if antrag.status.zurueckziehen_erlaubt %}
+
+<hr>
 <h3>Antrag zurückziehen</h3>
 <p>Wenn du deinen Antrag zurückziehst, wird er nicht weiter bearbeitet. Du kannst auch keinen neuen Antrag über das System stellen.</p>
 
 <a href="{% url 'antragzurueckziehen' antrag_id=antrag.id %}">Antrag zurückziehen</a>
 
+{% endif %}
 
 
 {% endblock %}

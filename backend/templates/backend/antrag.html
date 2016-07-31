@@ -5,7 +5,7 @@
 {% block content %}
 
 <h2>Antrag auf Rückerstattung – {{antrag.grund.identifier}} {{antrag.id}}</h2>
-<p>Antragsstatus: <span class="{{antrag.status.klassen}}">{{antrag.status.name}}</span></p>
+<p>Antragsstatus: <span class="{{antrag.status.klassen}}">{{antrag.status.name}}</span> | <a href="{% url 'history' antrag_id=antrag.id %}">Bearbeitungsverlauf anzeigen</a></p>
 
 <hr>
 
@@ -20,14 +20,25 @@
   <strong>Hoppla!</strong> Bevor der Antrag <em>teilweise genehmigt</em> werden kann, muss zunächst der Überweisungsbetrag angepasst werden. Das geht bei <a href="{% url 'ueberweisungsbetrag' antrag_id=antrag.id %}">Betrag anpassen</a>.
 </div>
 {% endif %}
+{% if gmessage == 'brief_nicht_erstellt' %}
+<div class="alert alert-danger" role="alert">
+  <strong>Hoppla!</strong> Vor dieser Aktion muss zunächst ein entsprechender Brief erstellt und versandfertig gemacht werden.
+</div>
+{% endif %}
 {% if gmessage == 'brief_wurde_erstellt' %}
 <div class="alert alert-success" role="alert">
   <strong>Ein Brief wurde erstellt!</strong> Du kannst ihn im Abschnitt »Briefe« öffnen.
 </div>
 {% endif %}
+{% if gmessage == 'aktion_erfolgreich' %}
+<div class="alert alert-success" role="alert">
+  <strong>Jawohl!</strong> Die Aktion wurde erfolgreich ausgeführt.
+</div>
+{% endif %}
 {% endif %}
 
 <h3>Aktionen</h3>
+{% if aktionen %}
 <p><b>Obacht:</b> Zuerst den Brief erstellen und versandfertig machen, dann hier auf's Knöpfchen drücken! Zuvor aber ggf. den Betrag anpassen.</p>
 <div class="form-inline">
 {% for aktion in aktionen %}
@@ -36,8 +47,10 @@
 {% if antrag.status.betragsanpassung_erlaubt %}
 <a class="btn btn-info" href="{% url 'ueberweisungsbetrag' antrag_id=antrag.id %}">Betrag anpassen</a>
 {% endif %}
-<a class="btn btn-secondary" href="{% url 'history' antrag_id=antrag.id %}">Bearbeitungsverlauf</a>
 </div>
+{% else %}
+<p>In diesem Antragsstatus sind keine Aktionen verfügbar.</p>
+{% endif %}
 
 <hr>
 
@@ -50,14 +63,17 @@ Derzeit stehen keine Briefvorlagen zur Verfügung.
 {% endfor %}
 
 <h4>Erstellte Briefe</h4>
+
+{% if briefe %}
 <table class="table">
 <tr><th>Vorlage</th><th>Erstellungszeitpunkt</th></tr>
 {% for brief in briefe %}
 <tr><td><a href="{% url 'brief' brief_id=brief.id %}">{{brief.vorlage.name}}</a></td><td>{{brief.timestamp}}</td></tr>
-{% empty %}
-Keine Briefe vorhanden.
 {% endfor %}
 </table>
+{% else %}
+<p>Keine Briefe vorhanden.</p>
+{% endif %}
 
 <hr>
 
@@ -84,7 +100,7 @@ Keine Briefe vorhanden.
 	{{nachweis.name}}
 	<ul>
 	{% for dokument_id in nachweis.dokumente %}
-		<li><span class="tag tag-default dokument"><a href="{% url 'datei' dokument_id=dokument_id %}" target="_blank">Dokument</a></span></li>
+		<li><span class="tag tag-default dokument"><a href="{% url 'datei' dokument_id=dokument_id %}" target="_blank">Dokument</a></span> <a href="{% url 'datei' dokument_id=dokument_id %}" target="_blank">anzeigen</a></li>
 	{% endfor %}
 	</ul>
 	</li>

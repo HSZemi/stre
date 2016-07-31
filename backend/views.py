@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import redirect
 from  django.contrib.auth.password_validation import validate_password, ValidationError
-from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History, Briefvorlage, Brief
+from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History, Briefvorlage, Brief, Status
 from django.db.models import Count
 from .forms import DokumentForm, UeberweisungsbetragForm, BriefErstellenForm
 import uuid
@@ -72,13 +72,26 @@ def dashboard(request):
 	return render(request, 'backend/dashboard.html', context)
 
 @staff_member_required(login_url='/backend/login')
-def antraege(request, semester_id):
+def antraege(request, semester_id, status_id=None):
 	semester_id = int(semester_id)
+	if(status_id != None):
+		status_id = int(status_id)
 	message = None
 	
 	semester = get_object_or_404(Semester, pk=semester_id)
+	antragsgruende = Antragsgrund.objects.all().order_by('sort')
+	statusse = Status.objects.all().order_by('sort')
 	
-	context = { 'message' : message, 'current_page' : 'dashboard', 'semester' : semester}
+	antraege_sortiert = {}
+	
+	for grund in antragsgruende:
+		if(status_id != None):
+			status_select = get_object_or_404(Status, pk=status_id)
+			antraege_sortiert[grund] = Antrag.objects.filter(semester__id=semester_id).filter(grund=grund).filter(status=status_select)
+		else:
+			antraege_sortiert[grund] = Antrag.objects.filter(semester__id=semester_id).filter(grund=grund)
+	
+	context = { 'message' : message, 'current_page' : 'dashboard', 'semester' : semester, 'antraege_sortiert':antraege_sortiert, 'statusse':statusse, 'status_id':status_id}
 	
 	return render(request, 'backend/antraege.html', context)
 
@@ -132,6 +145,8 @@ def antrag(request, antrag_id):
 					dokument.datei = pfad[1]
 					
 					dokument.save()
+					
+					antrag.status = uploadaktion.status_end
 					antrag.save()
 					
 					history = History()
@@ -165,7 +180,7 @@ def antrag(request, antrag_id):
 		if(nw.datei_id != None):
 			nachweise[nw.id]['dokumente'].append(nw.datei_id)
 	
-	aktionen = Aktion.objects.filter(status_start=antrag.status).filter(staff_explizit=True)
+	aktionen = Aktion.objects.filter(status_start=antrag.status).filter(staff_explizit=True).order_by('sort')
 	
 	briefe = antrag.brief_set.order_by('-timestamp')
 	
@@ -330,6 +345,11 @@ def antragaktion(request, antrag_id, aktion_id):
 				response = redirect('antragbackend', antrag_id=antrag.id)
 				response['Location'] += '?m=betrag_ist_nicht_modifiziert'
 				return response
+		
+		if(aktion.briefvorlage != None and not Brief.objects.filter(antrag=antrag,vorlage=aktion.briefvorlage).exists()):
+			response = redirect('antragbackend', antrag_id=antrag.id)
+			response['Location'] += '?m=brief_nicht_erstellt'
+			return response
 				
 		antrag.status = aktion.status_end
 		antrag.save()
@@ -350,14 +370,16 @@ def antragaktion(request, antrag_id, aktion_id):
 	
 @staff_member_required(login_url='/backend/login')
 def history(request, antrag_id=None):
+	antrag = None
 	
 	if(antrag_id != None):
 		antrag_id = int(antrag_id)
+		antrag = get_object_or_404(Antrag, pk=antrag_id)
 		history = History.objects.filter(antrag=antrag_id).order_by('-timestamp')
 	else:
 		history = History.objects.all().order_by('-timestamp')
 	
-	context = {'current_page' : 'history', 'history' : history}
+	context = {'current_page' : 'history', 'history' : history, 'antrag':antrag}
 	return render(request, 'backend/history.html', context)
 
 @staff_member_required(login_url='/backend/login')

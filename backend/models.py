@@ -4,7 +4,6 @@ from datetime import date
 
 class Person(models.Model):
 	user = models.OneToOneField(User, on_delete=models.CASCADE)
-	geburtsort = models.CharField(max_length=200)
 	adresse = models.TextField()
 	
 	def __str__(self):
@@ -46,6 +45,7 @@ class Nachweis(models.Model):
 	name = models.CharField(max_length=200)
 	beschreibung = models.TextField(blank=True)
 	hochzuladen = models.BooleanField(default=True)
+	sort = models.IntegerField()
 	
 	def __str__(self):
 		return self.name
@@ -55,6 +55,7 @@ class Antragsgrund(models.Model):
 	name = models.CharField(max_length=200)
 	beschreibung = models.TextField()
 	nachweise = models.ManyToManyField(Nachweis)
+	sort = models.IntegerField()
 	
 	def __str__(self):
 		return "[{0}] {1}".format(self.identifier, self.name)
@@ -64,6 +65,20 @@ class Status(models.Model):
 	klassen = models.CharField(max_length=200)
 	hochladen_erlaubt = models.BooleanField()
 	betragsanpassung_erlaubt = models.BooleanField()
+	zurueckziehen_erlaubt = models.BooleanField()
+	sort = models.IntegerField()
+	
+	def __str__(self):
+		return self.name
+
+
+class Briefvorlage(models.Model):
+	name = models.CharField(max_length=200)
+	betreff = models.CharField(max_length=200)
+	anrede = models.CharField(max_length=200)
+	brieftext = models.TextField()
+	status = models.ManyToManyField(Status)
+	sort = models.IntegerField()
 	
 	def __str__(self):
 		return self.name
@@ -75,6 +90,8 @@ class Aktion(models.Model):
 	user_explizit = models.BooleanField()
 	staff_explizit = models.BooleanField()
 	ist_upload = models.BooleanField()
+	sort = models.IntegerField()
+	briefvorlage = models.ForeignKey(Briefvorlage, null=True, default=None)
 	
 	def __str__(self):
 		return "{0} ({1}->{2})".format(self.name, self.status_start.name, self.status_end.name)
@@ -109,15 +126,6 @@ class Dokument(models.Model):
 	datei = models.CharField(max_length=1024)
 	aktiv = models.BooleanField(default=True)
 
-class Briefvorlage(models.Model):
-	name = models.CharField(max_length=200)
-	betreff = models.CharField(max_length=200)
-	anrede = models.CharField(max_length=200)
-	brieftext = models.TextField()
-	status = models.ManyToManyField(Status)
-	
-	def __str__(self):
-		return self.name
 	
 class Brief(models.Model):
 	antrag = models.ForeignKey(Antrag)

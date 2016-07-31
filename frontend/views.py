@@ -1,11 +1,13 @@
 from django.http import HttpResponse, FileResponse, Http404, HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import redirect
 from  django.contrib.auth.password_validation import validate_password, ValidationError
 from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History
-from .forms import PasswordChangeForm, AntragForm, DokumentForm
+from django.db import IntegrityError
+from .forms import PasswordChangeForm, AntragForm, DokumentForm, RegistrierungForm
 import uuid
 import os
 import mimetypes
@@ -78,7 +80,10 @@ def statuspage(request):
 					FROM backend_semester s LEFT OUTER JOIN (SELECT ba.id AS id, ba.semester_id AS semester_id, bs.name AS status, bs.klassen AS klassen FROM backend_antrag ba JOIN backend_status bs ON ba.status_id = bs.id WHERE user_id = %s) a ON s.id = a.semester_id 
 					ORDER BY s.jahr""", [person.id])
 	
-	context = {'person':request.user, 'current_page' : 'index', 'semester' : semester, 'form' : form, 'message':message, 'validation_errors' : validation_errors, 'person':person}
+	initialstatus = (GlobalSettings.objects.get()).status_start
+	neue_antraege = person.antrag_set.filter(status=initialstatus).values_list('id', flat=True)
+	
+	context = {'person':request.user, 'current_page' : 'index', 'semester' : semester, 'form' : form, 'message':message, 'validation_errors' : validation_errors, 'person':person, 'neue_antraege':neue_antraege}
 	return render(request, 'frontend/status.html', context)
 
 def index(request):
@@ -93,16 +98,90 @@ def logoutpage(request):
 	logout(request)
 	return redirect('index')
 
-def register(request):
-	return HttpResponse("Hello, world. You're at the register page.")
+def registrierung(request):
+	user = None
+	message = None
+	validation_errors = None
+	form = None
+	if request.method == 'POST':
+		# create a form instance and populate it with data from the request:
+		form = RegistrierungForm(request.POST)
+		# check whether it's valid:
+		if form.is_valid():
+			
+			# Nutzeraccount erstellen
+			
+			semester = form.cleaned_data['semester']
+			matrikelnummer = form.cleaned_data['matrikelnummer']
+			email = form.cleaned_data['email']
+			passwort = form.cleaned_data['passwort']
+			vorname = form.cleaned_data['vorname']
+			nachname = form.cleaned_data['nachname']
+			adresse = form.cleaned_data['adresse']
+			
+			try:
+				validate_password(form.cleaned_data['passwort'])
+					
+				# User erstellen und in Gruppe 'Antragstellung' aufnehmen
+				user = User.objects.create_user(matrikelnummer, email, passwort, first_name=vorname, last_name=nachname)
+				group = Group.objects.get(name='Antragstellung') 
+				group.user_set.add(user)
+				
+				# Person um User bauen
+				person = Person()
+				person.user = user
+				person.adresse = adresse
+				person.save()
+				
+				# User einloggen und Seite 2 aufrufen
+				user = authenticate(username=matrikelnummer, password=passwort)
+				if user is not None:
+					if user.is_active:
+						login(request, user)
+						if(user.groups.filter(name='Antragstellung').exists()):
+							# Redirect auf Seite 2
+							response = redirect('antragstellung', semester_id=semester.id)
+							response['Location'] += '?m=initialantrag'
+							return response
+						else:
+							message = 'falsche_gruppe'
+					else:
+						# Return a 'disabled account' error message
+						message = 'zugang_deaktiviert'
+						
+				else:
+					# Return an 'invalid login' error message.
+					message = 'ungueltige_zugangsdaten'
+				
+			except IntegrityError as ie:
+				# user existiert bereits
+				message = 'user_existiert_bereits'
+			except ValidationError as e:
+				message = 'validation_error'
+				validation_errors = e
+			
+			
+		else:
+			# form invalid
+			pass
+	else:
+		form = RegistrierungForm()
+	context = { 'current_page' : 'registrierung', 'form':form, 'user':user, 'message':message, 'validation_errors':validation_errors }
+	return render(request, 'frontend/registrierung.html', context)
 
 def resetpassword(request):
 	return HttpResponse("Hello, world. You're at the password reset page. Unfortunately, there is nothing we can do for you.")
 
 def loginpage(request):
 	message=None
+	matnr=None
 	if('m' in request.GET):
 		message = request.GET['m']
+	if('u' in request.GET):
+		try:
+			matnr = str(int(request.GET['u'])) # nur Zahlen erlaubt!
+		except ValueError:
+			pass
 	
 	next_page = 'index'
 	if('next' in request.GET and len(request.GET['next']) > 0 and request.GET['next'][0] == '/'):
@@ -131,11 +210,11 @@ def loginpage(request):
 				# Return an 'invalid login' error message.
 				message = 'ungueltige_zugangsdaten'
 	
-	context = { 'message' : message, 'current_page' : 'loginpage'}
+	context = { 'message' : message, 'current_page' : 'loginpage', 'matrikelnummer':matnr}
 	return render(request, 'frontend/login.html', context)
 
 def info(request):
-	gruende = Antragsgrund.objects.all()
+	gruende = Antragsgrund.objects.all().order_by('sort')
 	context = { 'gruende' : gruende, 'current_page' : 'info' }
 	return render(request, 'frontend/info.html', context)
 
@@ -147,42 +226,54 @@ def impressum(request):
 @group_required('Antragstellung')
 def antragstellung(request, semester_id):
 	semester_id = int(semester_id)
+	gmessage = None
+	message = None
 	
 	semester = get_object_or_404(Semester, pk=semester_id)
 	
 	person = Person.objects.get(user__id=request.user.id)
 	form = None
 	
+	if('m' in request.GET):
+		gmessage = request.GET['m']
+	
 	if request.method == 'POST':
 		# create a form instance and populate it with data from the request:
 		form = AntragForm(request.POST)
-		# check whether it's valid:
-		if form.is_valid():
-			
-			antrag = form.save(commit=False)
-			antrag.semester = semester
-			antrag.user = person
-			antrag.status = (GlobalSettings.objects.get()).status_start
-			
-			antrag.save()
-			
-			aktion = (GlobalSettings.objects.get()).aktion_antrag_stellen
-			history = History()
-			history.akteur = request.user
-			history.antrag = antrag
-			history.aktion = aktion
-			history.save()
-			
-			response = redirect('antragfrontend', antrag_id=antrag.id)
-			response['Location'] += '?m=antrag_erstellt'
-			return response
-			
+		
+		habe_gelesen = ('habe_gelesen' in request.POST and request.POST['habe_gelesen'] == 'on')
+		if habe_gelesen:
+			# check whether it's valid:
+			if form.is_valid():
+				
+				antrag = form.save(commit=False)
+				antrag.semester = semester
+				antrag.user = person
+				antrag.status = (GlobalSettings.objects.get()).status_start
+				
+				antrag.save()
+				
+				aktion = (GlobalSettings.objects.get()).aktion_antrag_stellen
+				history = History()
+				history.akteur = request.user
+				history.antrag = antrag
+				history.aktion = aktion
+				history.save()
+				
+				response = redirect('antragfrontend', antrag_id=antrag.id)
+				response['Location'] += '?m=antrag_erstellt'
+				return response
+			else:
+				#form invalid 
+				pass #TODO
+		else:
+			message = 'habe_nicht_gelesen'
 	else:
 		initial_form_values = {'kontoinhaber_in': '{0} {1}'.format(person.user.first_name, person.user.last_name),
 				'versandanschrift':person.adresse}
 		form = AntragForm(initial=initial_form_values)
 	
-	context = {'current_page' : 'antragstellung', 'semester' : semester, 'form' : form }
+	context = {'current_page' : 'antragstellung', 'semester' : semester, 'form' : form, 'gmessage':gmessage, 'message':message }
 	return render(request, 'frontend/antragstellung.html', context)
 
 def handle_uploaded_file(f, semester_id, antrag_id):
@@ -239,6 +330,8 @@ def antrag(request, antrag_id):
 					dokument.datei = pfad[1]
 					
 					dokument.save()
+					
+					antrag.status = uploadaktion.status_end
 					antrag.save()
 					
 					history = History()
@@ -257,9 +350,9 @@ def antrag(request, antrag_id):
 	form.fields["nachweis"].queryset = antrag.grund.nachweise.filter(hochzuladen=True)
 		
 		
-	nachweise_queryset = Nachweis.objects.raw("""SELECT n.id, n.name, n.beschreibung, n.hochzuladen, d.id AS datei_id
+	nachweise_queryset = Nachweis.objects.raw("""SELECT n.id, n.name, n.beschreibung, n.hochzuladen, n.sort, d.id AS datei_id
 		FROM backend_nachweis n LEFT OUTER JOIN (SELECT id, nachweis_id from backend_dokument bd WHERE bd.antrag_id = %s AND bd.aktiv) d ON n.id = d.nachweis_id
-		WHERE n.id in (SELECT nachweis_id FROM backend_antragsgrund_nachweise WHERE antragsgrund_id = %s) """, [antrag_id, antrag.grund.id])
+		WHERE n.id in (SELECT nachweis_id FROM backend_antragsgrund_nachweise WHERE antragsgrund_id = %s) ORDER BY n.sort ASC """, [antrag_id, antrag.grund.id])
 	
 	nachweise = {}
 	for nw in nachweise_queryset:

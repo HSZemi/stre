@@ -69,6 +69,11 @@ form {
 	height: 5rem;
 }
 
+.statusselektor{
+	font-size: 120%;
+	margin: 0.2rem;
+}
+
 .form-signin {
 	max-width: 330px;
 	padding: 15px;

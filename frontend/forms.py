@@ -1,6 +1,7 @@
 from django import forms
-from backend.models import Antrag, Dokument
+from backend.models import Antrag, Dokument, Semester
 from django.forms import ModelForm, ValidationError
+from datetime import date
 
 
 class PasswordChangeForm(forms.Form):
@@ -38,3 +39,12 @@ class DokumentForm(ModelForm):
 			'nachweis': 'Zu welchem Nachweis gehört diese Datei?',
 		}
 	userfile = forms.FileField(help_text="Erlaubte Dateitypen: PDF, JPG, PNG", label="Datei:")
+
+class RegistrierungForm(forms.Form):
+	semester = forms.ModelChoiceField(queryset=Semester.objects.filter(antragsfrist__gte=date.today()).order_by('-jahr'), label="Semester*", help_text="Für welches Semester soll der Antrag gestellt werden?")
+	matrikelnummer = forms.IntegerField(label="Matrikelnummer*", min_value=1000)
+	passwort = forms.CharField(label="Passwort wählen*", widget=forms.PasswordInput(), help_text="Dieses Passwort benötigst du, um deinen Antragsstatus einzusehen, Nachweise hochzuladen und weitere Anträge zu stellen. Wer deine Matrikelnummer und dein Passwort errät, hat Zugriff auf all deine Daten und Dokumente. Wähle deshalb ein sicheres Passwort!")
+	vorname = forms.CharField(label="Vorname(n)*")
+	nachname = forms.CharField(label="Nachname(n)*")
+	email = forms.EmailField(label="E-Mail-Adresse",required=False, help_text="Ohne Angabe einer gültigen E-Mail-Adresse stehen einige Funktionen nicht zur Verfügung.")
+	adresse = forms.CharField(widget=forms.Textarea, label="Anschrift*", help_text="Besteht in der Regel aus Straße, Hausnummer, PLZ und Ort.")
