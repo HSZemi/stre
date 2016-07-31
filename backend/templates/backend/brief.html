@@ -1,0 +1,32 @@
+{% extends 'backend/base.html' %}
+
+{% block title%}Semesterticket-Rückerstattung - Brief erstellen{% endblock %}
+
+{% block content %}
+
+<h2>Brief erstellen</h2>
+
+
+{% if message %}
+{% if message == 'brief_erstellt' %}
+<div class="alert alert-success" role="alert">
+  <strong>Der Brief wurde erstellt.</strong> (((((Brief öffnen)))))</a>
+</div>
+{% endif %}
+{% endif %}
+
+<p>Wir schreiben einen Brief ({{briefvorlage.name}}) für <a href="{% url 'antragbackend' antrag_id=antrag.id %}">Antrag {{antrag.grund.identifier}} {{antrag.id}}</a>.</p>
+
+<div class="briefform">
+<form method="POST">
+{% csrf_token %}
+<table class="table">
+{{form}}
+</table>
+<input type="submit" value="Brief erstellen" class="btn btn-primary"/>
+</form>
+</div>
+
+
+
+{% endblock %}

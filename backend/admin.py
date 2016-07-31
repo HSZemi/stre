@@ -8,6 +8,7 @@ from .models import Status
 from .models import Person
 from .models import GlobalSettings
 from .models import Aktion
+from .models import Briefvorlage
 
 admin.site.register(Semester)
 admin.site.register(Antragsgrund)
@@ -16,3 +17,4 @@ admin.site.register(Status)
 admin.site.register(Person)
 admin.site.register(GlobalSettings)
 admin.site.register(Aktion)
+admin.site.register(Briefvorlage)

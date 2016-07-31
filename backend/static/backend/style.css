@@ -60,6 +60,15 @@ form {
 	margin-bottom: 2rem;
 }
 
+.briefform input[type=text],
+.briefform textarea {
+	width: 100%;
+}
+
+.briefform #id_anschrift{
+	height: 5rem;
+}
+
 .form-signin {
 	max-width: 330px;
 	padding: 15px;

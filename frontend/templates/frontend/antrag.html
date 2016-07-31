@@ -13,6 +13,9 @@
 <tr><th>Antragsgrund</th><td>{{antrag.grund.name}}</td></tr>
 <tr><th>Letzte Aktivität</th><td>{{antrag.letzte_bearbeitung}}</td></tr>
 <tr><th>Antragsstatus</th><td><span class="{{antrag.status.klassen}}">{{antrag.status.name}}</span></td></tr>
+{% if antrag.ueberweisungsbetrag > 0 %}
+<tr><th>Überweisungsbetrag</th><td><span class="{{antrag.status.klassen}}">{{antrag.status.name}}</span></td></tr>
+{% endif %}
 </table>
 
 <h3>Benötigte Nachweise</h3>
@@ -29,6 +32,7 @@
 {% endfor %}
 </ul>
 
+{% if antrag.status.hochladen_erlaubt %}
 <hr>
 
 <h3>Nachweis hochladen</h3>
@@ -60,6 +64,7 @@
 </table>
 <input type="submit" value="Nachweis hochladen" class="btn btn-primary"/>
 </form>
+{% endif %}
 
 <hr>
 

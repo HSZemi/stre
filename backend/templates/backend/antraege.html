@@ -19,6 +19,7 @@
 		<tr>
 			<th>ID</th>
 			<th>Antragsteller/in</th>
+			<th>Status</th>
 			<th></th>
 		</tr>
 	</thead>
@@ -27,6 +28,7 @@
 		<tr>
 			<td>{{antrag.grund.identifier}} {{antrag.id}}</td>
 			<td>{{antrag.user.user.first_name}} {{antrag.user.user.last_name}}</td>
+			<td><span class="{{antrag.status.klassen}}">{{antrag.status.name}}</span></td>
 			<td><a href="{% url 'antragbackend' antrag.id %}">Anzeigen</a></td>
 			
 		</tr>

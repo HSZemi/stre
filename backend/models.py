@@ -59,6 +59,8 @@ class Antragsgrund(models.Model):
 class Status(models.Model):
 	name = models.CharField(max_length=200)
 	klassen = models.CharField(max_length=200)
+	hochladen_erlaubt = models.BooleanField()
+	betragsanpassung_erlaubt = models.BooleanField()
 	
 	def __str__(self):
 		return self.name
@@ -67,6 +69,8 @@ class Aktion(models.Model):
 	name = models.CharField(max_length=200)
 	status_start = models.ForeignKey(Status, related_name='status_start')
 	status_end = models.ForeignKey(Status, related_name='status_end')
+	user_explizit = models.BooleanField()
+	staff_explizit = models.BooleanField()
 	
 	def __str__(self):
 		return "{0} ({1}->{2})".format(self.name, self.status_start.name, self.status_end.name)
@@ -84,9 +88,11 @@ class Antrag(models.Model):
 	bic = models.CharField(max_length=14) # maximal 11 Stellen, 4 Segmente, Leerzeichen sind unüblich
 	
 	status = models.ForeignKey(Status)
+	ueberweisungsbetrag = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
 	
 	antragszeitpunkt = models.DateTimeField(auto_now_add=True)
 	letzte_bearbeitung = models.DateTimeField(auto_now=True)
+	
 	
 	def __str__(self):
 		return "{0} {1}".format(self.grund.identifier, self.id)
@@ -97,6 +103,21 @@ class Dokument(models.Model):
 	datei = models.CharField(max_length=1024)
 	aktiv = models.BooleanField(default=True)
 
+class Briefvorlage(models.Model):
+	name = models.CharField(max_length=200)
+	betreff = models.CharField(max_length=200)
+	anrede = models.CharField(max_length=200)
+	brieftext = models.TextField()
+	status = models.ManyToManyField(Status)
+	
+	def __str__(self):
+		return self.name
+	
+class Brief(models.Model):
+	antrag = models.ForeignKey(Antrag)
+	vorlage = models.ForeignKey(Briefvorlage)
+	datei = models.CharField(max_length=1024)
+	timestamp = models.DateTimeField(auto_now_add=True)
 	
 class History(models.Model):
 	timestamp = models.DateTimeField(auto_now_add=True)
@@ -106,6 +127,8 @@ class History(models.Model):
 
 class GlobalSettings(models.Model):
 	status_start = models.ForeignKey(Status)
+	aktion_ueberweisungsbetrag_aendern = models.ForeignKey(Aktion)
+	brief_tex = models.TextField()
 	
 	def save(self, *args, **kwargs):
 		self.__class__.objects.exclude(id=self.id).delete()

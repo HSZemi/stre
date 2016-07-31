@@ -4,11 +4,64 @@
 
 {% block content %}
 
-<h2>Antrag auf Rückerstattung</h2>
+<h2>Antrag auf Rückerstattung – {{antrag.grund.identifier}} {{antrag.id}}</h2>
+<p>Antragsstatus: <span class="{{antrag.status.klassen}}">{{antrag.status.name}}</span></p>
+
+<hr>
 
 {% if gmessage %}
-{{gmessage}}
+{% if gmessage == 'betrag_ist_modifiziert' %}
+<div class="alert alert-danger" role="alert">
+  <strong>Hoppla!</strong> Der Überweisungsbetrag wurde modifiziert. Deshalb kann der Antrag aktuell nur <b>teilweise genehmigt</b> werden.<br>Um den Antrag voll zu genehmigen, muss zunächst der Überweisungsbetrag wieder über <a href="{% url 'ueberweisungsbetrag' antrag_id=antrag.id %}">Betrag anpassen</a> auf {{antrag.semester.betrag}} € gesetzt werden.
+</div>
 {% endif %}
+{% if gmessage == 'betrag_ist_nicht_modifiziert' %}
+<div class="alert alert-danger" role="alert">
+  <strong>Hoppla!</strong> Bevor der Antrag <em>teilweise genehmigt</em> werden kann, muss zunächst der Überweisungsbetrag angepasst werden. Das geht bei <a href="{% url 'ueberweisungsbetrag' antrag_id=antrag.id %}">Betrag anpassen</a>.
+</div>
+{% endif %}
+{% if gmessage == 'brief_wurde_erstellt' %}
+<div class="alert alert-success" role="alert">
+  <strong>Ein Brief wurde erstellt!</strong> Du kannst ihn im Abschnitt »Briefe« öffnen.
+</div>
+{% endif %}
+{% endif %}
+
+<h3>Aktionen</h3>
+<p><b>Obacht:</b> Zuerst den Brief erstellen und versandfertig machen, dann hier auf's Knöpfchen drücken! Zuvor aber ggf. den Betrag anpassen.</p>
+<div class="form-inline">
+{% for aktion in aktionen %}
+<a class="btn btn-primary" href="{% url 'antragaktion' antrag_id=antrag.id aktion_id=aktion.id %}">{{aktion.name}}</a>
+{% endfor %}
+{% if antrag.status.betragsanpassung_erlaubt %}
+<a class="btn btn-info" href="{% url 'ueberweisungsbetrag' antrag_id=antrag.id %}">Betrag anpassen</a>
+{% endif %}
+<a class="btn btn-secondary" href="{% url 'history' antrag_id=antrag.id %}">Bearbeitungsverlauf</a>
+</div>
+
+<hr>
+
+<h3>Briefe</h3>
+
+{% for vorlage in briefvorlagen %}
+<a href="{% url 'brieferstellen' antrag_id=antrag.id briefvorlage_id=vorlage.id %}" class="btn btn-secondary">{{vorlage.name}} erstellen</a>
+{% empty %}
+Derzeit stehen keine Briefvorlagen zur Verfügung.
+{% endfor %}
+
+<h4>Erstellte Briefe</h4>
+<table class="table">
+<tr><th>Vorlage</th><th>Erstellungszeitpunkt</th></tr>
+{% for brief in briefe %}
+<tr><td><a href="{% url 'brief' brief_id=brief.id %}">{{brief.vorlage.name}}</a></td><td>{{brief.timestamp}}</td></tr>
+{% empty %}
+Keine Briefe vorhanden.
+{% endfor %}
+</table>
+
+<hr>
+
+<h3>Antragsdaten</h3>
 
 <table class="table">
 <tr><th>Antragsteller/in</th><td>{{antrag.user.user.first_name}} {{antrag.user.user.last_name}} ({{antrag.user.user.username}})</td></tr>
@@ -17,9 +70,14 @@
 <tr><th>Antragsgrund</th><td>{{antrag.grund.name}}</td></tr>
 <tr><th>Letzte Aktivität</th><td>{{antrag.letzte_bearbeitung}}</td></tr>
 <tr><th>Antragsstatus</th><td><span class="{{antrag.status.klassen}}">{{antrag.status.name}}</span></td></tr>
+{% if antrag.ueberweisungsbetrag > 0 %}
+<tr><th>Überweisungsbetrag</th><td>{{antrag.ueberweisungsbetrag}} €</td></tr>
+{% endif %}
 </table>
 
-<h3>Benötigte Nachweise</h3>
+<hr>
+
+<h3>Nachweise</h3>
 <ul>
 {% for nachweis in nachweise.values %}
 	<li>
@@ -33,14 +91,9 @@
 {% endfor %}
 </ul>
 
+{% if antrag.status.hochladen_erlaubt %}
 <hr>
 
-aktionen
-<ul>
-{% for aktion in aktionen %}
-<li><a href="{% url 'antragaktion' antrag_id=antrag.id aktion_id=aktion.id %}">{{aktion}}</a></li>
-{% endfor %}
-</ul>
 <h3>Nachweis hochladen</h3>
 
 {% if message %}
@@ -71,6 +124,6 @@ aktionen
 <input type="submit" value="Nachweis hochladen" class="btn btn-primary"/>
 </form>
 
-
+{% endif %}
 
 {% endblock %}

@@ -7,6 +7,12 @@ class PasswordChangeForm(forms.Form):
 	passwort_alt = forms.CharField(label='Aktuelles Passwort:', widget=forms.PasswordInput)
 	passwort_neu1 = forms.CharField(label='Neues Passwort:', widget=forms.PasswordInput)
 	passwort_neu2 = forms.CharField(label='Neues Passwort (noch einmal):', widget=forms.PasswordInput)
+	
+class UeberweisungsbetragForm(forms.Form):
+	
+	def __init__(self, max_value, *args, **kwargs):
+		super(UeberweisungsbetragForm, self).__init__(*args, **kwargs)
+		self.fields['ueberweisungsbetrag'] = forms.DecimalField(min_value=0, max_value=max_value, max_digits=10, decimal_places=2, label='Überweisungsbetrag')
 
 class AntragForm(ModelForm):
 	class Meta:
@@ -38,3 +44,9 @@ class DokumentForm(ModelForm):
 			'nachweis': 'Zu welchem Nachweis gehört diese Datei?',
 		}
 	userfile = forms.FileField(help_text="Erlaubte Dateitypen: PDF, JPG, PNG", label="Datei:")
+
+class BriefErstellenForm(forms.Form):
+	anschrift = forms.CharField(widget=forms.Textarea)
+	betreff = forms.CharField()
+	anrede = forms.CharField()
+	brieftext = forms.CharField(widget=forms.Textarea)
