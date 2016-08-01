@@ -1,6 +1,7 @@
 from django import forms
 from backend.models import Antrag, Dokument, Semester
 from django.forms import ModelForm, ValidationError
+from localflavor.generic.forms import BICFormField, IBANFormField
 from datetime import date
 
 
@@ -12,7 +13,7 @@ class PasswordChangeForm(forms.Form):
 class AntragForm(ModelForm):
 	class Meta:
 		model = Antrag
-		fields = ['versandanschrift', 'grund', 'kontoinhaber_in', 'iban', 'bic']
+		fields = ['versandanschrift', 'grund', 'kontoinhaber_in']
 		
 		labels = {
 			'grund': 'Antragsgrund',
@@ -25,7 +26,10 @@ class AntragForm(ModelForm):
 			'versandanschrift': 'An diese Adresse werden die Bescheide versandt.',
 			'grund': 'Bitte wähle aus, weshalb du den Antrag auf Rückerstattung stellst.<br>Im nächsten Schritt kannst du dann die benötigten Nachweise hochladen.',
 		}
-
+		
+	iban = IBANFormField(label="IBAN", help_text="Auf dieses Konto wird der Rückerstattungsbetrag überwiesen, falls dein Antrag erfolg hat.")
+	bic = BICFormField(label="BIC")
+	
 class DokumentForm(ModelForm):
 	class Meta:
 		model = Dokument

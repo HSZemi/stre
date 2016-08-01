@@ -228,11 +228,15 @@ def antragstellung(request, semester_id):
 	semester_id = int(semester_id)
 	gmessage = None
 	message = None
+	form = None
 	
 	semester = get_object_or_404(Semester, pk=semester_id)
 	
 	person = Person.objects.get(user__id=request.user.id)
-	form = None
+	
+	# Check ob Antrag bereits existiert
+	if(Antrag.objects.filter(semester=semester, user=person).exists()):
+		return antrag(request, Antrag.objects.get(semester=semester, user=person).id)
 	
 	if('m' in request.GET):
 		gmessage = request.GET['m']
@@ -246,21 +250,23 @@ def antragstellung(request, semester_id):
 			# check whether it's valid:
 			if form.is_valid():
 				
-				antrag = form.save(commit=False)
-				antrag.semester = semester
-				antrag.user = person
-				antrag.status = (GlobalSettings.objects.get()).status_start
+				neu_antrag = form.save(commit=False)
+				neu_antrag.semester = semester
+				neu_antrag.user = person
+				neu_antrag.iban = form.cleaned_data['iban']
+				neu_antrag.bic = form.cleaned_data['bic']
+				neu_antrag.status = (GlobalSettings.objects.get()).status_start
 				
-				antrag.save()
+				neu_antrag.save()
 				
 				aktion = (GlobalSettings.objects.get()).aktion_antrag_stellen
 				history = History()
 				history.akteur = request.user
-				history.antrag = antrag
+				history.antrag = neu_antrag
 				history.aktion = aktion
 				history.save()
 				
-				response = redirect('antragfrontend', antrag_id=antrag.id)
+				response = redirect('antragfrontend', antrag_id=neu_antrag.id)
 				response['Location'] += '?m=antrag_erstellt'
 				return response
 			else:

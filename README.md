@@ -4,6 +4,7 @@ Ein Onlinesystem für die Studiticket-Rückerstattung in Entwicklung. Oder auch 
 
 # Setup
   * pip3 install django
+  * pip3 install django-localflavor (für BIC- und IBAN-Felder)
   * sudo apt-get install libmysqlclient-dev (MySQL only)
   * pip3 install mysqlclient (MySQL only)
 
