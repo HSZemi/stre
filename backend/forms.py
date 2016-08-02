@@ -1,6 +1,7 @@
 from django import forms
 from backend.models import Antrag, Dokument
 from django.forms import ModelForm, ValidationError
+import datetime
 
 
 class PasswordChangeForm(forms.Form):
@@ -9,10 +10,12 @@ class PasswordChangeForm(forms.Form):
 	passwort_neu2 = forms.CharField(label='Neues Passwort (noch einmal):', widget=forms.PasswordInput)
 	
 class UeberweisungsbetragForm(forms.Form):
-	
 	def __init__(self, max_value, *args, **kwargs):
 		super(UeberweisungsbetragForm, self).__init__(*args, **kwargs)
 		self.fields['ueberweisungsbetrag'] = forms.DecimalField(min_value=0, max_value=max_value, max_digits=10, decimal_places=2, label='Überweisungsbetrag')
+		
+class NachfristForm(forms.Form):
+	nachfrist = forms.DateField()
 
 class AntragForm(ModelForm):
 	class Meta:
@@ -45,7 +48,21 @@ class DokumentForm(ModelForm):
 		}
 	userfile = forms.FileField(help_text="Erlaubte Dateitypen: PDF, JPG, PNG", label="Datei:")
 
+class BriefBegruendungForm(forms.Form):
+	def __init__(self, nachweise, begruendungen, freitext, *args, **kwargs):
+		super(BriefBegruendungForm, self).__init__(*args, **kwargs)
+		if(nachweise):
+			self.fields['fehlende_nachweise'] = forms.ModelMultipleChoiceField(queryset=nachweise, label="Nachweise", help_text="Wähle hier die fehlenden Nachweise aus.", widget=forms.CheckboxSelectMultiple, required=False)
+		if(begruendungen):
+			self.fields['begruendungen'] = forms.ModelMultipleChoiceField(queryset=begruendungen, label="Nachweise", help_text="hjelp_texst", widget=forms.CheckboxSelectMultiple, required=False)
+		if(freitext):
+			self.fields['freitext'] = forms.CharField(widget=forms.Textarea, required=False)
+		
+	step = forms.CharField(widget=forms.HiddenInput(),initial='BriefBegruendungForm')
+
 class BriefErstellenForm(forms.Form):
+	step = forms.CharField(widget=forms.HiddenInput(),initial='BriefErstellenForm')
+	briefdatum = forms.DateField(initial=datetime.date.today())
 	anschrift = forms.CharField(widget=forms.Textarea)
 	betreff = forms.CharField()
 	anrede = forms.CharField()

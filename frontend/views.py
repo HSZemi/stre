@@ -5,7 +5,7 @@ from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import redirect
 from  django.contrib.auth.password_validation import validate_password, ValidationError
-from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History
+from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History, Uebergang
 from django.db import IntegrityError
 from .forms import PasswordChangeForm, AntragForm, DokumentForm, RegistrierungForm
 import uuid
@@ -329,7 +329,7 @@ def antrag(request, antrag_id):
 				pfad = handle_uploaded_file(request.FILES['userfile'], antrag.semester.id, antrag.id)
 				
 				if(pfad[0] == True):
-					uploadaktion = Aktion.objects.filter(status_start=antrag.status).filter(ist_upload=True)[0]
+					uploadaktion = (GlobalSettings.objects.get()).aktion_hochladen
 					
 					dokument = form.save(commit=False)
 					dokument.antrag = antrag
@@ -337,7 +337,7 @@ def antrag(request, antrag_id):
 					
 					dokument.save()
 					
-					antrag.status = uploadaktion.status_end
+					antrag.status = Uebergang.objects.get(status_start=antrag.status, aktion=uploadaktion).status_end
 					antrag.save()
 					
 					history = History()

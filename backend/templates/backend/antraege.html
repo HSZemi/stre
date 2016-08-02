@@ -4,6 +4,11 @@
 
 {% block content %}
 
+{% for message in messages %}
+<div class="alert {{message.klassen}}" role="alert">
+  {{message.text|safe}}
+</div>
+{% endfor %}
 
 
 <div class="card">
@@ -16,7 +21,7 @@
 	Nach Status filtern: 
 	<a href="{% url 'antraege' semester_id=semester.id %}"><span class="statusselektor tag {% if status_id %}tag-default{% else %}tag-primary{% endif %}">Alle</span></a><br>
 	{% for status in statusse %}
-	<a href="{% url 'antraege' semester_id=semester.id status_id=status.id %}"><span class="statusselektor tag {% if status_id and status_id = status.id %}tag-primary{% else %}tag-default{% endif %}">{{status}}</span></a> 
+	<a href="{% url 'antraege' semester_id=semester.id status_id=status.id %}"><span class="statusselektor tag {% if status_id and status_id == status.id %}tag-primary{% else %}tag-default{% endif %}">{{status}}</span></a> 
 	{% endfor %}
 	</div>
 	

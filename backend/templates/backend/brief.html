@@ -6,14 +6,11 @@
 
 <h2>Brief erstellen</h2>
 
-
-{% if message %}
-{% if message == 'brief_erstellt' %}
-<div class="alert alert-success" role="alert">
-  <strong>Der Brief wurde erstellt.</strong> (((((Brief öffnen)))))</a>
+{% for message in messages %}
+<div class="alert {{message.klassen}}" role="alert">
+  {{message.text|safe}}
 </div>
-{% endif %}
-{% endif %}
+{% endfor %}
 
 <p>Wir schreiben einen Brief ({{briefvorlage.name}}) für <a href="{% url 'antragbackend' antrag_id=antrag.id %}">Antrag {{antrag.grund.identifier}} {{antrag.id}}</a>.</p>
 

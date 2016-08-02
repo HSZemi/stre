@@ -1,0 +1,36 @@
+{% extends 'backend/base.html' %}
+
+{% block title%}Semesterticket-Rückerstattung - Nachfrist{% endblock %}
+
+{% block content %}
+
+<div class="row">
+<div class="col-sm-6 offset-sm-3">
+<h2>Nachfrist setzen</h2>
+
+
+{% if message %}
+{{message}}
+{% if message == 'nachfrist_gesetzt' %}
+<div class="alert alert-success" role="alert">
+  <strong>Die Nachfrist wurde gesetzt.</strong> Zurück zum <a href="{% url 'antragbackend' antrag_id=antrag.id %}">Antrag</a>
+</div>
+{% endif %}
+{% endif %}
+
+<p>Hier kannst du eine Nachfrist für <a href="{% url 'antragbackend' antrag_id=antrag.id %}">Antrag {{antrag}}</a> setzen. Gib das gewünschte Datum ein, und klicke dann auf »Nachfrist setzen«.</p>
+
+<form method="POST">
+{% csrf_token %}
+<table class="table">
+{{form}}
+</table>
+<input type="submit" value="Nachfrist setzen" class="btn btn-primary"/>
+</form>
+
+</div>
+</div>
+
+
+
+{% endblock %}

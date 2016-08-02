@@ -63,10 +63,28 @@ class Antragsgrund(models.Model):
 class Status(models.Model):
 	name = models.CharField(max_length=200)
 	klassen = models.CharField(max_length=200)
-	hochladen_erlaubt = models.BooleanField()
-	betragsanpassung_erlaubt = models.BooleanField()
-	zurueckziehen_erlaubt = models.BooleanField()
 	sort = models.IntegerField()
+	
+	def hochladen_erlaubt(self):
+		aktion_hochladen = (GlobalSettings.objects.get()).aktion_hochladen
+		if(self.uebergang_from__set.filter(aktion=aktion_hochladen).exists()):
+			return True
+		else:
+			return False
+		
+	def ueberweisungsbetrag_aendern_erlaubt(self):
+		aktion_ueberweisungsbetrag_aendern = (GlobalSettings.objects.get()).aktion_ueberweisungsbetrag_aendern
+		if(self.uebergang_from__set.filter(aktion=aktion_ueberweisungsbetrag_aendern).exists()):
+			return True
+		else:
+			return False
+		
+	def zurueckziehen_erlaubt(self):
+		aktion_zurueckziehen = (GlobalSettings.objects.get()).aktion_zurueckziehen
+		if(self.uebergang_from__set.filter(aktion=aktion_zurueckziehen).exists()):
+			return True
+		else:
+			return False
 	
 	def __str__(self):
 		return self.name
@@ -77,7 +95,10 @@ class Briefvorlage(models.Model):
 	betreff = models.CharField(max_length=200)
 	anrede = models.CharField(max_length=200)
 	brieftext = models.TextField()
-	status = models.ManyToManyField(Status)
+	status = models.ForeignKey(Status)
+	hat_nachweise = models.BooleanField()
+	hat_begruendung = models.BooleanField()
+	hat_freitext = models.BooleanField()
 	sort = models.IntegerField()
 	
 	def __str__(self):
@@ -85,18 +106,28 @@ class Briefvorlage(models.Model):
 
 class Aktion(models.Model):
 	name = models.CharField(max_length=200)
-	status_start = models.ForeignKey(Status, related_name='status_start')
-	status_end = models.ForeignKey(Status, related_name='status_end')
 	user_explizit = models.BooleanField()
 	staff_explizit = models.BooleanField()
-	ist_upload = models.BooleanField()
+	setzt_ueberweisungsbetrag = models.BooleanField()
+	setzt_nachfrist1 = models.BooleanField()
+	setzt_nachfrist2 = models.BooleanField()
 	sort = models.IntegerField()
-	briefvorlage = models.ForeignKey(Briefvorlage, null=True, default=None)
+	briefvorlage = models.ForeignKey(Briefvorlage, null=True, blank=True, default=None)
 	
 	def __str__(self):
-		return "{0} ({1}->{2})".format(self.name, self.status_start.name, self.status_end.name)
+		return self.name
 
-
+class Uebergang(models.Model):
+	aktion = models.ForeignKey(Aktion)
+	status_start = models.ForeignKey(Status, related_name='uebergang_from__set')
+	status_end = models.ForeignKey(Status, related_name='uebergang_to__set')
+	
+	class Meta:
+		unique_together = ('status_start', 'aktion',)
+	
+	def __str__(self):
+		return "{0} -> ({1}) -> {2}".format(self.status_start.name, self.aktion.name, self.status_end.name)
+	
 class Antrag(models.Model):
 	semester = models.ForeignKey(Semester)
 	user = models.ForeignKey(Person)
@@ -109,6 +140,10 @@ class Antrag(models.Model):
 	bic = models.CharField(max_length=14) # maximal 11 Stellen, 4 Segmente, Leerzeichen sind unüblich
 	
 	status = models.ForeignKey(Status)
+	nachfrist1 = models.DateField(null=True, default=None)
+	nachfrist1_briefdatum = models.DateField(null=True, default=None)
+	nachfrist2 = models.DateField(null=True, default=None)
+	nachfrist2_briefdatum = models.DateField(null=True, default=None)
 	ueberweisungsbetrag = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
 	
 	antragszeitpunkt = models.DateTimeField(auto_now_add=True)
@@ -131,6 +166,7 @@ class Brief(models.Model):
 	antrag = models.ForeignKey(Antrag)
 	vorlage = models.ForeignKey(Briefvorlage)
 	datei = models.CharField(max_length=1024)
+	briefdatum = models.DateField()
 	timestamp = models.DateTimeField(auto_now_add=True)
 	
 class History(models.Model):
@@ -138,11 +174,20 @@ class History(models.Model):
 	akteur = models.ForeignKey(User)
 	antrag = models.ForeignKey(Antrag)
 	aktion = models.ForeignKey(Aktion)
+	
+class Begruendung(models.Model):
+	name = models.CharField(max_length=200)
+	text = models.TextField()
+	sort = models.IntegerField()
+	
+	def __str__(self):
+		return self.name
 
 class GlobalSettings(models.Model):
 	status_start = models.ForeignKey(Status)
-	aktion_ueberweisungsbetrag_aendern = models.ForeignKey(Aktion, related_name='aktion_ueberweisungsbetrag_aendern')
 	aktion_antrag_stellen = models.ForeignKey(Aktion, related_name='aktion_antrag_stellen')
+	aktion_hochladen = models.ForeignKey(Aktion, related_name='aktion_hochladen')
+	aktion_zurueckziehen = models.ForeignKey(Aktion, related_name='aktion_zurueckziehen')
 	brief_tex = models.TextField()
 	
 	def save(self, *args, **kwargs):

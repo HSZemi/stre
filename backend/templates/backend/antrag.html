@@ -9,44 +9,18 @@
 
 <hr>
 
-{% if gmessage %}
-{% if gmessage == 'betrag_ist_modifiziert' %}
-<div class="alert alert-danger" role="alert">
-  <strong>Hoppla!</strong> Der Überweisungsbetrag wurde modifiziert. Deshalb kann der Antrag aktuell nur <b>teilweise genehmigt</b> werden.<br>Um den Antrag voll zu genehmigen, muss zunächst der Überweisungsbetrag wieder über <a href="{% url 'ueberweisungsbetrag' antrag_id=antrag.id %}">Betrag anpassen</a> auf {{antrag.semester.betrag}} € gesetzt werden.
+{% for message in messages %}
+<div class="alert {{message.klassen}}" role="alert">
+  {{message.text|safe}}
 </div>
-{% endif %}
-{% if gmessage == 'betrag_ist_nicht_modifiziert' %}
-<div class="alert alert-danger" role="alert">
-  <strong>Hoppla!</strong> Bevor der Antrag <em>teilweise genehmigt</em> werden kann, muss zunächst der Überweisungsbetrag angepasst werden. Das geht bei <a href="{% url 'ueberweisungsbetrag' antrag_id=antrag.id %}">Betrag anpassen</a>.
-</div>
-{% endif %}
-{% if gmessage == 'brief_nicht_erstellt' %}
-<div class="alert alert-danger" role="alert">
-  <strong>Hoppla!</strong> Vor dieser Aktion muss zunächst ein entsprechender Brief erstellt und versandfertig gemacht werden.
-</div>
-{% endif %}
-{% if gmessage == 'brief_wurde_erstellt' %}
-<div class="alert alert-success" role="alert">
-  <strong>Ein Brief wurde erstellt!</strong> Du kannst ihn im Abschnitt »Briefe« öffnen.
-</div>
-{% endif %}
-{% if gmessage == 'aktion_erfolgreich' %}
-<div class="alert alert-success" role="alert">
-  <strong>Jawohl!</strong> Die Aktion wurde erfolgreich ausgeführt.
-</div>
-{% endif %}
-{% endif %}
+{% endfor %}
 
 <h3>Aktionen</h3>
 {% if aktionen %}
-<p><b>Obacht:</b> Zuerst den Brief erstellen und versandfertig machen, dann hier auf's Knöpfchen drücken! Zuvor aber ggf. den Betrag anpassen.</p>
 <div class="form-inline">
 {% for aktion in aktionen %}
 <a class="btn btn-primary" href="{% url 'antragaktion' antrag_id=antrag.id aktion_id=aktion.id %}">{{aktion.name}}</a>
 {% endfor %}
-{% if antrag.status.betragsanpassung_erlaubt %}
-<a class="btn btn-info" href="{% url 'ueberweisungsbetrag' antrag_id=antrag.id %}">Betrag anpassen</a>
-{% endif %}
 </div>
 {% else %}
 <p>In diesem Antragsstatus sind keine Aktionen verfügbar.</p>
@@ -55,14 +29,6 @@
 <hr>
 
 <h3>Briefe</h3>
-
-{% for vorlage in briefvorlagen %}
-<a href="{% url 'brieferstellen' antrag_id=antrag.id briefvorlage_id=vorlage.id %}" class="btn btn-secondary">{{vorlage.name}} erstellen</a>
-{% empty %}
-Derzeit stehen keine Briefvorlagen zur Verfügung.
-{% endfor %}
-
-<h4>Erstellte Briefe</h4>
 
 {% if briefe %}
 <table class="table">
@@ -86,6 +52,12 @@ Derzeit stehen keine Briefvorlagen zur Verfügung.
 <tr><th>Antragsgrund</th><td>{{antrag.grund.name}}</td></tr>
 <tr><th>Letzte Aktivität</th><td>{{antrag.letzte_bearbeitung}}</td></tr>
 <tr><th>Antragsstatus</th><td><span class="{{antrag.status.klassen}}">{{antrag.status.name}}</span></td></tr>
+{% if antrag.nachfrist1 %}
+<tr><th>Nachfrist 1</th><td>{{antrag.nachfrist1}}</td></tr>
+{% endif %}
+{% if antrag.nachfrist2 %}
+<tr><th>Nachfrist 2</th><td>{{antrag.nachfrist2}}</td></tr>
+{% endif %}
 {% if antrag.ueberweisungsbetrag > 0 %}
 <tr><th>Überweisungsbetrag</th><td>{{antrag.ueberweisungsbetrag}} €</td></tr>
 {% endif %}
@@ -107,30 +79,10 @@ Derzeit stehen keine Briefvorlagen zur Verfügung.
 {% endfor %}
 </ul>
 
-{% if antrag.status.hochladen_erlaubt %}
+{% if form %}
 <hr>
 
 <h3>Nachweis hochladen</h3>
-
-{% if message %}
-{% if message == 'nachweis_ungueltig' %}
-<div class="alert alert-danger" role="alert">
-  <strong>Herrje!</strong> Das hat nicht funktioniert. Bitte nutze die vorgegebenen Nachweise.
-</div>
-{% elif message == 'form_invalid' %}
-<div class="alert alert-warning" role="alert">
-  <strong>Hoppla!</strong> Bitte fülle das Formular komplett aus.
-</div>
-{% elif message == 'falscher_content_type' or message == 'falsches_dateiformat' %}
-<div class="alert alert-warning" role="alert">
-  <strong>Hoppla!</strong> Bitte lade nur PDF-, PNG- oder JPG-Dateien hoch.
-</div>
-{% else %}
-<div class="alert alert-success" role="alert">
-  <strong>Das Dokument wurde erfolgreich hochgeladen.</strong> Er sollte jetzt hinter seinem Nachweis aufgeführt sein.
-</div>
-{% endif %}
-{% endif %}
 
 <form enctype="multipart/form-data" method="POST">
 {% csrf_token %}
