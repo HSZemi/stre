@@ -9,7 +9,9 @@ Ein Onlinesystem für die Studiticket-Rückerstattung in Entwicklung. Oder auch 
   * pip3 install mysqlclient (MySQL only)
 
   * Tabelle mit Kollation 'utf8_bin' erstellen
+  * stre/settings.py.template in settings.py umbenennen
   * Datenbankzugriff in stre/settings.py einrichten (im Abschnitt DATABASES = {})
+  * dokumente/briefe/static/briefkopf.pdf.template in briefkopf.pdf umbenennen bzw. ersetzen
   * python3 manage.py makemigrations
   * python3 manage.py migrate
 

@@ -1,4 +1,5 @@
 briefe/*
 nachweise/*
 !briefe/static/.empty_file_for_git
+!briefe/static/briefkopf.pdf.template
 !nachweise/.empty_file_for_git
