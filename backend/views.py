@@ -1,6 +1,7 @@
 from django.http import HttpResponse, FileResponse, Http404
 from django.shortcuts import render, get_object_or_404
 from django.core.urlresolvers import reverse
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.admin.views.decorators import staff_member_required
@@ -19,6 +20,8 @@ from django.utils import timezone
 import shutil
 import subprocess
 import datetime
+
+BASE_DIR = settings.BASE_DIR
 
 def group_required(*group_names):
 	"""Requires user membership in at least one of the groups passed in."""
@@ -63,7 +66,7 @@ def loginpage(request):
 	
 	return render(request, 'backend/login.html', context)
 
-@staff_member_required(login_url='/backend/login')
+@staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
 def dashboard(request):
 	message = None
 	
@@ -73,7 +76,7 @@ def dashboard(request):
 	
 	return render(request, 'backend/dashboard.html', context)
 
-@staff_member_required(login_url='/backend/login')
+@staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
 def antraege(request, semester_id, status_id=None):
 	semester_id = int(semester_id)
 	if(status_id != None):
@@ -105,19 +108,19 @@ def handle_uploaded_file(f, semester_id, antrag_id):
 		return (False, 'falsches_dateiformat')
 	
 	filename = str(uuid.uuid4())
-	filedir = "nachweise/{0}/{1}".format(semester_id, antrag_id)
-	filepath = "nachweise/{0}/{1}/{2}{3}".format(semester_id, antrag_id, filename, extension) # extension enthält den Punkt
+	filedir = "dokumente/nachweise/{0}/{1}".format(semester_id, antrag_id)
+	filepath = "dokumente/nachweise/{0}/{1}/{2}{3}".format(semester_id, antrag_id, filename, extension) # extension enthält den Punkt
 	
-	if(not os.path.isdir(os.path.join('dokumente', filedir))):
-		os.makedirs(os.path.join('dokumente', filedir)) #TODO permissions
+	if(not os.path.isdir(filedir)):
+		os.makedirs(os.path.join(BASE_DIR, filedir)) #TODO permissions
 	
-	with open(os.path.join('dokumente', filepath), 'wb+') as destination:
+	with open(os.path.join(BASE_DIR, filepath), 'wb+') as destination:
 		for chunk in f.chunks():
 			destination.write(chunk)
 	
 	return (True, filepath)
 
-@staff_member_required(login_url='/backend/login')
+@staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
 def antrag(request, antrag_id):
 	antrag_id = int(antrag_id)
 	messages = []
@@ -211,7 +214,7 @@ def antrag(request, antrag_id):
 	context = {'current_page' : 'antrag', 'antrag' : antrag, 'form':form, 'messages':messages, 'nachweise':nachweise, 'aktionen':aktionen, 'briefe':briefe}
 	return render(request, 'backend/antrag.html', context)
 
-@staff_member_required(login_url='/backend/login')
+@staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
 def ueberweisungsbetrag(request, antrag_id, aktion_id):
 	antrag_id = int(antrag_id)
 	aktion_id = int(aktion_id)
@@ -252,7 +255,7 @@ def ueberweisungsbetrag(request, antrag_id, aktion_id):
 	context = {'current_page' : 'ueberweisungsbetrag', 'antrag' : antrag, 'form':form, 'messages':messages}
 	return render(request, 'backend/ueberweisungsbetrag.html', context)
 
-@staff_member_required(login_url='/backend/login')
+@staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
 @group_required('Bearbeitung')
 def nachfrist(request, antrag_id, aktion_id):
 	antrag_id = int(antrag_id)
@@ -303,7 +306,7 @@ def replace_variables(inputstring, replacements):
 	result = pattern.sub(lambda x: replacements[x.group()], inputstring)
 	return result
 
-@staff_member_required(login_url='/backend/login')
+@staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
 @group_required('Bearbeitung')
 def brief(request, antrag_id, briefvorlage_id, aktion_id):
 	antrag_id = int(antrag_id)
@@ -354,22 +357,22 @@ def brief(request, antrag_id, briefvorlage_id, aktion_id):
 				semester_id = antrag.semester.id
 				
 				filename = str(uuid.uuid4())
-				filedir = "briefe/{0}/{1}".format(semester_id, antrag_id)
-				filepath = "briefe/{0}/{1}/{2}{3}".format(semester_id, antrag_id, filename, '.tex') # extension enthält den Punkt
-				pdffilepath = "briefe/{0}/{1}/{2}{3}".format(semester_id, antrag_id, filename, '.pdf') # extension enthält den Punkt
+				filedir = "dokumente/briefe/{0}/{1}".format(semester_id, antrag_id)
+				filepath = "dokumente/briefe/{0}/{1}/{2}{3}".format(semester_id, antrag_id, filename, '.tex') # extension enthält den Punkt
+				pdffilepath = "dokumente/briefe/{0}/{1}/{2}{3}".format(semester_id, antrag_id, filename, '.pdf') # extension enthält den Punkt
 				
-				if(not os.path.isdir(os.path.join('dokumente', filedir))):
+				if(not os.path.isdir(os.path.join(BASE_DIR, filedir))):
 					#os.makedirs(os.path.join('dokumente', filedir)) #TODO permissions
-					shutil.copytree(os.path.join('dokumente', 'briefe/static'), os.path.join('dokumente', filedir))
+					shutil.copytree(os.path.join(BASE_DIR, "dokumente/briefe/static"), os.path.join(BASE_DIR, filedir))
 				
-				with open(os.path.join('dokumente', filepath), 'w') as destination:
+				with open(os.path.join(BASE_DIR, filepath), 'w') as destination:
 					destination.write(text)
 				
-				if(os.path.isfile(os.path.join('dokumente', filepath))):
+				if(os.path.isfile(os.path.join(BASE_DIR, filepath))):
 					# compile
-					retval = subprocess.call(['pdflatex', "-interaction=nonstopmode", "{0}.tex".format(filename)], cwd=os.path.join('dokumente', filedir))
-					retval = subprocess.call(['pdflatex', "-interaction=nonstopmode", "{0}.tex".format(filename)], cwd=os.path.join('dokumente', filedir))
-					if(os.path.isfile(os.path.join('dokumente', pdffilepath))):
+					retval = subprocess.call(['pdflatex', "-interaction=nonstopmode", "{0}.tex".format(filename)], cwd=os.path.join(BASE_DIR, filedir))
+					retval = subprocess.call(['pdflatex', "-interaction=nonstopmode", "{0}.tex".format(filename)], cwd=os.path.join(BASE_DIR, filedir))
+					if(os.path.isfile(os.path.join(BASE_DIR, pdffilepath))):
 						brief = Brief()
 						brief.antrag = antrag
 						brief.vorlage = briefvorlage
@@ -462,7 +465,7 @@ def brief(request, antrag_id, briefvorlage_id, aktion_id):
 	context = {'current_page' : 'brief', 'antrag' : antrag, 'briefvorlage':briefvorlage, 'form':form, 'messages':messages}
 	return render(request, 'backend/brief.html', context)
 
-@staff_member_required(login_url='/backend/login')
+@staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
 @group_required('Bearbeitung')
 def antragaktion(request, antrag_id, aktion_id, brief_id=None):
 	antrag_id = int(antrag_id)
@@ -514,7 +517,7 @@ def antragaktion(request, antrag_id, aktion_id, brief_id=None):
 		response['Location'] += '?m=aktion_nicht_erfolgreich'
 		return response
 	
-@staff_member_required(login_url='/backend/login')
+@staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
 def history(request, antrag_id=None):
 	antrag = None
 	
@@ -528,6 +531,6 @@ def history(request, antrag_id=None):
 	context = {'current_page' : 'history', 'history' : history, 'antrag':antrag}
 	return render(request, 'backend/history.html', context)
 
-@staff_member_required(login_url='/backend/login')
+@staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
 def konfiguration(request):
 	return HttpResponse("Hello, world. You're at the konfiguration page.")

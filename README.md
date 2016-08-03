@@ -8,6 +8,8 @@ Ein Onlinesystem für die Studiticket-Rückerstattung in Entwicklung. Oder auch 
   * sudo apt-get install libmysqlclient-dev (MySQL only)
   * pip3 install mysqlclient (MySQL only)
 
+  * latex installieren (für Brieferstellung)
+
   * Tabelle mit Kollation 'utf8_bin' erstellen
   * stre/settings.py.template in settings.py umbenennen
   * Datenbankzugriff in stre/settings.py einrichten (im Abschnitt DATABASES = {})
@@ -16,3 +18,4 @@ Ein Onlinesystem für die Studiticket-Rückerstattung in Entwicklung. Oder auch 
   * python3 manage.py migrate
 
   * Im Admin-Interface (/admin/) mit admin:Zeitungsartikel einloggen und ein Semester anlegen
+

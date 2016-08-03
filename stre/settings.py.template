@@ -29,6 +29,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 ALLOWED_HOSTS = ['localhost']
 
 LOGIN_URL = "/login"
+BACKEND_LOGIN_URL = "/backend/login"
 
 
 # Application definition

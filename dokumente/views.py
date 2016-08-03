@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.conf import settings
 from django.http import FileResponse, Http404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.admin.views.decorators import staff_member_required
@@ -6,6 +7,8 @@ from django.shortcuts import render, get_object_or_404
 from backend.models import Dokument, Brief
 import os
 import mimetypes
+
+BASE_DIR = settings.BASE_DIR
 
 # Create your views here.
 
@@ -26,7 +29,7 @@ def datei(request, dokument_id):
 	dokument = get_object_or_404(Dokument, pk=dokument_id)
 	
 	if(dokument.antrag.user.user.id == request.user.id or bool(request.user.groups.filter(name__in=['Bearbeitung']))):
-		response = FileResponse(open(os.path.join('dokumente', dokument.datei), 'rb'), content_type=mimetypes.guess_type(dokument.datei)[0])
+		response = FileResponse(open(os.path.join(BASE_DIR, dokument.datei), 'rb'), content_type=mimetypes.guess_type(os.path.join(BASE_DIR, dokument.datei))[0])
 		#response['Content-Disposition'] = 'attachment; filename={0}'.format(os.path.basename(dokument.datei))
 		return response
 	else:
@@ -38,6 +41,6 @@ def brief(request, brief_id):
 	
 	brief = get_object_or_404(Brief, pk=brief_id)
 	
-	response = FileResponse(open(os.path.join('dokumente', brief.datei), 'rb'), content_type=mimetypes.guess_type(brief.datei)[0])
+	response = FileResponse(open(os.path.join(BASE_DIR, brief.datei), 'rb'), content_type=mimetypes.guess_type(os.path.join(BASE_DIR, brief.datei))[0])
 	#response['Content-Disposition'] = 'attachment; filename={0}'.format(os.path.basename(dokument.datei))
 	return response
