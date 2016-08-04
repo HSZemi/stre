@@ -1,5 +1,6 @@
 from django.http import HttpResponse, FileResponse, Http404, HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required, user_passes_test
