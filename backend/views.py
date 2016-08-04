@@ -246,7 +246,7 @@ def ueberweisungsbetrag(request, antrag_id, aktion_id):
 		else:
 			messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte fülle das Formular korrekt aus.'})
 	else:
-		initialbetrag = antrag.ueberweisungsbetragmax_value
+		initialbetrag = antrag.ueberweisungsbetrag
 		if(not initialbetrag > 0):
 			initialbetrag = antrag.semester.betrag
 		form = UeberweisungsbetragForm(initial={'ueberweisungsbetrag': initialbetrag}, max_value=antrag.semester.betrag)

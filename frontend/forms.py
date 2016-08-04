@@ -13,7 +13,7 @@ class PasswordChangeForm(forms.Form):
 class AntragForm(ModelForm):
 	class Meta:
 		model = Antrag
-		fields = ['versandanschrift', 'grund', 'kontoinhaber_in']
+		fields = [ 'grund', 'versandanschrift','kontoinhaber_in']
 		
 		labels = {
 			'grund': 'Antragsgrund',
@@ -26,6 +26,10 @@ class AntragForm(ModelForm):
 			'versandanschrift': 'An diese Adresse werden die Bescheide versandt.',
 			'grund': 'Bitte wähle aus, weshalb du den Antrag auf Rückerstattung stellst.<br>Im nächsten Schritt kannst du dann die benötigten Nachweise hochladen.',
 		}
+	
+	def __init__(self, gruende, *args, **kwargs):
+		super(AntragForm, self).__init__(*args, **kwargs)
+		self.fields['grund'] = forms.ModelChoiceField(queryset=gruende, label="Antragsgrund", help_text="Bitte wähle aus, weshalb du den Antrag auf Rückerstattung stellst.<br>Im nächsten Schritt kannst du dann die benötigten Nachweise hochladen.", widget=forms.Select)	
 		
 	iban = IBANFormField(label="IBAN", help_text="Auf dieses Konto wird der Rückerstattungsbetrag überwiesen, falls dein Antrag erfolg hat.")
 	bic = BICFormField(label="BIC")
@@ -45,7 +49,7 @@ class DokumentForm(ModelForm):
 	userfile = forms.FileField(help_text="Erlaubte Dateitypen: PDF, JPG, PNG", label="Datei:")
 
 class RegistrierungForm(forms.Form):
-	semester = forms.ModelChoiceField(queryset=Semester.objects.filter(antragsfrist__gte=date.today()).order_by('-jahr'), label="Semester*", help_text="Für welches Semester soll der Antrag gestellt werden?")
+	semester = forms.ModelChoiceField(queryset=Semester.objects.filter(anzeigefrist__gte=date.today()).order_by('-jahr'), label="Semester*", help_text="Für welches Semester soll der Antrag gestellt werden?")
 	matrikelnummer = forms.IntegerField(label="Matrikelnummer*", min_value=1000)
 	passwort = forms.CharField(label="Passwort wählen*", widget=forms.PasswordInput(), help_text="Dieses Passwort benötigst du, um deinen Antragsstatus einzusehen, Nachweise hochzuladen und weitere Anträge zu stellen. Wer deine Matrikelnummer und dein Passwort errät, hat Zugriff auf all deine Daten und Dokumente. Wähle deshalb ein sicheres Passwort!")
 	vorname = forms.CharField(label="Vorname(n)*")

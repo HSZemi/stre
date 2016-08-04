@@ -79,7 +79,7 @@ def statuspage(request):
 	# ANTRAGSÜBERSICHT  #
 	# # # # # # # # # # # 
 	
-	semester = Semester.objects.raw("""SELECT s.id, s.semestertyp, s.betrag, s.jahr, s.antragsfrist, a.id AS antrag, a.status AS status, a.klassen AS klassen
+	semester = Semester.objects.raw("""SELECT s.id, s.semestertyp, s.betrag, s.jahr, s.antragsfrist, s.anzeigefrist, a.id AS antrag, a.status AS status, a.klassen AS klassen
 					FROM backend_semester s LEFT OUTER JOIN (SELECT ba.id AS id, ba.semester_id AS semester_id, bs.name AS status, bs.klassen AS klassen FROM backend_antrag ba JOIN backend_status bs ON ba.status_id = bs.id WHERE user_id = %s) a ON s.id = a.semester_id 
 					ORDER BY s.jahr""", [person.id])
 	
@@ -244,9 +244,13 @@ def antragstellung(request, semester_id):
 	if('m' in request.GET):
 		gmessage = request.GET['m']
 	
+	gruende = Antragsgrund.objects.all().order_by('sort')
+	if(semester.frist_abgelaufen()):
+		gruende = Antragsgrund.objects.filter(an_frist_gebunden=False)
+	
 	if request.method == 'POST':
 		# create a form instance and populate it with data from the request:
-		form = AntragForm(request.POST)
+		form = AntragForm(gruende, request.POST)
 		
 		habe_gelesen = ('habe_gelesen' in request.POST and request.POST['habe_gelesen'] == 'on')
 		if habe_gelesen:
@@ -280,7 +284,7 @@ def antragstellung(request, semester_id):
 	else:
 		initial_form_values = {'kontoinhaber_in': '{0} {1}'.format(person.user.first_name, person.user.last_name),
 				'versandanschrift':person.adresse}
-		form = AntragForm(initial=initial_form_values)
+		form = AntragForm(gruende, initial=initial_form_values)
 	
 	context = {'current_page' : 'antragstellung', 'semester' : semester, 'form' : form, 'gmessage':gmessage, 'message':message }
 	return render(request, 'frontend/antragstellung.html', context)

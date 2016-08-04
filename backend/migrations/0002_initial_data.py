@@ -878,6 +878,7 @@ def erstelle_antragsgruende_nachweise(apps, schema_editor):
 	g_exmatrikulation.identifier = "E"
 	g_exmatrikulation.name = "Exmatrikulation"
 	g_exmatrikulation.beschreibung = ""
+	g_exmatrikulation.an_frist_gebunden = False
 	g_exmatrikulation.sort = 0
 	g_exmatrikulation.save()
 	g_exmatrikulation.nachweise.add(n_kopie_personalausweis_reisepass)
@@ -889,6 +890,7 @@ def erstelle_antragsgruende_nachweise(apps, schema_editor):
 	g_exmatrikulation.identifier = "S"
 	g_exmatrikulation.name = "Sozialer Härtefall"
 	g_exmatrikulation.beschreibung = ""
+	g_exmatrikulation.an_frist_gebunden = True
 	g_exmatrikulation.sort = 0
 	g_exmatrikulation.save()
 	g_exmatrikulation.nachweise.add(n_kopie_studausweis)
@@ -901,6 +903,7 @@ def erstelle_antragsgruende_nachweise(apps, schema_editor):
 	g_exmatrikulation.identifier = "B"
 	g_exmatrikulation.name = "Schwerbehinderung"
 	g_exmatrikulation.beschreibung = ""
+	g_exmatrikulation.an_frist_gebunden = True
 	g_exmatrikulation.sort = 0
 	g_exmatrikulation.save()
 	g_exmatrikulation.nachweise.add(n_kopie_studausweis)
@@ -913,6 +916,7 @@ def erstelle_antragsgruende_nachweise(apps, schema_editor):
 	g_exmatrikulation.identifier = "A"
 	g_exmatrikulation.name = "Studienbedingter Aufenthalt außerhalb des Vertragsgebiete"
 	g_exmatrikulation.beschreibung = ""
+	g_exmatrikulation.an_frist_gebunden = True
 	g_exmatrikulation.sort = 0
 	g_exmatrikulation.save()
 	g_exmatrikulation.nachweise.add(n_kopie_studausweis)
@@ -924,6 +928,7 @@ def erstelle_antragsgruende_nachweise(apps, schema_editor):
 	g_exmatrikulation.identifier = "V"
 	g_exmatrikulation.name = "Verspäteter Immatrikulation/Promotionsbegin"
 	g_exmatrikulation.beschreibung = ""
+	g_exmatrikulation.an_frist_gebunden = True
 	g_exmatrikulation.sort = 0
 	g_exmatrikulation.save()
 	g_exmatrikulation.nachweise.add(n_kopie_studausweis)
@@ -935,6 +940,7 @@ def erstelle_antragsgruende_nachweise(apps, schema_editor):
 	g_exmatrikulation.identifier = "F"
 	g_exmatrikulation.name = "Aufenthalt außerhalb Vertragsgebiet wegen dringender familiärer Gründe"
 	g_exmatrikulation.beschreibung = ""
+	g_exmatrikulation.an_frist_gebunden = True
 	g_exmatrikulation.sort = 0
 	g_exmatrikulation.save()
 	g_exmatrikulation.nachweise.add(n_kopie_studausweis)
@@ -946,6 +952,7 @@ def erstelle_antragsgruende_nachweise(apps, schema_editor):
 	g_exmatrikulation.identifier = "P"
 	g_exmatrikulation.name = "Promotion (ohne Anwesenheit im Vertragsgebiet)"
 	g_exmatrikulation.beschreibung = ""
+	g_exmatrikulation.an_frist_gebunden = True
 	g_exmatrikulation.sort = 0
 	g_exmatrikulation.save()
 	g_exmatrikulation.nachweise.add(n_kopie_studausweis)
@@ -957,6 +964,7 @@ def erstelle_antragsgruende_nachweise(apps, schema_editor):
 	g_exmatrikulation.identifier = "AA"
 	g_exmatrikulation.name = "Abschlussarbeit (Fertigstellung außerhalb Vertragsgebiet)"
 	g_exmatrikulation.beschreibung = ""
+	g_exmatrikulation.an_frist_gebunden = True
 	g_exmatrikulation.sort = 0
 	g_exmatrikulation.save()
 	g_exmatrikulation.nachweise.add(n_kopie_studausweis)
@@ -968,6 +976,7 @@ def erstelle_antragsgruende_nachweise(apps, schema_editor):
 	g_exmatrikulation.identifier = "J"
 	g_exmatrikulation.name = "Jobticket"
 	g_exmatrikulation.beschreibung = ""
+	g_exmatrikulation.an_frist_gebunden = True
 	g_exmatrikulation.sort = 0
 	g_exmatrikulation.save()
 	g_exmatrikulation.nachweise.add(n_kopie_studausweis)
@@ -980,6 +989,7 @@ def erstelle_antragsgruende_nachweise(apps, schema_editor):
 	g_exmatrikulation.identifier = "W"
 	g_exmatrikulation.name = "Weitere Gründe"
 	g_exmatrikulation.beschreibung = ""
+	g_exmatrikulation.an_frist_gebunden = True
 	g_exmatrikulation.sort = 0
 	g_exmatrikulation.save()
 	g_exmatrikulation.nachweise.add(n_kopie_studausweis)

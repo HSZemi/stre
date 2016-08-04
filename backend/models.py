@@ -28,12 +28,19 @@ class Semester(models.Model):
 	betrag = models.DecimalField(max_digits=10, decimal_places=2)
 	
 	antragsfrist = models.DateField()
+	anzeigefrist = models.DateField()
 	
 	class Meta:
 		unique_together = ('semestertyp', 'jahr',)
 	
 	def antrag_moeglich(self):
-		if(self.antragsfrist >= date.today()):
+		if(self.anzeigefrist >= date.today()):
+			return True
+		else:
+			return False
+		
+	def frist_abgelaufen(self):
+		if(self.antragsfrist < date.today()):
 			return True
 		else:
 			return False
@@ -53,8 +60,9 @@ class Nachweis(models.Model):
 class Antragsgrund(models.Model):
 	identifier = models.CharField(max_length=2,unique=True)
 	name = models.CharField(max_length=200)
-	beschreibung = models.TextField()
+	beschreibung = models.TextField(blank=True)
 	nachweise = models.ManyToManyField(Nachweis)
+	an_frist_gebunden = models.BooleanField()
 	sort = models.IntegerField()
 	
 	def __str__(self):

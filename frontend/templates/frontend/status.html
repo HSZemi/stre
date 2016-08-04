@@ -42,8 +42,11 @@
 			<td>Nein</td>
 			<td></td>
 			<td>
-			{% if sem.antrag_moeglich %}
+			{% if sem.antrag_moeglich and not sem.frist_abgelaufen%}
 			<a href="{% url 'antragstellung' semester_id=sem.id %}">Antrag stellen</a>
+			{% endif %}
+			{% if sem.antrag_moeglich and sem.frist_abgelaufen%}
+			<a href="{% url 'antragstellung' semester_id=sem.id %}">Antrag stellen*</a>
 			{% endif %}
 			</td>
 			{% endif %}
