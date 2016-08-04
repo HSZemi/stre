@@ -293,10 +293,10 @@ def handle_uploaded_file(f, semester_id, antrag_id):
 	filedir = "nachweise/{0}/{1}".format(semester_id, antrag_id)
 	filepath = "nachweise/{0}/{1}/{2}{3}".format(semester_id, antrag_id, filename, extension) # extension enthält den Punkt
 	
-	if(not os.path.isdir(os.path.join('dokumente', filedir))):
-		os.makedirs(os.path.join('dokumente', filedir)) #TODO permissions
+	if(not os.path.isdir(os.path.join(BASE_DIR, filedir))):
+		os.makedirs(os.path.join(BASE_DIR, filedir)) #TODO permissions
 	
-	with open(os.path.join('dokumente', filepath), 'wb+') as destination:
+	with open(os.path.join(BASE_DIR, filepath), 'wb+') as destination:
 		for chunk in f.chunks():
 			destination.write(chunk)
 	
