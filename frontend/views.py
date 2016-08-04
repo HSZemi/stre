@@ -12,6 +12,8 @@ import uuid
 import os
 import mimetypes
 
+BASE_DIR = settings.BASE_DIR
+
 def group_required(*group_names):
 	"""Requires user membership in at least one of the groups passed in."""
 	def in_groups(u):
