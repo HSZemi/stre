@@ -293,8 +293,8 @@ def handle_uploaded_file(f, semester_id, antrag_id):
 		return (False, 'falsches_dateiformat')
 	
 	filename = str(uuid.uuid4())
-	filedir = "nachweise/{0}/{1}".format(semester_id, antrag_id)
-	filepath = "nachweise/{0}/{1}/{2}{3}".format(semester_id, antrag_id, filename, extension) # extension enthält den Punkt
+	filedir = "dokumente/nachweise/{0}/{1}".format(semester_id, antrag_id)
+	filepath = "dokumente/nachweise/{0}/{1}/{2}{3}".format(semester_id, antrag_id, filename, extension) # extension enthält den Punkt
 	
 	if(not os.path.isdir(os.path.join(BASE_DIR, filedir))):
 		os.makedirs(os.path.join(BASE_DIR, filedir)) #TODO permissions
