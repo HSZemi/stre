@@ -17,5 +17,7 @@ Ein Onlinesystem für die Studiticket-Rückerstattung in Entwicklung. Oder auch 
   * python3 manage.py makemigrations
   * python3 manage.py migrate
 
-  * Im Admin-Interface (/admin/) mit admin:Zeitungsartikel einloggen und ein Semester anlegen
+  * Im Admin-Interface (/admin/) mit admin:Zeitungsartikel einloggen und eine Gruppe pro Semester anlegen
+  * Dann im Admin-Interface die Semester anlegen und die zugehörige Gruppe zuweisen
+  * Nutzer müssen in der zugehörigen Gruppe sein um ein Semester bearbeiten/ansehen zu dürfen
 

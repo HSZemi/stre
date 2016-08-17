@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from datetime import date
 
 class Person(models.Model):
@@ -29,6 +29,8 @@ class Semester(models.Model):
 	
 	antragsfrist = models.DateField()
 	anzeigefrist = models.DateField()
+	
+	gruppe = models.ForeignKey(Group)
 	
 	class Meta:
 		unique_together = ('semestertyp', 'jahr',)
@@ -181,7 +183,8 @@ class History(models.Model):
 	timestamp = models.DateTimeField(auto_now_add=True)
 	akteur = models.ForeignKey(User)
 	antrag = models.ForeignKey(Antrag)
-	aktion = models.ForeignKey(Aktion)
+	uebergang = models.ForeignKey(Uebergang)
+	ist_undo = models.BooleanField(default=False)
 	
 class Begruendung(models.Model):
 	name = models.CharField(max_length=200)

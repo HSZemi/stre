@@ -13,5 +13,6 @@ urlpatterns = [
     url(r'^antrag/(?P<antrag_id>[0-9]+)/brief/(?P<briefvorlage_id>[0-9]+)', views.brief, name='brieferstellen'),
     url(r'^history$', views.history, name='history'),
     url(r'^history/(?P<antrag_id>[0-9]+)$', views.history, name='history'),
+    url(r'^undo/(?P<history_id>[0-9]+)$', views.undo, name='undo'),
     url(r'^konfiguration$', views.konfiguration, name='konfiguration'),
 ]

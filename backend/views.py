@@ -70,7 +70,7 @@ def loginpage(request):
 def dashboard(request):
 	message = None
 	
-	semester = Semester.objects.order_by('-jahr').annotate(count=Count('antrag'))
+	semester = Semester.objects.order_by('-jahr').annotate(count=Count('antrag')).filter(gruppe__in=request.user.groups.values_list('id',flat=True))
 	
 	context = { 'message' : message, 'current_page' : 'dashboard', 'semester' : semester}
 	
@@ -84,6 +84,11 @@ def antraege(request, semester_id, status_id=None):
 	message = None
 	
 	semester = get_object_or_404(Semester, pk=semester_id)
+	
+	# Hat der User Zugriff auf dieses Semester?
+	if(semester.gruppe not in request.user.groups.all()):
+		raise Http404
+	
 	antragsgruende = Antragsgrund.objects.all().order_by('sort')
 	statusse = Status.objects.all().order_by('sort')
 	
@@ -137,6 +142,10 @@ def antrag(request, antrag_id):
 	
 	antrag = get_object_or_404(Antrag, pk=antrag_id)
 	
+	# Hat der User Zugriff auf das Semester des Antrags?
+	if(antrag.semester.gruppe not in request.user.groups.all()):
+            raise Http404
+	
 	uebergaenge = antrag.status.uebergang_from__set
 	uebergang_zu = uebergaenge.values('status_end')
 	zulaessige_aktionen = Aktion.objects.filter(pk__in=uebergaenge.values('aktion'))
@@ -164,13 +173,14 @@ def antrag(request, antrag_id):
 						
 						dokument.save()
 						
-						antrag.status = Uebergang.objects.get(status_start=antrag.status, aktion=uploadaktion).status_end
+						uebergang = Uebergang.objects.get(status_start=antrag.status, aktion=uploadaktion)
+						antrag.status = uebergang.status_end
 						antrag.save()
 						
 						history = History()
 						history.akteur = request.user
 						history.antrag = antrag
-						history.aktion = uploadaktion
+						history.uebergang = uebergang
 						history.save()
 						
 						messages.append({'klassen':'alert-success','text':'<strong>Das Dokument wurde erfolgreich hochgeladen.</strong> Es sollte jetzt hinter seinem Nachweis aufgeführt sein.'})
@@ -222,6 +232,11 @@ def ueberweisungsbetrag(request, antrag_id, aktion_id):
 	
 	antrag = get_object_or_404(Antrag, pk=antrag_id)
 	aktion = get_object_or_404(Aktion, pk=aktion_id)
+	uebergang = get_object_or_404(Uebergang, status_start=antrag.status, aktion=aktion)
+	
+	# Hat der User Zugriff auf das Semester des Antrags?
+	if(antrag.semester.gruppe not in request.user.groups.all()):
+            raise Http404
 	
 	if(not aktion.setzt_ueberweisungsbetrag):
 		raise Http404
@@ -237,7 +252,7 @@ def ueberweisungsbetrag(request, antrag_id, aktion_id):
 			history = History()
 			history.akteur = request.user
 			history.antrag = antrag
-			history.aktion = aktion
+			history.uebergang = uebergang
 			history.save()
 			
 			response = redirect('antragaktion', antrag_id=antrag.id, aktion_id=aktion.id)
@@ -265,6 +280,11 @@ def nachfrist(request, antrag_id, aktion_id):
 	
 	antrag = get_object_or_404(Antrag, pk=antrag_id)
 	aktion = get_object_or_404(Aktion, pk=aktion_id)
+	uebergang = get_object_or_404(Uebergang, status_start=antrag.status, aktion=aktion)
+	
+	# Hat der User Zugriff auf das Semester des Antrags?
+	if(antrag.semester.gruppe not in request.user.groups.all()):
+            raise Http404
 	
 	if request.method == 'POST':
 		# create a form instance and populate it with data from the request:
@@ -278,11 +298,12 @@ def nachfrist(request, antrag_id, aktion_id):
 			
 			antrag.save()
 			
-			history = History()
-			history.akteur = request.user
-			history.antrag = antrag
-			history.aktion = aktion
-			history.save()
+			# Nachfrist setzen ist kein eigener History-Eintrag
+			#history = History()
+			#history.akteur = request.user
+			#history.antrag = antrag
+			#history.uebergang = uebergang
+			#history.save()
 			
 			response = redirect('antragaktion', antrag_id=antrag.id, aktion_id=aktion.id)
 			response['Location'] += '?m=nachfrist_gesetzt'
@@ -323,6 +344,10 @@ def brief(request, antrag_id, briefvorlage_id, aktion_id):
 	antrag = get_object_or_404(Antrag, pk=antrag_id)
 	briefvorlage = get_object_or_404(Briefvorlage, pk=briefvorlage_id)
 	aktion = get_object_or_404(Aktion, pk=aktion_id)
+	
+	# Hat der User Zugriff auf das Semester des Antrags?
+	if(antrag.semester.gruppe not in request.user.groups.all()):
+            raise Http404
 	
 	nachweise = None
 	begruendungen = None
@@ -474,6 +499,11 @@ def antragaktion(request, antrag_id, aktion_id, brief_id=None):
 	
 	antrag = get_object_or_404(Antrag, pk=antrag_id)
 	aktion = get_object_or_404(Aktion, pk=aktion_id)
+	uebergang = get_object_or_404(Uebergang, status_start=antrag.status, aktion=aktion)
+	
+	# Hat der User Zugriff auf das Semester des Antrags?
+	if(antrag.semester.gruppe not in request.user.groups.all()):
+            raise Http404
 	
 	uebergaenge = antrag.status.uebergang_from__set
 	uebergang_zu = uebergaenge.values('status_end')
@@ -484,9 +514,9 @@ def antragaktion(request, antrag_id, aktion_id, brief_id=None):
 		
 		if(aktion.setzt_ueberweisungsbetrag and antrag.ueberweisungsbetrag <= 0):
 			return ueberweisungsbetrag(request, antrag.id, aktion.id)
-		if(aktion.setzt_nachfrist1 and antrag.nachfrist1 == None):
+		if(aktion.setzt_nachfrist1 and (antrag.nachfrist1 == None or not ('m' in request.GET and request.GET['m'] == 'nachfrist_gesetzt'))):
 			return nachfrist(request, antrag.id, aktion.id)
-		if(aktion.setzt_nachfrist2 and antrag.nachfrist2 == None):
+		if(aktion.setzt_nachfrist2 and (antrag.nachfrist2 == None or not ('m' in request.GET and request.GET['m'] == 'nachfrist_gesetzt'))):
 			return nachfrist(request, antrag.id, aktion.id)
 		
 		if(aktion.briefvorlage != None):
@@ -500,13 +530,13 @@ def antragaktion(request, antrag_id, aktion_id, brief_id=None):
 					response['Location'] += '?m=brief_ungueltig'
 					return response
 				
-		antrag.status = Uebergang.objects.get(status_start=antrag.status, aktion=aktion).status_end
+		antrag.status = uebergang.status_end
 		antrag.save()
 			
 		history = History()
 		history.akteur = request.user
 		history.antrag = antrag
-		history.aktion = aktion
+		history.uebergang = uebergang
 		history.save()
 		
 		response = redirect('antragbackend', antrag_id=antrag.id)
@@ -520,16 +550,72 @@ def antragaktion(request, antrag_id, aktion_id, brief_id=None):
 @staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
 def history(request, antrag_id=None):
 	antrag = None
+	messages = []
 	
 	if(antrag_id != None):
 		antrag_id = int(antrag_id)
 		antrag = get_object_or_404(Antrag, pk=antrag_id)
+		
+		if('m' in request.GET):
+			if(request.GET['m'] == 'aktion_nicht_zulaessig'):
+				messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Diese Aktion ist nicht zulässig.'})
+			if(request.GET['m'] == 'aktion_erfolgreich'):
+				messages.append({'klassen':'alert-success','text':'<strong>Aktion erfolgreich!</strong> Die Aktion wurde erfolgreich rückgängig gemacht.'})
+		
+		# Hat der User Zugriff auf das Semester des Antrags?
+		if(antrag.semester.gruppe not in request.user.groups.all()):
+			raise Http404
+		
 		history = History.objects.filter(antrag=antrag_id).order_by('-timestamp')
 	else:
-		history = History.objects.all().order_by('-timestamp')
+		history = History.objects.filter(antrag__semester__gruppe__in=request.user.groups.values_list('id',flat=True)).order_by('-timestamp')
 	
-	context = {'current_page' : 'history', 'history' : history, 'antrag':antrag}
+	context = {'current_page' : 'history', 'history' : history, 'antrag':antrag, 'messages':messages}
 	return render(request, 'backend/history.html', context)
+
+@staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
+def undo(request, history_id):
+	history = get_object_or_404(History, pk=history_id)
+	
+	# darf User den Antrag sehen?
+	if(history.antrag.semester.gruppe not in request.user.groups.all()):
+		raise Http404
+	
+	if(history.ist_undo):
+		response = redirect('history', antrag_id=history.antrag.id)
+		response['Location'] += '?m=aktion_nicht_zulaessig'
+		return response
+	
+	# ist Antrag im Endstatus?
+	if(history.antrag.status == history.uebergang.status_end):
+		
+		# Aktion umgekehrt ausführen
+		if(history.uebergang.aktion.setzt_ueberweisungsbetrag):
+			history.antrag.betrag = 0
+		if(history.uebergang.aktion.setzt_nachfrist1):
+			history.antrag.nachfrist1 = None
+		if(history.uebergang.aktion.setzt_nachfrist2):
+			history.antrag.nachfrist2 = None
+		
+		history.antrag.status = history.uebergang.status_start
+		history.antrag.save()
+		
+		new_history = History()
+		new_history.akteur = request.user
+		new_history.antrag = history.antrag
+		new_history.uebergang = history.uebergang
+		new_history.ist_undo = True
+		new_history.save()
+		
+		response = redirect('history', antrag_id=history.antrag.id)
+		response['Location'] += '?m=aktion_erfolgreich'
+		return response
+		
+	else:
+		# Aktion kann nicht rückgängig gemacht werden
+		response = redirect('history', antrag_id=history.antrag.id)
+		response['Location'] += '?m=aktion_nicht_zulaessig'
+		return response
 
 @staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
 def konfiguration(request):

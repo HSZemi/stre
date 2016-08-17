@@ -68,7 +68,7 @@ def erstelle_statusse_briefvorlagen_aktionen_uebergaenge(apps, schema_editor):
 	s_genehmigt.save()
 	
 	s_teilweise_genehmigt = Status()
-	s_teilweise_genehmigt.name = "teilweise Genehmigt"
+	s_teilweise_genehmigt.name = "teilweise genehmigt"
 	s_teilweise_genehmigt.klassen = "teilweise_genehmigt"
 	s_teilweise_genehmigt.sort = 510
 	s_teilweise_genehmigt.save()
@@ -78,6 +78,24 @@ def erstelle_statusse_briefvorlagen_aktionen_uebergaenge(apps, schema_editor):
 	s_abgelehnt.klassen = "abgelehnt"
 	s_abgelehnt.sort = 520
 	s_abgelehnt.save()
+	
+	s_genehmigung_verschickt = Status()
+	s_genehmigung_verschickt.name = "Genehmigung verschickt"
+	s_genehmigung_verschickt.klassen = "genehmigung_verschickt"
+	s_genehmigung_verschickt.sort = 550
+	s_genehmigung_verschickt.save()
+	
+	s_teilweise_genehmigung_verschickt = Status()
+	s_teilweise_genehmigung_verschickt.name = "teilweise Genehmiung verschickt"
+	s_teilweise_genehmigung_verschickt.klassen = "teilweise_genehmigung_verschickt"
+	s_teilweise_genehmigung_verschickt.sort = 560
+	s_teilweise_genehmigung_verschickt.save()
+	
+	s_ablehnung_verschickt = Status()
+	s_ablehnung_verschickt.name = "Ablehnung verschickt"
+	s_ablehnung_verschickt.klassen = "ablehnung_verschickt"
+	s_ablehnung_verschickt.sort = 570
+	s_ablehnung_verschickt.save()
 	
 	s_ueberwiesen = Status()
 	s_ueberwiesen.name = "Überwiesen"
@@ -348,8 +366,19 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	a_genehmigen.setzt_nachfrist1 = False
 	a_genehmigen.setzt_nachfrist2 = False
 	a_genehmigen.sort = 700
-	a_genehmigen.briefvorlage = b_genehmigung
+	a_genehmigen.briefvorlage = None
 	a_genehmigen.save()
+	
+	a_genehmigung_verschicken = Aktion()
+	a_genehmigung_verschicken.name = "Genehmigung verschicken"
+	a_genehmigung_verschicken.user_explizit = False
+	a_genehmigung_verschicken.staff_explizit = True
+	a_genehmigung_verschicken.setzt_ueberweisungsbetrag = False
+	a_genehmigung_verschicken.setzt_nachfrist1 = False
+	a_genehmigung_verschicken.setzt_nachfrist2 = False
+	a_genehmigung_verschicken.sort = 750
+	a_genehmigung_verschicken.briefvorlage = b_genehmigung
+	a_genehmigung_verschicken.save()
 	
 	a_teilweise_genehmigen = Aktion()
 	a_teilweise_genehmigen.name = "Antrag teilweise genehmigen"
@@ -359,8 +388,19 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	a_teilweise_genehmigen.setzt_nachfrist1 = False
 	a_teilweise_genehmigen.setzt_nachfrist2 = False
 	a_teilweise_genehmigen.sort = 710
-	a_teilweise_genehmigen.briefvorlage = b_teilweise_genehmigung
+	a_teilweise_genehmigen.briefvorlage = None
 	a_teilweise_genehmigen.save()
+	
+	a_teilweise_genehmigung_verschicken = Aktion()
+	a_teilweise_genehmigung_verschicken.name = "teilweise Genehmigung verschicken"
+	a_teilweise_genehmigung_verschicken.user_explizit = False
+	a_teilweise_genehmigung_verschicken.staff_explizit = True
+	a_teilweise_genehmigung_verschicken.setzt_ueberweisungsbetrag = False
+	a_teilweise_genehmigung_verschicken.setzt_nachfrist1 = False
+	a_teilweise_genehmigung_verschicken.setzt_nachfrist2 = False
+	a_teilweise_genehmigung_verschicken.sort = 760
+	a_teilweise_genehmigung_verschicken.briefvorlage = b_teilweise_genehmigung
+	a_teilweise_genehmigung_verschicken.save()
 	
 	a_ablehnen = Aktion()
 	a_ablehnen.name = "Antrag ablehnen"
@@ -370,8 +410,19 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	a_ablehnen.setzt_nachfrist1 = False
 	a_ablehnen.setzt_nachfrist2 = False
 	a_ablehnen.sort = 720
-	a_ablehnen.briefvorlage = b_ablehnung
+	a_ablehnen.briefvorlage = None
 	a_ablehnen.save()
+	
+	a_ablehnung_verschicken = Aktion()
+	a_ablehnung_verschicken.name = "Ablehnung verschicken"
+	a_ablehnung_verschicken.user_explizit = False
+	a_ablehnung_verschicken.staff_explizit = True
+	a_ablehnung_verschicken.setzt_ueberweisungsbetrag = False
+	a_ablehnung_verschicken.setzt_nachfrist1 = False
+	a_ablehnung_verschicken.setzt_nachfrist2 = False
+	a_ablehnung_verschicken.sort = 770
+	a_ablehnung_verschicken.briefvorlage = b_ablehnung
+	a_ablehnung_verschicken.save()
 	
 	a_als_ueberwiesen_markieren= Aktion()
 	a_als_ueberwiesen_markieren.name = "als überwiesen markieren"
@@ -586,15 +637,33 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	u_nv_zg.status_end = s_zurueckgezogen
 	u_nv_zg.save()
 	
+	u_tg_tgv = Uebergang()
+	u_tg_tgv.aktion = a_teilweise_genehmigung_verschicken
+	u_tg_tgv.status_start = s_teilweise_genehmigt
+	u_tg_tgv.status_end = s_teilweise_genehmigung_verschickt
+	u_tg_tgv.save()
+	
+	u_g_gv = Uebergang()
+	u_g_gv.aktion = a_genehmigung_verschicken
+	u_g_gv.status_start = s_genehmigt
+	u_g_gv.status_end = s_genehmigung_verschickt
+	u_g_gv.save()
+	
+	u_a_av = Uebergang()
+	u_a_av.aktion = a_ablehnung_verschicken
+	u_a_av.status_start = s_abgelehnt
+	u_a_av.status_end = s_ablehnung_verschickt
+	u_a_av.save()
+	
 	u_tg_uw = Uebergang()
 	u_tg_uw.aktion = a_als_ueberwiesen_markieren
-	u_tg_uw.status_start = s_teilweise_genehmigt
+	u_tg_uw.status_start = s_teilweise_genehmigung_verschickt
 	u_tg_uw.status_end = s_ueberwiesen
 	u_tg_uw.save()
 	
 	u_g_uw = Uebergang()
 	u_ag_ag.aktion = a_als_ueberwiesen_markieren
-	u_ag_ag.status_start = s_genehmigt
+	u_ag_ag.status_start = s_genehmigung_verschickt
 	u_ag_ag.status_end = s_ueberwiesen
 	u_ag_ag.save()
 	
@@ -886,116 +955,116 @@ def erstelle_antragsgruende_nachweise(apps, schema_editor):
 	g_exmatrikulation.nachweise.add(n_zahlung_beitrag)
 	g_exmatrikulation.save()
 	
-	g_exmatrikulation = Antragsgrund()
-	g_exmatrikulation.identifier = "S"
-	g_exmatrikulation.name = "Sozialer Härtefall"
-	g_exmatrikulation.beschreibung = ""
-	g_exmatrikulation.an_frist_gebunden = True
-	g_exmatrikulation.sort = 0
-	g_exmatrikulation.save()
-	g_exmatrikulation.nachweise.add(n_kopie_studausweis)
-	g_exmatrikulation.nachweise.add(n_kopie_personalausweis_reisepass)
-	g_exmatrikulation.nachweise.add(n_belege_2a)
-	g_exmatrikulation.nachweise.add(n_anhang_2a)
-	g_exmatrikulation.save()
+	g_sozialer_haertefall = Antragsgrund()
+	g_sozialer_haertefall.identifier = "S"
+	g_sozialer_haertefall.name = "Sozialer Härtefall"
+	g_sozialer_haertefall.beschreibung = ""
+	g_sozialer_haertefall.an_frist_gebunden = True
+	g_sozialer_haertefall.sort = 0
+	g_sozialer_haertefall.save()
+	g_sozialer_haertefall.nachweise.add(n_kopie_studausweis)
+	g_sozialer_haertefall.nachweise.add(n_kopie_personalausweis_reisepass)
+	g_sozialer_haertefall.nachweise.add(n_belege_2a)
+	g_sozialer_haertefall.nachweise.add(n_anhang_2a)
+	g_sozialer_haertefall.save()
 	
-	g_exmatrikulation = Antragsgrund()
-	g_exmatrikulation.identifier = "B"
-	g_exmatrikulation.name = "Schwerbehinderung"
-	g_exmatrikulation.beschreibung = ""
-	g_exmatrikulation.an_frist_gebunden = True
-	g_exmatrikulation.sort = 0
-	g_exmatrikulation.save()
-	g_exmatrikulation.nachweise.add(n_kopie_studausweis)
-	g_exmatrikulation.nachweise.add(n_kopie_personalausweis_reisepass)
-	g_exmatrikulation.nachweise.add(n_kopie_schwerbehausweis)
-	g_exmatrikulation.nachweise.add(n_weiterer_nachweis)
-	g_exmatrikulation.save()
+	g_schwerbehinderung = Antragsgrund()
+	g_schwerbehinderung.identifier = "B"
+	g_schwerbehinderung.name = "Schwerbehinderung"
+	g_schwerbehinderung.beschreibung = ""
+	g_schwerbehinderung.an_frist_gebunden = True
+	g_schwerbehinderung.sort = 0
+	g_schwerbehinderung.save()
+	g_schwerbehinderung.nachweise.add(n_kopie_studausweis)
+	g_schwerbehinderung.nachweise.add(n_kopie_personalausweis_reisepass)
+	g_schwerbehinderung.nachweise.add(n_kopie_schwerbehausweis)
+	g_schwerbehinderung.nachweise.add(n_weiterer_nachweis)
+	g_schwerbehinderung.save()
 	
-	g_exmatrikulation = Antragsgrund()
-	g_exmatrikulation.identifier = "A"
-	g_exmatrikulation.name = "Studienbedingter Aufenthalt außerhalb des Vertragsgebiete"
-	g_exmatrikulation.beschreibung = ""
-	g_exmatrikulation.an_frist_gebunden = True
-	g_exmatrikulation.sort = 0
-	g_exmatrikulation.save()
-	g_exmatrikulation.nachweise.add(n_kopie_studausweis)
-	g_exmatrikulation.nachweise.add(n_kopie_personalausweis_reisepass)
-	g_exmatrikulation.nachweise.add(n_anhang_2b)
-	g_exmatrikulation.save()
+	g_studienbedingter_a_a_v = Antragsgrund()
+	g_studienbedingter_a_a_v.identifier = "A"
+	g_studienbedingter_a_a_v.name = "Studienbedingter Aufenthalt außerhalb des Vertragsgebiete"
+	g_studienbedingter_a_a_v.beschreibung = ""
+	g_studienbedingter_a_a_v.an_frist_gebunden = True
+	g_studienbedingter_a_a_v.sort = 0
+	g_studienbedingter_a_a_v.save()
+	g_studienbedingter_a_a_v.nachweise.add(n_kopie_studausweis)
+	g_studienbedingter_a_a_v.nachweise.add(n_kopie_personalausweis_reisepass)
+	g_studienbedingter_a_a_v.nachweise.add(n_anhang_2b)
+	g_studienbedingter_a_a_v.save()
 	
-	g_exmatrikulation = Antragsgrund()
-	g_exmatrikulation.identifier = "V"
-	g_exmatrikulation.name = "Verspäteter Immatrikulation/Promotionsbegin"
-	g_exmatrikulation.beschreibung = ""
-	g_exmatrikulation.an_frist_gebunden = True
-	g_exmatrikulation.sort = 0
-	g_exmatrikulation.save()
-	g_exmatrikulation.nachweise.add(n_kopie_studausweis)
-	g_exmatrikulation.nachweise.add(n_kopie_personalausweis_reisepass)
-	g_exmatrikulation.nachweise.add(n_einschreibebescheinigung)
-	g_exmatrikulation.save()
+	g_verspaeteter_immatrikulation_pb = Antragsgrund()
+	g_verspaeteter_immatrikulation_pb.identifier = "V"
+	g_verspaeteter_immatrikulation_pb.name = "Verspäteter Immatrikulation/Promotionsbegin"
+	g_verspaeteter_immatrikulation_pb.beschreibung = ""
+	g_verspaeteter_immatrikulation_pb.an_frist_gebunden = True
+	g_verspaeteter_immatrikulation_pb.sort = 0
+	g_verspaeteter_immatrikulation_pb.save()
+	g_verspaeteter_immatrikulation_pb.nachweise.add(n_kopie_studausweis)
+	g_verspaeteter_immatrikulation_pb.nachweise.add(n_kopie_personalausweis_reisepass)
+	g_verspaeteter_immatrikulation_pb.nachweise.add(n_einschreibebescheinigung)
+	g_verspaeteter_immatrikulation_pb.save()
 	
-	g_exmatrikulation = Antragsgrund()
-	g_exmatrikulation.identifier = "F"
-	g_exmatrikulation.name = "Aufenthalt außerhalb Vertragsgebiet wegen dringender familiärer Gründe"
-	g_exmatrikulation.beschreibung = ""
-	g_exmatrikulation.an_frist_gebunden = True
-	g_exmatrikulation.sort = 0
-	g_exmatrikulation.save()
-	g_exmatrikulation.nachweise.add(n_kopie_studausweis)
-	g_exmatrikulation.nachweise.add(n_kopie_personalausweis_reisepass)
-	g_exmatrikulation.nachweise.add(n_existenz_grund)
-	g_exmatrikulation.save()
+	g_aufenthalt_a_v_w_d_f_g = Antragsgrund()
+	g_aufenthalt_a_v_w_d_f_g.identifier = "F"
+	g_aufenthalt_a_v_w_d_f_g.name = "Aufenthalt außerhalb Vertragsgebiet wegen dringender familiärer Gründe"
+	g_aufenthalt_a_v_w_d_f_g.beschreibung = ""
+	g_aufenthalt_a_v_w_d_f_g.an_frist_gebunden = True
+	g_aufenthalt_a_v_w_d_f_g.sort = 0
+	g_aufenthalt_a_v_w_d_f_g.save()
+	g_aufenthalt_a_v_w_d_f_g.nachweise.add(n_kopie_studausweis)
+	g_aufenthalt_a_v_w_d_f_g.nachweise.add(n_kopie_personalausweis_reisepass)
+	g_aufenthalt_a_v_w_d_f_g.nachweise.add(n_existenz_grund)
+	g_aufenthalt_a_v_w_d_f_g.save()
 	
-	g_exmatrikulation = Antragsgrund()
-	g_exmatrikulation.identifier = "P"
-	g_exmatrikulation.name = "Promotion (ohne Anwesenheit im Vertragsgebiet)"
-	g_exmatrikulation.beschreibung = ""
-	g_exmatrikulation.an_frist_gebunden = True
-	g_exmatrikulation.sort = 0
-	g_exmatrikulation.save()
-	g_exmatrikulation.nachweise.add(n_kopie_studausweis)
-	g_exmatrikulation.nachweise.add(n_kopie_personalausweis_reisepass)
-	g_exmatrikulation.nachweise.add(n_anhang_3b)
-	g_exmatrikulation.save()
+	g_promotion_o_a_i_v = Antragsgrund()
+	g_promotion_o_a_i_v.identifier = "P"
+	g_promotion_o_a_i_v.name = "Promotion (ohne Anwesenheit im Vertragsgebiet)"
+	g_promotion_o_a_i_v.beschreibung = ""
+	g_promotion_o_a_i_v.an_frist_gebunden = True
+	g_promotion_o_a_i_v.sort = 0
+	g_promotion_o_a_i_v.save()
+	g_promotion_o_a_i_v.nachweise.add(n_kopie_studausweis)
+	g_promotion_o_a_i_v.nachweise.add(n_kopie_personalausweis_reisepass)
+	g_promotion_o_a_i_v.nachweise.add(n_anhang_3b)
+	g_promotion_o_a_i_v.save()
 	
-	g_exmatrikulation = Antragsgrund()
-	g_exmatrikulation.identifier = "AA"
-	g_exmatrikulation.name = "Abschlussarbeit (Fertigstellung außerhalb Vertragsgebiet)"
-	g_exmatrikulation.beschreibung = ""
-	g_exmatrikulation.an_frist_gebunden = True
-	g_exmatrikulation.sort = 0
-	g_exmatrikulation.save()
-	g_exmatrikulation.nachweise.add(n_kopie_studausweis)
-	g_exmatrikulation.nachweise.add(n_kopie_personalausweis_reisepass)
-	g_exmatrikulation.nachweise.add(n_anhang_3a)
-	g_exmatrikulation.save()
+	g_abschlussarbeit_f_a_v = Antragsgrund()
+	g_abschlussarbeit_f_a_v.identifier = "AA"
+	g_abschlussarbeit_f_a_v.name = "Abschlussarbeit (Fertigstellung außerhalb Vertragsgebiet)"
+	g_abschlussarbeit_f_a_v.beschreibung = ""
+	g_abschlussarbeit_f_a_v.an_frist_gebunden = True
+	g_abschlussarbeit_f_a_v.sort = 0
+	g_abschlussarbeit_f_a_v.save()
+	g_abschlussarbeit_f_a_v.nachweise.add(n_kopie_studausweis)
+	g_abschlussarbeit_f_a_v.nachweise.add(n_kopie_personalausweis_reisepass)
+	g_abschlussarbeit_f_a_v.nachweise.add(n_anhang_3a)
+	g_abschlussarbeit_f_a_v.save()
 	
-	g_exmatrikulation = Antragsgrund()
-	g_exmatrikulation.identifier = "J"
-	g_exmatrikulation.name = "Jobticket"
-	g_exmatrikulation.beschreibung = ""
-	g_exmatrikulation.an_frist_gebunden = True
-	g_exmatrikulation.sort = 0
-	g_exmatrikulation.save()
-	g_exmatrikulation.nachweise.add(n_kopie_studausweis)
-	g_exmatrikulation.nachweise.add(n_kopie_personalausweis_reisepass)
-	g_exmatrikulation.nachweise.add(n_bescheinigung_vrs)
-	g_exmatrikulation.nachweise.add(n_kopie_jobticket)
-	g_exmatrikulation.save()
+	g_jobticket = Antragsgrund()
+	g_jobticket.identifier = "J"
+	g_jobticket.name = "Jobticket"
+	g_jobticket.beschreibung = ""
+	g_jobticket.an_frist_gebunden = True
+	g_jobticket.sort = 0
+	g_jobticket.save()
+	g_jobticket.nachweise.add(n_kopie_studausweis)
+	g_jobticket.nachweise.add(n_kopie_personalausweis_reisepass)
+	g_jobticket.nachweise.add(n_bescheinigung_vrs)
+	g_jobticket.nachweise.add(n_kopie_jobticket)
+	g_jobticket.save()
 	
-	g_exmatrikulation = Antragsgrund()
-	g_exmatrikulation.identifier = "W"
-	g_exmatrikulation.name = "Weitere Gründe"
-	g_exmatrikulation.beschreibung = ""
-	g_exmatrikulation.an_frist_gebunden = True
-	g_exmatrikulation.sort = 0
-	g_exmatrikulation.save()
-	g_exmatrikulation.nachweise.add(n_kopie_studausweis)
-	g_exmatrikulation.nachweise.add(n_kopie_personalausweis_reisepass)
-	g_exmatrikulation.nachweise.add(n_weitere_nachweise_fuer_die_einzelfallpruefung)
-	g_exmatrikulation.save()
+	g_weitere_gruende = Antragsgrund()
+	g_weitere_gruende.identifier = "W"
+	g_weitere_gruende.name = "Weitere Gründe"
+	g_weitere_gruende.beschreibung = ""
+	g_weitere_gruende.an_frist_gebunden = True
+	g_weitere_gruende.sort = 0
+	g_weitere_gruende.save()
+	g_weitere_gruende.nachweise.add(n_kopie_studausweis)
+	g_weitere_gruende.nachweise.add(n_kopie_personalausweis_reisepass)
+	g_weitere_gruende.nachweise.add(n_weitere_nachweise_fuer_die_einzelfallpruefung)
+	g_weitere_gruende.save()
 
 def erstelle_begruendungen(apps, schema_editor):
 	
@@ -1029,6 +1098,7 @@ def erstelle_gruppen_admin(apps, schema_editor):
 	
 	gruppe_antragstellung, created = Group.objects.get_or_create(name='Antragstellung')
 	gruppe_bearbeitung, created = Group.objects.get_or_create(name='Bearbeitung')
+	gruppe_bobachtung, created = Group.objects.get_or_create(name='Beobachtung')
 	
 	
 	admin = User.objects.create_user('admin', None, 'Zeitungsartikel')
