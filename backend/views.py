@@ -199,8 +199,8 @@ def antrag(request, antrag_id):
 		
 		
 		
-	nachweise_queryset = Nachweis.objects.raw("""SELECT n.id, n.name, n.beschreibung, n.hochzuladen, d.id AS datei_id
-		FROM backend_nachweis n LEFT OUTER JOIN (SELECT id, nachweis_id from backend_dokument bd WHERE bd.antrag_id = %s AND bd.aktiv) d ON n.id = d.nachweis_id
+	nachweise_queryset = Nachweis.objects.raw("""SELECT n.id, n.name, n.beschreibung, n.hochzuladen, d.id AS datei_id, d.timestamp AS datei_timestamp
+		FROM backend_nachweis n LEFT OUTER JOIN (SELECT id, timestamp, nachweis_id from backend_dokument bd WHERE bd.antrag_id = %s AND bd.aktiv) d ON n.id = d.nachweis_id
 		WHERE n.id in (SELECT nachweis_id FROM backend_antragsgrund_nachweise WHERE antragsgrund_id = %s) """, [antrag_id, antrag.grund.id])
 	
 	nachweise = {}
@@ -212,7 +212,7 @@ def antrag(request, antrag_id):
 			nachweise[nw.id]['hochzuladen'] = nw.hochzuladen
 			nachweise[nw.id]['dokumente'] = []
 		if(nw.datei_id != None):
-			nachweise[nw.id]['dokumente'].append(nw.datei_id)
+			nachweise[nw.id]['dokumente'].append({'id':nw.datei_id, 'timestamp':nw.datei_timestamp})
 	
 	
 	aktionen = zulaessige_aktionen.filter(staff_explizit=True).order_by('sort')

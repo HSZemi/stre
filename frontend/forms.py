@@ -13,10 +13,11 @@ class PasswordChangeForm(forms.Form):
 class AntragForm(ModelForm):
 	class Meta:
 		model = Antrag
-		fields = [ 'grund', 'versandanschrift','kontoinhaber_in']
+		fields = [ 'grund', 'freitext', 'versandanschrift','kontoinhaber_in']
 		
 		labels = {
 			'grund': 'Antragsgrund',
+			'freitext' : 'Hinweise zum Antrag',
 			'kontoinhaber_in': 'Kontoinhaber/in',
 			'iban': 'IBAN',
 			'bic': 'BIC',
@@ -25,11 +26,13 @@ class AntragForm(ModelForm):
 		help_texts = {
 			'versandanschrift': 'An diese Adresse werden die Bescheide versandt.',
 			'grund': 'Bitte wähle aus, weshalb du den Antrag auf Rückerstattung stellst.<br>Im nächsten Schritt kannst du dann die benötigten Nachweise hochladen.',
+			'freitext': 'Weitere Hinweise zum Antrag wie z. B. der Verweis auf einen früheren (auf Papier gestellten) Antrag, aus dem Nachweise übernommen werden sollen, oder die Erläuterung eines sonstigen Grundes.',
 		}
 	
 	def __init__(self, gruende, *args, **kwargs):
 		super(AntragForm, self).__init__(*args, **kwargs)
 		self.fields['grund'] = forms.ModelChoiceField(queryset=gruende, label="Antragsgrund", help_text="Bitte wähle aus, weshalb du den Antrag auf Rückerstattung stellst.<br>Im nächsten Schritt kannst du dann die benötigten Nachweise hochladen.", widget=forms.Select)	
+		self.fields['freitext'] = forms.CharField(widget=forms.Textarea, label='Hinweise zum Antrag', help_text='Weitere Hinweise zum Antrag wie z. B. der Verweis auf einen früheren (auf Papier gestellten) Antrag, aus dem Nachweise übernommen werden sollen, oder die Erläuterung eines sonstigen Grundes.', required=False)	
 		
 	iban = IBANFormField(label="IBAN", help_text="Auf dieses Konto wird der Rückerstattungsbetrag überwiesen, falls dein Antrag erfolg hat.")
 	bic = BICFormField(label="BIC")

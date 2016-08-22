@@ -456,6 +456,7 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	u_ag_ag.status_start = s_antrag_gestellt
 	u_ag_ag.status_end = s_antrag_gestellt
 	u_ag_ag.save()
+	#TODO wird nicht angelegt?
 	
 	u_ag_wp = Uebergang()
 	u_ag_wp.aktion = a_dokument_hochladen

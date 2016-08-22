@@ -145,6 +145,8 @@ class Antrag(models.Model):
 	versandanschrift = models.TextField()
 	grund = models.ForeignKey(Antragsgrund)
 	
+	freitext = models.TextField()
+	
 	kontoinhaber_in = models.CharField(max_length=400)
 	iban = models.CharField(max_length=67) #maximal 34 Stellen + Leerzeichen
 	bic = models.CharField(max_length=14) # maximal 11 Stellen, 4 Segmente, Leerzeichen sind unüblich
@@ -170,6 +172,7 @@ class Dokument(models.Model):
 	nachweis = models.ForeignKey(Nachweis)
 	datei = models.CharField(max_length=1024)
 	aktiv = models.BooleanField(default=True)
+	timestamp = models.DateTimeField(auto_now_add=True)
 
 	
 class Brief(models.Model):

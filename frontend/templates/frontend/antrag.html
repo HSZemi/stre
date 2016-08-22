@@ -19,6 +19,7 @@
 <tr><th>Semester</th><td>{{antrag.semester}}</td></tr>
 <tr><th>Antragszeitpunkt</th><td>{{antrag.antragszeitpunkt}}</td></tr>
 <tr><th>Antragsgrund</th><td>{{antrag.grund.name}}</td></tr>
+<tr><th>weitere Hinweise</th><td><i>{{antrag.freitext}}</i></td></tr>
 <tr><th>Letzte Aktivität</th><td>{{antrag.letzte_bearbeitung}}</td></tr>
 <tr><th>Antragsstatus</th><td><span class="{{antrag.status.klassen}}">{{antrag.status.name}}</span></td></tr>
 {% if antrag.ueberweisungsbetrag > 0 %}
@@ -32,8 +33,8 @@
 	<li>
 	{{nachweis.name}}
 	<ul>
-	{% for dokument_id in nachweis.dokumente %}
-		<li><span class="tag tag-default dokument"><a href="{% url 'datei' dokument_id=dokument_id %}" target="_blank">Dokument</a></span> <a href="{% url 'datei' dokument_id=dokument_id %}" target="_blank">anzeigen</a></li>
+	{% for dokument in nachweis.dokumente %}
+		<li><span class="tag tag-default dokument"><a href="{% url 'datei' dokument_id=dokument.id %}" target="_blank">Dokument #{{dokument.id}}</a></span> <a href="{% url 'datei' dokument_id=dokument.id %}" target="_blank">anzeigen</a> <small>(hochgeladen am {{dokument.timestamp}})</small></li>
 	{% endfor %}
 	</ul>
 	</li>

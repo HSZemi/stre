@@ -266,11 +266,14 @@ def antragstellung(request, semester_id):
 				
 				neu_antrag.save()
 				
+				
 				aktion = (GlobalSettings.objects.get()).aktion_antrag_stellen
+				uebergang = get_object_or_404(Uebergang, status_start=neu_antrag.status, aktion=aktion)
+				
 				history = History()
 				history.akteur = request.user
 				history.antrag = neu_antrag
-				history.aktion = aktion
+				history.uebergang = uebergang
 				history.save()
 				
 				response = redirect('antragfrontend', antrag_id=neu_antrag.id)
@@ -337,6 +340,7 @@ def antrag(request, antrag_id):
 				
 				if(pfad[0] == True):
 					uploadaktion = (GlobalSettings.objects.get()).aktion_hochladen
+					uebergang = get_object_or_404(Uebergang, status_start=antrag.status, aktion=uploadaktion)
 					
 					dokument = form.save(commit=False)
 					dokument.antrag = antrag
@@ -344,13 +348,13 @@ def antrag(request, antrag_id):
 					
 					dokument.save()
 					
-					antrag.status = Uebergang.objects.get(status_start=antrag.status, aktion=uploadaktion).status_end
+					antrag.status = uebergang.status_end
 					antrag.save()
 					
 					history = History()
 					history.akteur = request.user
 					history.antrag = antrag
-					history.aktion = uploadaktion
+					history.uebergang = uebergang
 					history.save()
 					
 				message = pfad[1]
@@ -363,8 +367,8 @@ def antrag(request, antrag_id):
 	form.fields["nachweis"].queryset = antrag.grund.nachweise.filter(hochzuladen=True)
 		
 		
-	nachweise_queryset = Nachweis.objects.raw("""SELECT n.id, n.name, n.beschreibung, n.hochzuladen, n.sort, d.id AS datei_id
-		FROM backend_nachweis n LEFT OUTER JOIN (SELECT id, nachweis_id from backend_dokument bd WHERE bd.antrag_id = %s AND bd.aktiv) d ON n.id = d.nachweis_id
+	nachweise_queryset = Nachweis.objects.raw("""SELECT n.id, n.name, n.beschreibung, n.hochzuladen, n.sort, d.id AS datei_id, d.timestamp AS datei_timestamp
+		FROM backend_nachweis n LEFT OUTER JOIN (SELECT id, timestamp, nachweis_id from backend_dokument bd WHERE bd.antrag_id = %s AND bd.aktiv) d ON n.id = d.nachweis_id
 		WHERE n.id in (SELECT nachweis_id FROM backend_antragsgrund_nachweise WHERE antragsgrund_id = %s) ORDER BY n.sort ASC """, [antrag_id, antrag.grund.id])
 	
 	nachweise = {}
@@ -376,7 +380,7 @@ def antrag(request, antrag_id):
 			nachweise[nw.id]['hochzuladen'] = nw.hochzuladen
 			nachweise[nw.id]['dokumente'] = []
 		if(nw.datei_id != None):
-			nachweise[nw.id]['dokumente'].append(nw.datei_id)
+			nachweise[nw.id]['dokumente'].append({'id':nw.datei_id, 'timestamp':nw.datei_timestamp})
 	
 	context = {'current_page' : 'antrag', 'antrag' : antrag, 'form':form, 'message':message, 'gmessage':gmessage, 'nachweise':nachweise}
 	return render(request, 'frontend/antrag.html', context)
