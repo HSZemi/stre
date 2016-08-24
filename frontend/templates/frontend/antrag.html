@@ -51,6 +51,18 @@
 </table>
 <input type="submit" value="Nachweis hochladen" class="btn btn-primary"/>
 </form>
+
+{% if form_uebertragen %}
+<h3>Nachweis von altem Antrag übernehmen</h3>
+
+<form method="POST">
+{% csrf_token %}
+<table class="table">
+{{form_uebertragen}}
+</table>
+<input type="submit" value="Nachweis übernehmen" class="btn btn-primary"/>
+</form>
+{% endif %}
 {% endif %}
 
 

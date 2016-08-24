@@ -15,4 +15,5 @@ urlpatterns = [
     url(r'^history/(?P<antrag_id>[0-9]+)$', views.history, name='history'),
     url(r'^undo/(?P<history_id>[0-9]+)$', views.undo, name='undo'),
     url(r'^konfiguration$', views.konfiguration, name='konfiguration'),
+    url(r'^markieren/(?P<dokument_id>[0-9]+)/(?P<markierung>[a-z-]+)', views.markieren, name='markieren'),
 ]

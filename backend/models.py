@@ -168,11 +168,35 @@ class Antrag(models.Model):
 		return "{0} {1}".format(self.grund.identifier, self.id)
 
 class Dokument(models.Model):
+	
+	GRAU = 'tag-default'
+	ROT = 'tag-danger'
+	GELB = 'tag-warning'
+	GRUEN = 'tag-success'
+	BLAU = 'tag-info'
+	
+	MARKIERUNG_CHOICES = (
+		(GRAU, 'Grau'),
+		(ROT, 'Rot'),
+		(GELB, 'Gelb'),
+		(GRUEN, 'Grün'),
+		(BLAU, 'Blau'),
+	)
+	
+	markierung = models.CharField(
+		max_length=11,
+		choices=MARKIERUNG_CHOICES,
+		default=GRAU
+	)
+	
 	antrag = models.ForeignKey(Antrag)
 	nachweis = models.ForeignKey(Nachweis)
 	datei = models.CharField(max_length=1024)
 	aktiv = models.BooleanField(default=True)
 	timestamp = models.DateTimeField(auto_now_add=True)
+	
+	def __str__(self):
+		return "Dokument #{0}".format(self.id)
 
 	
 class Brief(models.Model):

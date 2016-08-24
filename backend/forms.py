@@ -47,6 +47,24 @@ class DokumentForm(ModelForm):
 			'nachweis': 'Zu welchem Nachweis gehört diese Datei?',
 		}
 	userfile = forms.FileField(help_text="Erlaubte Dateitypen: PDF, JPG, PNG", label="Datei:")
+	
+class DokumentUebertragenForm(ModelForm):
+	class Meta:
+		model = Dokument
+		fields = ['nachweis']
+		
+		labels = {
+			'nachweis': 'Nachweis-Art',
+		}
+		
+		help_texts = {
+			'nachweis': 'Zu welchem Nachweis gehört diese Datei?',
+		}
+	formname = forms.CharField(widget=forms.HiddenInput(),initial='DokumentUebertragenForm')
+	
+	def __init__(self, dokumente, *args, **kwargs):
+		super(DokumentUebertragenForm, self).__init__(*args, **kwargs)
+		self.fields['userfile'] = forms.ModelChoiceField(queryset=dokumente, help_text="Du kannst die Dateien im alten Antrag aufrufen.", label="Datei:")
 
 class BriefBegruendungForm(forms.Form):
 	def __init__(self, nachweise, begruendungen, freitext, *args, **kwargs):

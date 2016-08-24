@@ -10,6 +10,10 @@ class PasswordChangeForm(forms.Form):
 	passwort_neu1 = forms.CharField(label='Neues Passwort:', widget=forms.PasswordInput)
 	passwort_neu2 = forms.CharField(label='Neues Passwort (noch einmal):', widget=forms.PasswordInput)
 
+class AccountForm(forms.Form):
+	email = forms.EmailField(label="E-Mail-Adresse",required=False, help_text="Ohne Angabe einer gültigen E-Mail-Adresse stehen einige Funktionen nicht zur Verfügung.")
+	adresse = forms.CharField(widget=forms.Textarea(attrs={'rows': 3}), label="Anschrift", help_text="<span style='color:red'><b>Achtung!</b> Eine Änderung dieser Adresse ändert <b>NICHT</b>, an welche Anschrift die Bescheide verschickt werden!</span><br>Die Adresse für den Versand der Bescheide kannst du nur persönlich in der Sprechstunde des Ausschusses ändern lassen.")
+
 class AntragForm(ModelForm):
 	class Meta:
 		model = Antrag
@@ -50,6 +54,26 @@ class DokumentForm(ModelForm):
 			'nachweis': 'Zu welchem Nachweis gehört diese Datei?',
 		}
 	userfile = forms.FileField(help_text="Erlaubte Dateitypen: PDF, JPG, PNG", label="Datei:")
+	formname = forms.CharField(widget=forms.HiddenInput(),initial='DokumentForm')
+	
+class DokumentUebertragenForm(ModelForm):
+	class Meta:
+		model = Dokument
+		fields = ['nachweis']
+		
+		labels = {
+			'nachweis': 'Nachweis-Art',
+		}
+		
+		help_texts = {
+			'nachweis': 'Zu welchem Nachweis gehört diese Datei?',
+		}
+	formname = forms.CharField(widget=forms.HiddenInput(),initial='DokumentUebertragenForm')
+	
+	def __init__(self, dokumente, *args, **kwargs):
+		super(DokumentUebertragenForm, self).__init__(*args, **kwargs)
+		self.fields['userfile'] = forms.ModelChoiceField(queryset=dokumente, help_text="Du kannst die Dateien im alten Antrag aufrufen.", label="Datei:")
+	
 
 class RegistrierungForm(forms.Form):
 	semester = forms.ModelChoiceField(queryset=Semester.objects.filter(anzeigefrist__gte=date.today()).order_by('-jahr'), label="Semester*", help_text="Für welches Semester soll der Antrag gestellt werden?")

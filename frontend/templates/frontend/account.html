@@ -1,0 +1,43 @@
+{% extends 'frontend/base.html' %}
+
+{% block title%}Semesterticket-Rückerstattung - Status{% endblock %}
+
+{% block content %}
+
+{% for message in messages %}
+<div class="alert {{message.klassen}}" role="alert">
+  {{message.text|safe}}
+</div>
+{% endfor %}
+
+<div class="card">
+	<div class="card-block">
+		<h4 class="card-title">Deine Daten</h4>
+		<p class="card-text">Hier kannst du deinen persönlichen Daten ändern.<br>Die mit * markierten Angaben kannst du jedoch nur persönlich in der Sprechstunde des Ausschusses ändern lassen.</p>
+	</div>
+	<div class="card-block">
+	
+	<form method="post">
+	{% csrf_token %}
+	
+	<table class="table">
+	<tbody>
+	<tr><td>Matrikelnummer*</td><td>{{person.user.username}}</td></tr>
+	<tr><td>Vorname*</td><td>{{person.user.first_name}}</td></tr>
+	<tr><td>Nachname*</td><td>{{person.user.last_name}}</td></tr>
+	{{ form }}
+	</tbody>
+	</table>
+	</table>
+
+	
+	<input type="submit" value="Daten ändern" class="btn btn-primary"/>
+	
+	
+	</form>
+	</div>
+</div>
+
+
+
+{% endblock %}

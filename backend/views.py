@@ -9,7 +9,7 @@ from django.shortcuts import redirect
 from  django.contrib.auth.password_validation import validate_password, ValidationError
 from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History, Briefvorlage, Brief, Status, Uebergang, Begruendung
 from django.db.models import Count
-from .forms import DokumentForm, UeberweisungsbetragForm, BriefErstellenForm, BriefBegruendungForm, NachfristForm
+from .forms import DokumentForm, DokumentUebertragenForm, UeberweisungsbetragForm, BriefErstellenForm, BriefBegruendungForm, NachfristForm
 import uuid
 import os
 import mimetypes
@@ -125,12 +125,32 @@ def handle_uploaded_file(f, semester_id, antrag_id):
 	
 	return (True, filepath)
 
+def copy_old_file(dokument, semester_id, antrag_id):
+	messages = []
+	filepath = None
+	
+	extension = dokument.datei[-4:].lower()
+	
+	filename = str(uuid.uuid4())
+	filedir = "dokumente/nachweise/{0}/{1}".format(semester_id, antrag_id)
+	filepath = "dokumente/nachweise/{0}/{1}/{2}{3}".format(semester_id, antrag_id, filename, extension) # extension enthält den Punkt
+	
+	if(not os.path.isdir(os.path.join(BASE_DIR, filedir))):
+		os.makedirs(os.path.join(BASE_DIR, filedir)) #TODO permissions
+	
+	# Dokument kopieren
+	shutil.copy(os.path.join(BASE_DIR, dokument.datei), os.path.join(BASE_DIR, filepath))
+	
+	messages.append({'klassen':'alert-success','text':'<strong>Das Dokument wurde erfolgreich kopiert.</strong> Er sollte jetzt hinter seinem Nachweis aufgeführt sein.'})
+	return (filepath, messages)
+
 @staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
 def antrag(request, antrag_id):
 	antrag_id = int(antrag_id)
 	messages = []
 	nachfrist_nr = None
 	form = None
+	form_uebertragen = None
 	
 	if('m' in request.GET):
 		if(request.GET['m'] == 'aktion_erfolgreich'):
@@ -150,57 +170,106 @@ def antrag(request, antrag_id):
 	uebergang_zu = uebergaenge.values('status_end')
 	zulaessige_aktionen = Aktion.objects.filter(pk__in=uebergaenge.values('aktion'))
 	
+	form = DokumentForm()
+	form.fields["nachweis"].queryset = antrag.grund.nachweise.filter(hochzuladen=True)
+		
+	dokumente = Dokument.objects.filter(antrag__user=antrag.user, antrag__semester__gruppe__in=request.user.groups.all()).exclude(antrag=antrag).order_by('-timestamp')
+	
+	if dokumente:
+		form_uebertragen = DokumentUebertragenForm(dokumente)
+		form_uebertragen.fields["nachweis"].queryset = antrag.grund.nachweise.filter(hochzuladen=True)
+	
 	# Dateiupload #
 	uploadaktion = (GlobalSettings.objects.get()).aktion_hochladen
 	
 	if(uploadaktion in zulaessige_aktionen):
-		if request.method == 'POST':
-			# create a form instance and populate it with data from the request:
-			form = DokumentForm(request.POST, request.FILES)
-			# check whether it's valid:
-			if form.is_valid():
-				
-				if(form.cleaned_data['nachweis'] not in antrag.grund.nachweise.all()):
-					message = 'nachweis_ungueltig'
-				else:
-					pfad = handle_uploaded_file(request.FILES['userfile'], antrag.semester.id, antrag.id)
+		if request.method == 'POST' and 'formname' in request.POST:
+			if request.POST['formname'] == 'DokumentForm':
+				# create a form instance and populate it with data from the request:
+				form = DokumentForm(request.POST, request.FILES)
+				# check whether it's valid:
+				if form.is_valid():
 					
-					if(pfad[0] == True):
-						
-						dokument = form.save(commit=False)
-						dokument.antrag = antrag
-						dokument.datei = pfad[1]
-						
-						dokument.save()
-						
-						uebergang = Uebergang.objects.get(status_start=antrag.status, aktion=uploadaktion)
-						antrag.status = uebergang.status_end
-						antrag.save()
-						
-						history = History()
-						history.akteur = request.user
-						history.antrag = antrag
-						history.uebergang = uebergang
-						history.save()
-						
-						messages.append({'klassen':'alert-success','text':'<strong>Das Dokument wurde erfolgreich hochgeladen.</strong> Es sollte jetzt hinter seinem Nachweis aufgeführt sein.'})
+					if(form.cleaned_data['nachweis'] not in antrag.grund.nachweise.all()):
+						message = 'nachweis_ungueltig'
 					else:
-						if(pfad[1] == 'nachweis_ungueltig'):
-							messages.append({'klassen':'alert-danger','text':'<strong>Herrje!</strong> Das hat nicht funktioniert. Bitte nutze die vorgegebenen Nachweise.'})
-						if(pfad[1] == 'falscher_content_type'):
-							messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte lade nur PDF-, PNG- oder JPG-Dateien hoch.'})
+						pfad = handle_uploaded_file(request.FILES['userfile'], antrag.semester.id, antrag.id)
+						
+						if(pfad[0] == True):
+							
+							dokument = form.save(commit=False)
+							dokument.antrag = antrag
+							dokument.datei = pfad[1]
+							
+							dokument.save()
+							
+							uebergang = Uebergang.objects.get(status_start=antrag.status, aktion=uploadaktion)
+							antrag.status = uebergang.status_end
+							antrag.save()
+							
+							history = History()
+							history.akteur = request.user
+							history.antrag = antrag
+							history.uebergang = uebergang
+							history.save()
+							
+							messages.append({'klassen':'alert-success','text':'<strong>Das Dokument wurde erfolgreich hochgeladen.</strong> Es sollte jetzt hinter seinem Nachweis aufgeführt sein.'})
+						else:
+							if(pfad[1] == 'nachweis_ungueltig'):
+								messages.append({'klassen':'alert-danger','text':'<strong>Herrje!</strong> Das hat nicht funktioniert. Bitte nutze die vorgegebenen Nachweise.'})
+							if(pfad[1] == 'falscher_content_type'):
+								messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte lade nur PDF-, PNG- oder JPG-Dateien hoch.'})
+						
+						form = DokumentForm()
+						form.fields["nachweis"].queryset = antrag.grund.nachweise.filter(hochzuladen=True)
+				else:
+					messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte fülle das Formular korrekt aus.'})
+			elif request.POST['formname'] == 'DokumentUebertragenForm':
+				# create a form instance and populate it with data from the request:
+				form_uebertragen = DokumentUebertragenForm(dokumente, request.POST)
+				# check whether it's valid:
+				if form_uebertragen.is_valid():
 					
-					form = DokumentForm()
+					if(form_uebertragen.cleaned_data['nachweis'] not in antrag.grund.nachweise.all()):
+						messages.append({'klassen':'alert-danger','text':'<strong>Herrje!</strong> Das hat nicht funktioniert. Bitte nutze die vorgegebenen Nachweise.'})
+					else:
+						# Datei kopieren
+						dokument_src = form_uebertragen.cleaned_data['userfile']
+						
+						filepath, huf_messages = copy_old_file(dokument_src, antrag.semester.id, antrag.id)
+						
+						messages.extend(huf_messages)
+						
+						if(filepath != None):
+							uploadaktion = (GlobalSettings.objects.get()).aktion_hochladen
+							uebergang = get_object_or_404(Uebergang, status_start=antrag.status, aktion=uploadaktion)
+							
+							dokument = form_uebertragen.save(commit=False)
+							dokument.antrag = antrag
+							dokument.datei = filepath
+							
+							dokument.save()
+							
+							antrag.status = uebergang.status_end
+							antrag.save()
+							
+							history = History()
+							history.akteur = request.user
+							history.antrag = antrag
+							history.uebergang = uebergang
+							history.save()
+						
+						form_uebertragen = DokumentUebertragenForm(dokumente)
+						form_uebertragen.fields["nachweis"].queryset = antrag.grund.nachweise.filter(hochzuladen=True)
+				else:
+					messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte fülle das Formular korrekt aus.'})
 			else:
-				messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte fülle das Formular komplett aus.'})
-		else:
-			form = DokumentForm()
-		form.fields["nachweis"].queryset = antrag.grund.nachweise.filter(hochzuladen=True)
+				pass # was ist das für ein Formular!?
 		
 		
 		
-	nachweise_queryset = Nachweis.objects.raw("""SELECT n.id, n.name, n.beschreibung, n.hochzuladen, d.id AS datei_id, d.timestamp AS datei_timestamp
-		FROM backend_nachweis n LEFT OUTER JOIN (SELECT id, timestamp, nachweis_id from backend_dokument bd WHERE bd.antrag_id = %s AND bd.aktiv) d ON n.id = d.nachweis_id
+	nachweise_queryset = Nachweis.objects.raw("""SELECT n.id, n.name, n.beschreibung, n.hochzuladen, d.id AS datei_id, d.timestamp AS datei_timestamp, d.markierung AS datei_markierung
+		FROM backend_nachweis n LEFT OUTER JOIN (SELECT id, timestamp, markierung, nachweis_id from backend_dokument bd WHERE bd.antrag_id = %s AND bd.aktiv) d ON n.id = d.nachweis_id
 		WHERE n.id in (SELECT nachweis_id FROM backend_antragsgrund_nachweise WHERE antragsgrund_id = %s) """, [antrag_id, antrag.grund.id])
 	
 	nachweise = {}
@@ -212,16 +281,16 @@ def antrag(request, antrag_id):
 			nachweise[nw.id]['hochzuladen'] = nw.hochzuladen
 			nachweise[nw.id]['dokumente'] = []
 		if(nw.datei_id != None):
-			nachweise[nw.id]['dokumente'].append({'id':nw.datei_id, 'timestamp':nw.datei_timestamp})
+			nachweise[nw.id]['dokumente'].append({'id':nw.datei_id, 'timestamp':nw.datei_timestamp, 'markierung':nw.datei_markierung})
 	
 	
 	aktionen = zulaessige_aktionen.filter(staff_explizit=True).order_by('sort')
 	
 	briefe = antrag.brief_set.order_by('-timestamp')
 	
+	markierungen = Dokument._meta.get_field('markierung').choices
 	
-	
-	context = {'current_page' : 'antrag', 'antrag' : antrag, 'form':form, 'messages':messages, 'nachweise':nachweise, 'aktionen':aktionen, 'briefe':briefe}
+	context = {'current_page' : 'antrag', 'antrag' : antrag, 'form':form, 'form_uebertragen':form_uebertragen, 'messages':messages, 'nachweise':nachweise, 'aktionen':aktionen, 'briefe':briefe, 'markierungen':markierungen}
 	return render(request, 'backend/antrag.html', context)
 
 @staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
@@ -503,7 +572,7 @@ def antragaktion(request, antrag_id, aktion_id, brief_id=None):
 	
 	# Hat der User Zugriff auf das Semester des Antrags?
 	if(antrag.semester.gruppe not in request.user.groups.all()):
-            raise Http404
+		raise Http404
 	
 	uebergaenge = antrag.status.uebergang_from__set
 	uebergang_zu = uebergaenge.values('status_end')
@@ -572,6 +641,31 @@ def history(request, antrag_id=None):
 	
 	context = {'current_page' : 'history', 'history' : history, 'antrag':antrag, 'messages':messages}
 	return render(request, 'backend/history.html', context)
+
+@staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
+def markieren(request, dokument_id, markierung):
+	dokument_id = int(dokument_id)
+	dokument = None
+	messages = []
+	
+	markierungen = Dokument._meta.get_field('markierung').choices
+	markierungen_ids = [m[0] for m in markierungen]
+	
+	if markierung not in markierungen_ids:
+		raise Http404
+	
+	dokument = get_object_or_404(Dokument, pk=dokument_id)
+	
+	# Hat der User Zugriff auf das Semester des Antrags?
+	if(dokument.antrag.semester.gruppe not in request.user.groups.all()):
+		raise Http404
+	
+	dokument.markierung = markierung
+	dokument.save()
+	
+	return redirect('antragbackend', antrag_id=dokument.antrag.id)
+
+
 
 @staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
 def undo(request, history_id):

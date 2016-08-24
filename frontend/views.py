@@ -9,9 +9,10 @@ from django.shortcuts import redirect
 from django.contrib.auth.password_validation import validate_password, ValidationError
 from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History, Uebergang
 from django.db import IntegrityError
-from .forms import PasswordChangeForm, AntragForm, DokumentForm, RegistrierungForm
+from .forms import PasswordChangeForm, AntragForm, DokumentForm, DokumentUebertragenForm, RegistrierungForm, AccountForm
 import uuid
 import os
+import shutil
 import mimetypes
 
 BASE_DIR = settings.BASE_DIR
@@ -329,16 +330,37 @@ def handle_uploaded_file(f, semester_id, antrag_id):
 	messages.append({'klassen':'alert-success','text':'<strong>Das Dokument wurde erfolgreich hochgeladen.</strong> Er sollte jetzt hinter seinem Nachweis aufgeführt sein.'})
 	return (filepath, messages)
 
+def copy_old_file(dokument, semester_id, antrag_id):
+	messages = []
+	filepath = None
+	
+	extension = dokument.datei[-4:].lower()
+	
+	filename = str(uuid.uuid4())
+	filedir = "dokumente/nachweise/{0}/{1}".format(semester_id, antrag_id)
+	filepath = "dokumente/nachweise/{0}/{1}/{2}{3}".format(semester_id, antrag_id, filename, extension) # extension enthält den Punkt
+	
+	if(not os.path.isdir(os.path.join(BASE_DIR, filedir))):
+		os.makedirs(os.path.join(BASE_DIR, filedir)) #TODO permissions
+	
+	# Dokument kopieren
+	shutil.copy(os.path.join(BASE_DIR, dokument.datei), os.path.join(BASE_DIR, filepath))
+	
+	messages.append({'klassen':'alert-success','text':'<strong>Das Dokument wurde erfolgreich kopiert.</strong> Er sollte jetzt hinter seinem Nachweis aufgeführt sein.'})
+	return (filepath, messages)
+
 @login_required
 @group_required('Antragstellung')
 def antrag(request, antrag_id):
 	antrag_id = int(antrag_id)
 	messages = []
+	form = None
+	form_uebertragen = None
 	
 	antrag = get_object_or_404(Antrag, pk=antrag_id)
 	if(antrag.user.user != request.user):
 		return HttpResponseForbidden()
-		
+	
 	
 	if('m' in request.GET):
 		message = request.GET['m']
@@ -346,44 +368,93 @@ def antrag(request, antrag_id):
 			messages.append({'klassen':'alert-info','text':'<strong>Glückwunsch!</strong> Dein Antrag auf Semesterticketrückerstattung wurde erstellt. Lade nun die benötigten Nachweise hoch!<br>Das Formular hierzu findest du auf dieser Seite etwas weiter unten.'})
 			
 	
-	if request.method == 'POST':
-		# create a form instance and populate it with data from the request:
-		form = DokumentForm(request.POST, request.FILES)
-		# check whether it's valid:
-		if form.is_valid():
-			
-			if(form.cleaned_data['nachweis'] not in antrag.grund.nachweise.all()):
-				messages.append({'klassen':'alert-danger','text':'<strong>Herrje!</strong> Das hat nicht funktioniert. Bitte nutze die vorgegebenen Nachweise.'})
-			else:
-				filepath, huf_messages = handle_uploaded_file(request.FILES['userfile'], antrag.semester.id, antrag.id)
-				
-				messages.extend(huf_messages)
-				
-				if(filepath != None):
-					uploadaktion = (GlobalSettings.objects.get()).aktion_hochladen
-					uebergang = get_object_or_404(Uebergang, status_start=antrag.status, aktion=uploadaktion)
-					
-					dokument = form.save(commit=False)
-					dokument.antrag = antrag
-					dokument.datei = pfad[1]
-					
-					dokument.save()
-					
-					antrag.status = uebergang.status_end
-					antrag.save()
-					
-					history = History()
-					history.akteur = request.user
-					history.antrag = antrag
-					history.uebergang = uebergang
-					history.save()
-				
-				form = DokumentForm()
-		else:
-			messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte fülle das Formular komplett aus.'})
-	else:
-		form = DokumentForm()
+	form = DokumentForm()
 	form.fields["nachweis"].queryset = antrag.grund.nachweise.filter(hochzuladen=True)
+		
+	dokumente = Dokument.objects.filter(antrag__user__user=request.user).exclude(antrag=antrag).order_by('-timestamp')
+	
+	if dokumente:
+		form_uebertragen = DokumentUebertragenForm(dokumente)
+		form_uebertragen.fields["nachweis"].queryset = antrag.grund.nachweise.filter(hochzuladen=True)
+	
+	if request.method == 'POST' and 'formname' in request.POST:
+		if request.POST['formname'] == 'DokumentForm':
+			# create a form instance and populate it with data from the request:
+			form = DokumentForm(request.POST, request.FILES)
+			# check whether it's valid:
+			if form.is_valid():
+				
+				if(form.cleaned_data['nachweis'] not in antrag.grund.nachweise.all()):
+					messages.append({'klassen':'alert-danger','text':'<strong>Herrje!</strong> Das hat nicht funktioniert. Bitte nutze die vorgegebenen Nachweise.'})
+				else:
+					filepath, huf_messages = handle_uploaded_file(request.FILES['userfile'], antrag.semester.id, antrag.id)
+					
+					messages.extend(huf_messages)
+					
+					if(filepath != None):
+						uploadaktion = (GlobalSettings.objects.get()).aktion_hochladen
+						uebergang = get_object_or_404(Uebergang, status_start=antrag.status, aktion=uploadaktion)
+						
+						dokument = form.save(commit=False)
+						dokument.antrag = antrag
+						dokument.datei = filepath
+						
+						dokument.save()
+						
+						antrag.status = uebergang.status_end
+						antrag.save()
+						
+						history = History()
+						history.akteur = request.user
+						history.antrag = antrag
+						history.uebergang = uebergang
+						history.save()
+					
+					form = DokumentForm()
+					form.fields["nachweis"].queryset = antrag.grund.nachweise.filter(hochzuladen=True)
+			else:
+				messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte fülle das Formular korrekt aus.'})
+		elif request.POST['formname'] == 'DokumentUebertragenForm':
+			# create a form instance and populate it with data from the request:
+			form_uebertragen = DokumentUebertragenForm(dokumente, request.POST)
+			# check whether it's valid:
+			if form_uebertragen.is_valid():
+				
+				if(form_uebertragen.cleaned_data['nachweis'] not in antrag.grund.nachweise.all()):
+					messages.append({'klassen':'alert-danger','text':'<strong>Herrje!</strong> Das hat nicht funktioniert. Bitte nutze die vorgegebenen Nachweise.'})
+				else:
+					# Datei kopieren
+					dokument_src = form_uebertragen.cleaned_data['userfile']
+					
+					filepath, huf_messages = copy_old_file(dokument_src, antrag.semester.id, antrag.id)
+					
+					messages.extend(huf_messages)
+					
+					if(filepath != None):
+						uploadaktion = (GlobalSettings.objects.get()).aktion_hochladen
+						uebergang = get_object_or_404(Uebergang, status_start=antrag.status, aktion=uploadaktion)
+						
+						dokument = form_uebertragen.save(commit=False)
+						dokument.antrag = antrag
+						dokument.datei = filepath
+						
+						dokument.save()
+						
+						antrag.status = uebergang.status_end
+						antrag.save()
+						
+						history = History()
+						history.akteur = request.user
+						history.antrag = antrag
+						history.uebergang = uebergang
+						history.save()
+					
+					form_uebertragen = DokumentUebertragenForm(dokumente)
+					form_uebertragen.fields["nachweis"].queryset = antrag.grund.nachweise.filter(hochzuladen=True)
+			else:
+				messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte fülle das Formular korrekt aus.'})
+		else:
+			pass # was ist das für ein Formular!?
 		
 		
 	nachweise_queryset = Nachweis.objects.raw("""SELECT n.id, n.name, n.beschreibung, n.hochzuladen, n.sort, d.id AS datei_id, d.timestamp AS datei_timestamp
@@ -401,8 +472,33 @@ def antrag(request, antrag_id):
 		if(nw.datei_id != None):
 			nachweise[nw.id]['dokumente'].append({'id':nw.datei_id, 'timestamp':nw.datei_timestamp})
 	
-	context = {'current_page' : 'antrag', 'antrag' : antrag, 'form':form, 'messages':messages, 'nachweise':nachweise}
+	context = {'current_page' : 'antrag', 'antrag' : antrag, 'form':form, 'form_uebertragen':form_uebertragen, 'messages':messages, 'nachweise':nachweise}
 	return render(request, 'frontend/antrag.html', context)
+	
+@login_required
+@group_required('Antragstellung')
+def account(request):
+	messages = []
+	person = get_object_or_404(Person, user=request.user.id)
+	if request.method == 'POST':
+		# create a form instance and populate it with data from the request:
+		form = AccountForm(request.POST)
+		# check whether it's valid:
+		if form.is_valid():
+			person.user.email = form.cleaned_data['email']
+			person.user.save()
+			person.adresse = form.cleaned_data['adresse']
+			person.save()
+			messages.append({'klassen':'alert-success','text':'<strong>Hurra!</strong> Deine Daten wurden geändert.'})
+			
+		else:
+			messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte fülle das Formular korrekt aus.'})
+	else:
+		form = AccountForm(initial={'email':person.user.email, 'adresse':person.adresse})
+		
+	
+	context = {'current_page' : 'account', 'form':form, 'messages':messages, 'person':person}
+	return render(request, 'frontend/account.html', context)
 	
 @login_required
 @group_required('Antragstellung')
