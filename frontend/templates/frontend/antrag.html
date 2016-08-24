@@ -6,13 +6,11 @@
 
 <h2>Antrag auf Rückerstattung</h2>
 
-{% if gmessage %}
-{% if gmessage == 'antrag_erstellt' %}
-<div class="alert alert-info" role="alert">
-  <strong>Glückwunsch!</strong> Dein Antrag auf Semesterticketrückerstattung wurde erstellt. Lade nun die benötigten Nachweise hoch!<br>Das Formular hierzu findest du auf dieser Seite etwas weiter unten.
+{% for message in messages %}
+<div class="alert {{message.klassen}}" role="alert">
+  {{message.text|safe}}
 </div>
-{% endif %}
-{% endif %}
+{% endfor %}
 
 <table class="table">
 <tr><th>Antragsteller/in</th><td>{{antrag.user.user.first_name}} {{antrag.user.user.last_name}} ({{antrag.user.user.username}})</td></tr>
@@ -45,26 +43,6 @@
 <hr>
 
 <h3>Nachweis hochladen</h3>
-
-{% if message %}
-{% if message == 'nachweis_ungueltig' %}
-<div class="alert alert-danger" role="alert">
-  <strong>Herrje!</strong> Das hat nicht funktioniert. Bitte nutze die vorgegebenen Nachweise.
-</div>
-{% elif message == 'form_invalid' %}
-<div class="alert alert-warning" role="alert">
-  <strong>Hoppla!</strong> Bitte fülle das Formular komplett aus.
-</div>
-{% elif message == 'falscher_content_type' or message == 'falsches_dateiformat' %}
-<div class="alert alert-warning" role="alert">
-  <strong>Hoppla!</strong> Bitte lade nur PDF-, PNG- oder JPG-Dateien hoch.
-</div>
-{% else %}
-<div class="alert alert-success" role="alert">
-  <strong>Das Dokument wurde erfolgreich hochgeladen.</strong> Er sollte jetzt hinter seinem Nachweis aufgeführt sein.
-</div>
-{% endif %}
-{% endif %}
 
 <form enctype="multipart/form-data" method="POST">
 {% csrf_token %}

@@ -4,7 +4,11 @@
 
 {% block content %}
 
-
+{% for message in messages %}
+<div class="alert {{message.klassen}}" role="alert">
+  {{message.text|safe}}
+</div>
+{% endfor %}
 
 <div class="card">
 	<div class="card-block">
@@ -81,12 +85,6 @@
 		<p class="card-text">Hier kannst du dein Zugangspasswort ändern.</p>
 	</div>
 	<div class="card-block">
-	
-	{% for error in validation_errors %}
-	<div class="alert alert-warning" role="alert">
-	{{error}}
-	</div>
-	{% endfor%}
 	
 	<form method="post">
 		{% csrf_token %}

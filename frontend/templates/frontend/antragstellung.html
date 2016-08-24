@@ -6,18 +6,15 @@
 
 <h2>Antrag auf Rückerstattung stellen</h2>
 
-{% if gmessage %}
-{% if gmessage == 'initialantrag' %}
+{% if initialantrag %}
 <h3>Schritt 2: Antragsdaten eingeben</h3>
 {% endif %}
-{% endif %}
-{% if message %}
-{% if message == 'habe_nicht_gelesen' %}
-<div class="alert alert-warning" role="alert">
-  <strong>Hoppla!</strong> Du solltest wirklich die Hinweise lesen. Und dann den Haken unten setzen.
+
+{% for message in messages %}
+<div class="alert {{message.klassen}}" role="alert">
+  {{message.text|safe}}
 </div>
-{% endif %}
-{% endif %}
+{% endfor %}
 
 <form method="POST">
 {% csrf_token %}

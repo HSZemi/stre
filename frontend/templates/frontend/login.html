@@ -4,23 +4,11 @@
 
 {% block content %}
 
-{% if message %}
-{% if message == 'ungueltige_zugangsdaten' %}
-<div class="alert alert-danger" role="alert">
-  <strong>Herrje!</strong> Das hat nicht funktioniert. Hast du Matrikelnummer und Passwort auch wirklich korrekt eingegeben?
+{% for message in messages %}
+<div class="alert {{message.klassen}}" role="alert">
+  {{message.text|safe}}
 </div>
-{% endif %}
-{% if message == 'zugang_deaktiviert' %}
-<div class="alert alert-warning" role="alert">
-  <strong>Hoppla!</strong> Dein Zugang wurde deaktiviert. Bitte wende dich an den Semesterticketausschuss.
-</div>
-{% endif %}
-{% if message == 'passwort_erfolgreich_geaendert' %}
-<div class="alert alert-success" role="alert">
-  <strong>Dein Passwort wurde erfolgreich geändert.</strong> Bitte melde dich mit deinem neuen Passwort an.
-</div>
-{% endif %}
-{% endif %}
+{% endfor %}
 
 
 <form class="form-signin" method="POST">

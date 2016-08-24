@@ -1,11 +1,12 @@
 from django.http import HttpResponse, FileResponse, Http404, HttpResponseForbidden
+from django.core.urlresolvers import reverse
 from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import redirect
-from  django.contrib.auth.password_validation import validate_password, ValidationError
+from django.contrib.auth.password_validation import validate_password, ValidationError
 from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History, Uebergang
 from django.db import IntegrityError
 from .forms import PasswordChangeForm, AntragForm, DokumentForm, RegistrierungForm
@@ -28,7 +29,7 @@ def group_required(*group_names):
 @login_required
 @group_required('Antragstellung')
 def statuspage(request):
-	message = None
+	messages = []
 	validation_errors = []
 	
 	# # # # # # # # # # #
@@ -41,11 +42,12 @@ def statuspage(request):
 		if form.is_valid():
 			# passwort_neu1 == passwort_neu2 ?
 			if(form.cleaned_data['passwort_neu1'] != form.cleaned_data['passwort_neu2']):
-				message = 'neue_passwoerter_stimmen_nicht_ueberein'
+				messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Der Inhalt der beiden Felder für das neue Passwort stimmt nicht überein.'})
 			
 			# passwort_alt korrekt?
 			elif(not request.user.check_password(form.cleaned_data['passwort_alt'])):
-				message = 'altes_passwort_nicht_korrekt'
+				messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Das alte Passwort ist leider nicht korrekt.'})
+			
 			
 			# Änderung erfolgreich?
 			else:
@@ -55,15 +57,16 @@ def statuspage(request):
 					request.user.set_password(form.cleaned_data['passwort_neu1'])
 					request.user.save()
 					
-					message = 'passwort_erfolgreich_geaendert'
+					# passwort erfolgreich geändert
 					# login user again
 					response = redirect('loginpage')
-					response['Location'] += '?m={0}'.format(message)
+					response['Location'] += '?m=passwort_erfolgreich_geaendert'
 					return response
 					
 				except ValidationError as e:
-					message = 'validation_error'
 					validation_errors = e
+					for validation_error in validation_errors:
+						messages.append({'klassen':'alert-warning','text':validation_error})
 
 	# if a GET (or any other method) we'll create a blank form
 	else:
@@ -86,7 +89,7 @@ def statuspage(request):
 	initialstatus = (GlobalSettings.objects.get()).status_start
 	neue_antraege = person.antrag_set.filter(status=initialstatus).values_list('id', flat=True)
 	
-	context = {'person':request.user, 'current_page' : 'index', 'semester' : semester, 'form' : form, 'message':message, 'validation_errors' : validation_errors, 'person':person, 'neue_antraege':neue_antraege}
+	context = {'person':request.user, 'current_page' : 'index', 'semester' : semester, 'form' : form, 'messages':messages, 'person':person, 'neue_antraege':neue_antraege}
 	return render(request, 'frontend/status.html', context)
 
 def index(request):
@@ -103,8 +106,7 @@ def logoutpage(request):
 
 def registrierung(request):
 	user = None
-	message = None
-	validation_errors = None
+	messages = []
 	form = None
 	if request.method == 'POST':
 		# create a form instance and populate it with data from the request:
@@ -147,21 +149,23 @@ def registrierung(request):
 							response['Location'] += '?m=initialantrag'
 							return response
 						else:
-							message = 'falsche_gruppe'
+							messages.append({'klassen':'alert-danger','text':'falsche_gruppe'})
 					else:
 						# Return a 'disabled account' error message
-						message = 'zugang_deaktiviert'
+						messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Dein Zugang wurde deaktiviert. Bitte wende dich an den Semesterticketausschuss.'})
 						
 				else:
 					# Return an 'invalid login' error message.
-					message = 'ungueltige_zugangsdaten'
+					messages.append({'klassen':'alert-danger','text':'<strong>Herrje!</strong> Das hat nicht funktioniert. Hast du Matrikelnummer und Passwort auch wirklich korrekt eingegeben?'})
 				
 			except IntegrityError as ie:
 				# user existiert bereits
-				message = 'user_existiert_bereits'
+				login_url = reverse('loginpage')
+				messages.append({'klassen':'alert-info','text':'<strong>Hoppla!</strong> Für diese Matrikelnummer existiert bereist ein Konto. <a href="{0}?u={1}">Melde dich bitte an</a> und stelle dann den Antrag.'.format(login_url, form.cleaned_data['matrikelnummer'])})
 			except ValidationError as e:
-				message = 'validation_error'
 				validation_errors = e
+				for validation_error in validation_errors:
+					messages.append({'klassen':'alert-warning','text':validation_error})
 			
 			
 		else:
@@ -169,17 +173,19 @@ def registrierung(request):
 			pass
 	else:
 		form = RegistrierungForm()
-	context = { 'current_page' : 'registrierung', 'form':form, 'user':user, 'message':message, 'validation_errors':validation_errors }
+	context = { 'current_page' : 'registrierung', 'form':form, 'user':user, 'messages':messages }
 	return render(request, 'frontend/registrierung.html', context)
 
 def resetpassword(request):
 	return HttpResponse("Hello, world. You're at the password reset page. Unfortunately, there is nothing we can do for you.")
 
 def loginpage(request):
-	message=None
+	messages=[]
 	matnr=None
 	if('m' in request.GET):
 		message = request.GET['m']
+		if(message == "passwort_erfolgreich_geaendert"):
+			messages.append({'klassen':'alert-success','text':'<strong>Dein Passwort wurde erfolgreich geändert.</strong> Bitte melde dich mit deinem neuen Passwort an.'})
 	if('u' in request.GET):
 		try:
 			matnr = str(int(request.GET['u'])) # nur Zahlen erlaubt!
@@ -204,16 +210,18 @@ def loginpage(request):
 					elif(user.is_staff):
 						return redirect('dashboard')
 					else:
-						message = 'falsche_gruppe'
+						# falsche_gruppe
+						messages.append({'klassen':'alert-danger','text':'falsche_gruppe'})
+						
 				else:
 					# Return a 'disabled account' error message
-					message = 'zugang_deaktiviert'
+					messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Dein Zugang wurde deaktiviert. Bitte wende dich an den Semesterticketausschuss.'})
 					
 			else:
 				# Return an 'invalid login' error message.
-				message = 'ungueltige_zugangsdaten'
+				messages.append({'klassen':'alert-danger','text':'<strong>Herrje!</strong> Das hat nicht funktioniert. Hast du Matrikelnummer und Passwort auch wirklich korrekt eingegeben?'})
 	
-	context = { 'message' : message, 'current_page' : 'loginpage', 'matrikelnummer':matnr}
+	context = { 'messages' : messages, 'current_page' : 'loginpage', 'matrikelnummer':matnr}
 	return render(request, 'frontend/login.html', context)
 
 def info(request):
@@ -229,8 +237,8 @@ def impressum(request):
 @group_required('Antragstellung')
 def antragstellung(request, semester_id):
 	semester_id = int(semester_id)
-	gmessage = None
-	message = None
+	messages = []
+	initialantrag = False
 	form = None
 	
 	semester = get_object_or_404(Semester, pk=semester_id)
@@ -242,7 +250,9 @@ def antragstellung(request, semester_id):
 		return antrag(request, Antrag.objects.get(semester=semester, user=person).id)
 	
 	if('m' in request.GET):
-		gmessage = request.GET['m']
+		message = request.GET['m']
+		if(message == 'initialantrag'):
+			initialantrag = True
 	
 	gruende = Antragsgrund.objects.all().order_by('sort')
 	if(semester.frist_abgelaufen()):
@@ -283,21 +293,27 @@ def antragstellung(request, semester_id):
 				#form invalid 
 				pass #TODO
 		else:
-			message = 'habe_nicht_gelesen'
+			messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Du solltest wirklich die Hinweise lesen. Und dann den Haken unten setzen.'})
 	else:
 		initial_form_values = {'kontoinhaber_in': '{0} {1}'.format(person.user.first_name, person.user.last_name),
 				'versandanschrift':person.adresse}
 		form = AntragForm(gruende, initial=initial_form_values)
 	
-	context = {'current_page' : 'antragstellung', 'semester' : semester, 'form' : form, 'gmessage':gmessage, 'message':message }
+	context = {'current_page' : 'antragstellung', 'semester' : semester, 'form' : form, 'initialantrag':initialantrag, 'messages':messages }
 	return render(request, 'frontend/antragstellung.html', context)
 
 def handle_uploaded_file(f, semester_id, antrag_id):
+	messages = []
+	filepath = None
+	
 	if(f.content_type not in ('application/pdf','image/png','image/jpg','image/jpeg')):
-		return (False, 'falscher_content_type')
+		messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte lade nur PDF-, PNG- oder JPG-Dateien hoch.'})
+		return (filepath, messages)
+	
 	extension = f.name[-4:].lower()
 	if(extension not in ('.pdf','.png','.jpg')):
-		return (False, 'falsches_dateiformat')
+		messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte lade nur PDF-, PNG- oder JPG-Dateien hoch.'})
+		return (filepath, messages)
 	
 	filename = str(uuid.uuid4())
 	filedir = "dokumente/nachweise/{0}/{1}".format(semester_id, antrag_id)
@@ -310,14 +326,14 @@ def handle_uploaded_file(f, semester_id, antrag_id):
 		for chunk in f.chunks():
 			destination.write(chunk)
 	
-	return (True, filepath)
+	messages.append({'klassen':'alert-success','text':'<strong>Das Dokument wurde erfolgreich hochgeladen.</strong> Er sollte jetzt hinter seinem Nachweis aufgeführt sein.'})
+	return (filepath, messages)
 
 @login_required
 @group_required('Antragstellung')
 def antrag(request, antrag_id):
 	antrag_id = int(antrag_id)
-	message = None
-	gmessage = None
+	messages = []
 	
 	antrag = get_object_or_404(Antrag, pk=antrag_id)
 	if(antrag.user.user != request.user):
@@ -325,7 +341,10 @@ def antrag(request, antrag_id):
 		
 	
 	if('m' in request.GET):
-		gmessage = request.GET['m']
+		message = request.GET['m']
+		if(message == 'antrag_erstellt'):
+			messages.append({'klassen':'alert-info','text':'<strong>Glückwunsch!</strong> Dein Antrag auf Semesterticketrückerstattung wurde erstellt. Lade nun die benötigten Nachweise hoch!<br>Das Formular hierzu findest du auf dieser Seite etwas weiter unten.'})
+			
 	
 	if request.method == 'POST':
 		# create a form instance and populate it with data from the request:
@@ -334,11 +353,13 @@ def antrag(request, antrag_id):
 		if form.is_valid():
 			
 			if(form.cleaned_data['nachweis'] not in antrag.grund.nachweise.all()):
-				message = 'nachweis_ungueltig'
+				messages.append({'klassen':'alert-danger','text':'<strong>Herrje!</strong> Das hat nicht funktioniert. Bitte nutze die vorgegebenen Nachweise.'})
 			else:
-				pfad = handle_uploaded_file(request.FILES['userfile'], antrag.semester.id, antrag.id)
+				filepath, huf_messages = handle_uploaded_file(request.FILES['userfile'], antrag.semester.id, antrag.id)
 				
-				if(pfad[0] == True):
+				messages.extend(huf_messages)
+				
+				if(filepath != None):
 					uploadaktion = (GlobalSettings.objects.get()).aktion_hochladen
 					uebergang = get_object_or_404(Uebergang, status_start=antrag.status, aktion=uploadaktion)
 					
@@ -356,12 +377,10 @@ def antrag(request, antrag_id):
 					history.antrag = antrag
 					history.uebergang = uebergang
 					history.save()
-					
-				message = pfad[1]
 				
 				form = DokumentForm()
 		else:
-			message = 'form_invalid'
+			messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte fülle das Formular komplett aus.'})
 	else:
 		form = DokumentForm()
 	form.fields["nachweis"].queryset = antrag.grund.nachweise.filter(hochzuladen=True)
@@ -382,7 +401,7 @@ def antrag(request, antrag_id):
 		if(nw.datei_id != None):
 			nachweise[nw.id]['dokumente'].append({'id':nw.datei_id, 'timestamp':nw.datei_timestamp})
 	
-	context = {'current_page' : 'antrag', 'antrag' : antrag, 'form':form, 'message':message, 'gmessage':gmessage, 'nachweise':nachweise}
+	context = {'current_page' : 'antrag', 'antrag' : antrag, 'form':form, 'messages':messages, 'nachweise':nachweise}
 	return render(request, 'frontend/antrag.html', context)
 	
 @login_required
