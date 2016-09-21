@@ -10,7 +10,7 @@ from  django.contrib.auth.password_validation import validate_password, Validati
 from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History, Briefvorlage, Brief, Status, Uebergang, Begruendung
 from django.db.models import Count
 from django.core.exceptions import ObjectDoesNotExist
-from .forms import DokumentForm, DokumentUebertragenForm, UeberweisungsbetragForm, BriefErstellenForm, BriefBegruendungForm, NachfristForm, LoginForm, BulkAlsUeberwiesenMarkierenForm
+from .forms import DokumentForm, DokumentUebertragenForm, UeberweisungsbetragForm, BriefErstellenForm, BriefBegruendungForm, NachfristForm, LoginForm, BulkAlsUeberwiesenMarkierenForm, AccountForm
 from axes.decorators import watch_login
 import uuid
 import os
@@ -90,7 +90,7 @@ def suche(request, suchbegriff=None):
 		
 		antrag = Antrag.objects.get(pk=antrag_id)
 		
-		return redirect('antragbackend', antrag_id=antrag_id)
+		return redirect('backend:antrag', antrag_id=antrag_id)
 	
 	except (ValueError, ObjectDoesNotExist): # suche nach Name
 		
@@ -132,6 +132,21 @@ def antraege(request, semester_id, status_id=None, messages=None):
 	context = { 'message' : message, 'current_page' : 'antraege', 'semester' : semester, 'antraege_sortiert':antraege_sortiert, 'statusse':statusse, 'status_id':status_id, 'messages':messages}
 	
 	return render(request, 'backend/antraege.html', context)
+
+@staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
+@group_required('Bearbeitung')
+def account(request, person_id):
+	person_id = int(person_id)
+	
+	person = get_object_or_404(Person, pk=person_id)
+	
+	semester = Semester.objects.raw("""SELECT s.id, s.semestertyp, s.betrag, s.jahr, s.antragsfrist, s.anzeigefrist, a.id AS antrag, a.status AS status, a.klassen AS klassen
+					FROM backend_semester s LEFT OUTER JOIN (SELECT ba.id AS id, ba.semester_id AS semester_id, bs.name AS status, bs.klassen AS klassen FROM backend_antrag ba JOIN backend_status bs ON ba.status_id = bs.id WHERE user_id = %s) a ON s.id = a.semester_id WHERE s.gruppe_id in (SELECT group_id FROM auth_user_groups WHERE user_id=%s) 
+					ORDER BY s.jahr""", [person.id, request.user.id])
+	
+	context = {'current_page' : 'account', 'semester' : semester, 'person':person}
+	
+	return render(request, 'backend/account.html', context)
 
 def handle_uploaded_file(f, semester_id, antrag_id):
 	if(f.content_type not in ('application/pdf','image/png','image/jpg','image/jpeg')):
@@ -624,7 +639,7 @@ def antragaktion(request, antrag_id, aktion_id, brief_id=None):
 				brief_id = int(brief_id)
 				erstellter_brief = get_object_or_404(Brief, pk=brief_id)
 				if(erstellter_brief.vorlage != aktion.briefvorlage):
-					response = redirect('antragbackend', antrag_id=antrag.id)
+					response = redirect('backend:antrag', antrag_id=antrag.id)
 					response['Location'] += '?m=brief_ungueltig'
 					return response
 				
@@ -637,11 +652,11 @@ def antragaktion(request, antrag_id, aktion_id, brief_id=None):
 		history.uebergang = uebergang
 		history.save()
 		
-		response = redirect('antragbackend', antrag_id=antrag.id)
+		response = redirect('backend:antrag', antrag_id=antrag.id)
 		response['Location'] += '?m=aktion_erfolgreich'
 		return response
 	else:
-		response = redirect('antragbackend', antrag_id=antrag.id)
+		response = redirect('backend:antrag', antrag_id=antrag.id)
 		response['Location'] += '?m=aktion_nicht_erfolgreich'
 		return response
 	
@@ -693,7 +708,7 @@ def markieren(request, dokument_id, markierung):
 	dokument.markierung = markierung
 	dokument.save()
 	
-	return redirect('antragbackend', antrag_id=dokument.antrag.id)
+	return redirect('backend:antrag', antrag_id=dokument.antrag.id)
 
 
 
@@ -809,3 +824,29 @@ def konfiguration(request):
 
 def resetpassword(request):
 	return HttpResponse("Bitte kontaktieren Sie das IT-Referat Ihres Vertrauens.")
+
+@staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
+@group_required('Bearbeitung')
+def account_bearbeiten(request, person_id):
+	person_id = int(person_id)
+	messages = []
+	person = get_object_or_404(Person, pk=person_id)
+	if request.method == 'POST':
+		# create a form instance and populate it with data from the request:
+		form = AccountForm(request.POST)
+		# check whether it's valid:
+		if form.is_valid():
+			person.user.email = form.cleaned_data['email']
+			person.user.save()
+			person.adresse = form.cleaned_data['adresse']
+			person.save()
+			messages.append({'klassen':'alert-success','text':'<strong>Hurra!</strong> Die Daten dieser Person wurden geändert.'})
+			
+		else:
+			messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte fülle das Formular korrekt aus.'})
+	else:
+		form = AccountForm(initial={'matrikelnummer':person.user.username, 'vorname':person.user.first_name, 'nachname':person.user.last_name, 'email':person.user.email, 'adresse':person.adresse})
+		
+	
+	context = {'current_page' : 'account', 'form':form, 'messages':messages, 'person':person}
+	return render(request, 'backend/account_bearbeiten.html', context)

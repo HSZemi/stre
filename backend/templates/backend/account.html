@@ -1,0 +1,75 @@
+{% extends 'backend/base.html' %}
+
+{% block title%}Semesterticket-Rückerstattung - Account{% endblock %}
+
+{% block content %}
+
+{% for message in messages %}
+<div class="alert {{message.klassen}}" role="alert">
+  {{message.text|safe}}
+</div>
+{% endfor %}
+
+
+<div class="card">
+	<div class="card-block">
+		<h4 class="card-title">Persönliche Daten</h4>
+		<p class="card-text">Eine Übersicht über die persönlichen Daten.</p>
+	</div>
+	<div class="card-block">
+	<table class="table">
+	<tbody>
+	<tr><td>Matrikelnummer</td><td>{{person.user.username}}</td></tr>
+	<tr><td>Vorname</td><td>{{person.user.first_name}}</td></tr>
+	<tr><td>Nachname</td><td>{{person.user.last_name}}</td></tr>
+	<tr><td>E-Mail-Adresse</td><td>{% if person.user.email %}{{person.user.email}}{% else %}(keine){% endif %}</td></tr>
+	<tr><td>Anschrift</td><td>{{person.adresse|linebreaks}}</td></tr>
+	</tbody>
+	</table>
+	
+	<a href="{% url 'backend:account_bearbeiten' person_id=person.id %}">Daten ändern</a>
+	</div>
+</div>
+
+<div class="card">
+	<div class="card-block">
+		<h4 class="card-title">Gestellte Anträge</h4>
+		<p class="card-text">Eine Übersicht über die letzten Semester und die gestellten Anträge.</p>
+	</div>
+	
+	
+	<div class="card-block">
+
+	<table class="table">
+	<thead>
+		<tr>
+			<th>Semester</th>
+			<th>Antrag gestellt?</th>
+			<th>Status</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for sem in semester %}
+		<tr>
+			<td>{{sem}}</td>
+			{% if sem.antrag %}
+			<td>Ja</td>
+			<td class="{{sem.klassen}}">{{sem.status}}</td>
+			<td><a href="{% url 'backend:antrag' antrag_id=sem.antrag %}">Antrag öffnen</a></td>
+			{% else %}
+			<td>Nein</td>
+			<td></td>
+			<td>
+			</td>
+			{% endif %}
+		</tr>
+	{% endfor %}
+	</tbody>
+	</table>
+	</div>
+</div>
+
+
+
+{% endblock %}

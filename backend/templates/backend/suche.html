@@ -38,7 +38,7 @@
 			<td>{{antrag.semester}}</td>
 			<td>{{antrag.user.user.first_name}} {{antrag.user.user.last_name}}</td>
 			<td><span class="{{antrag.status.klassen}}">{{antrag.status.name}}</span></td>
-			<td><a href="{% url 'antragbackend' antrag.id %}">Öffnen</a></td>
+			<td><a href="{% url 'backend:antrag' antrag.id %}">Öffnen</a></td>
 			
 		</tr>
 	{% endfor %}

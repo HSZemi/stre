@@ -1,0 +1,40 @@
+{% extends 'backend/base.html' %}
+
+{% block title%}Semesterticket-Rückerstattung - Status{% endblock %}
+
+{% block content %}
+
+{% for message in messages %}
+<div class="alert {{message.klassen}}" role="alert">
+  {{message.text|safe}}
+</div>
+{% endfor %}
+
+<div class="card">
+	<div class="card-block">
+		<h4 class="card-title">Persönliche Daten bearbeiten (<a href="{% url 'backend:account' person_id=person.id %}">{{person.user.username}}</a>)</h4>
+		<p class="card-text">Hier können die persönlichen Daten geändert werden.</p>
+	</div>
+	<div class="card-block">
+	
+	<form method="post">
+	{% csrf_token %}
+	
+	<table class="table">
+	<tbody>
+	{{ form }}
+	</tbody>
+	</table>
+	</table>
+
+	
+	<input type="submit" value="Daten ändern" class="btn btn-primary"/>
+	
+	
+	</form>
+	</div>
+</div>
+
+
+
+{% endblock %}

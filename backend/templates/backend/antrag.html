@@ -46,8 +46,9 @@
 <h3>Antragsdaten</h3>
 
 <table class="table">
-<tr><th>Antragsteller/in</th><td>{{antrag.user.user.first_name}} {{antrag.user.user.last_name}} ({{antrag.user.user.username}})</td></tr>
+<tr><th>Antragsteller/in</th><td>{{antrag.user.user.first_name}} {{antrag.user.user.last_name}} (<a href="{% url 'backend:account' person_id=antrag.user.id %}">{{antrag.user.user.username}}</a>)</td></tr>
 <tr><th>Semester</th><td>{{antrag.semester}}</td></tr>
+<tr><th>Versandanschrift</th><td>{{antrag.versandanschrift|linebreaks}}</td></tr>
 <tr><th>Antragszeitpunkt</th><td>{{antrag.antragszeitpunkt}}</td></tr>
 <tr><th>Antragsgrund</th><td>{{antrag.grund.name}}</td></tr>
 <tr><th>weitere Hinweise</th><td><i>{{antrag.freitext}}</i></td></tr>
