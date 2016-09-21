@@ -5,7 +5,7 @@
 {% block content %}
 
 <h2>Antrag auf Rückerstattung – {{antrag.grund.identifier}} {{antrag.id}}</h2>
-<p>Antragsstatus: <span class="{{antrag.status.klassen}}">{{antrag.status.name}}</span> | <a href="{% url 'history' antrag_id=antrag.id %}">Bearbeitungsverlauf anzeigen</a></p>
+<p>Antragsstatus: <span class="{{antrag.status.klassen}}">{{antrag.status.name}}</span> | <a href="{% url 'backend:history' antrag_id=antrag.id %}">Bearbeitungsverlauf anzeigen</a></p>
 
 <hr>
 
@@ -19,7 +19,7 @@
 {% if aktionen %}
 <div class="form-inline">
 {% for aktion in aktionen %}
-<a class="btn btn-primary" href="{% url 'antragaktion' antrag_id=antrag.id aktion_id=aktion.id %}">{{aktion.name}}</a>
+<a class="btn btn-primary" href="{% url 'backend:antragaktion' antrag_id=antrag.id aktion_id=aktion.id %}">{{aktion.name}}</a>
 {% endfor %}
 </div>
 {% else %}
@@ -34,7 +34,7 @@
 <table class="table">
 <tr><th>Vorlage</th><th>Erstellungszeitpunkt</th></tr>
 {% for brief in briefe %}
-<tr><td><a href="{% url 'brief' brief_id=brief.id %}">{{brief.vorlage.name}}</a></td><td>{{brief.timestamp}}</td></tr>
+<tr><td><a href="{% url 'dokumente:brief' brief_id=brief.id %}">{{brief.vorlage.name}}</a></td><td>{{brief.timestamp}}</td></tr>
 {% endfor %}
 </table>
 {% else %}
@@ -73,10 +73,10 @@
 	{{nachweis.name}}
 	<ul>
 	{% for dokument in nachweis.dokumente %}
-		<li><span class="tag {{dokument.markierung}} dokument"><a href="{% url 'datei' dokument_id=dokument.id %}" target="_blank">Dokument #{{dokument.id}}</a></span> <a href="{% url 'datei' dokument_id=dokument.id %}" target="_blank">anzeigen</a> <small>(hochgeladen am {{dokument.timestamp}})</small> 
+		<li><span class="tag {{dokument.markierung}} dokument"><a href="{% url 'dokumente:datei' dokument_id=dokument.id %}" target="_blank">Dokument #{{dokument.id}}</a></span> <a href="{% url 'dokumente:datei' dokument_id=dokument.id %}" target="_blank">anzeigen</a> <small>(hochgeladen am {{dokument.timestamp}})</small> 
 		
 		{% for markierung in markierungen %}
-		<a href="{% url 'markieren' dokument_id=dokument.id markierung=markierung.0 %}" title="Dokument {{markierung.1}} markieren"><span class="tag {{markierung.0|safe}}">&nbsp;</span></a>
+		<a href="{% url 'backend:markieren' dokument_id=dokument.id markierung=markierung.0 %}" title="Dokument {{markierung.1}} markieren"><span class="tag {{markierung.0|safe}}">&nbsp;</span></a>
 		{% endfor %}
 		</li>
 	{% endfor %}

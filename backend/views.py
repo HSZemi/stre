@@ -9,7 +9,9 @@ from django.shortcuts import redirect
 from  django.contrib.auth.password_validation import validate_password, ValidationError
 from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History, Briefvorlage, Brief, Status, Uebergang, Begruendung
 from django.db.models import Count
-from .forms import DokumentForm, DokumentUebertragenForm, UeberweisungsbetragForm, BriefErstellenForm, BriefBegruendungForm, NachfristForm
+from django.core.exceptions import ObjectDoesNotExist
+from .forms import DokumentForm, DokumentUebertragenForm, UeberweisungsbetragForm, BriefErstellenForm, BriefBegruendungForm, NachfristForm, LoginForm, BulkAlsUeberwiesenMarkierenForm
+from axes.decorators import watch_login
 import uuid
 import os
 import mimetypes
@@ -32,26 +34,29 @@ def group_required(*group_names):
 		return False
 	return user_passes_test(in_groups)
 
+@watch_login
 def loginpage(request):
 	messages = []
-	next_page = 'dashboard'
+	next_page = 'backend:dashboard'
+	form = LoginForm()
 	
 	if('next' in request.GET and len(request.GET['next']) > 0 and request.GET['next'][0] == '/'):
 		next_page = request.GET['next']
 		
 	if request.method == 'POST':
-		if('username' in request.POST and 'passwort' in request.POST):
-			username = request.POST['username']
-			passwort = request.POST['passwort']
+		form = LoginForm(request.POST)
+		if form.is_valid():
+			username = form.cleaned_data['username']
+			passwort = form.cleaned_data['password']
 			user = authenticate(username=username, password=passwort)
 			if user is not None:
 				if user.is_active:
 					login(request, user)
 					if(user.groups.filter(name='Antragstellung').exists()):
 						# Redirect to a success page.
-						return redirect('index')
+						return redirect('backend:index')
 					elif(user.is_staff):
-						return redirect('dashboard')
+						return redirect('backend:dashboard')
 					else:
 						messages.append({'klassen':'alert-warning','text':'Huch! Falsche Gruppe'})
 				else:
@@ -61,8 +66,10 @@ def loginpage(request):
 			else:
 				# Return an 'invalid login' error message.
 				messages.append({'klassen':'alert-danger','text':'<strong>Herrje!</strong> Das hat nicht funktioniert. Hast du Login-Name und Passwort auch wirklich korrekt eingegeben?'})
+		else:
+			messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte fülle das Formular korrekt aus.'})
 	
-	context = { 'messages' : messages, 'current_page' : 'loginpagebackend'}
+	context = { 'messages' : messages, 'current_page' : 'loginpagebackend', 'form':form}
 	
 	return render(request, 'backend/login.html', context)
 
@@ -77,7 +84,28 @@ def dashboard(request):
 	return render(request, 'backend/dashboard.html', context)
 
 @staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
-def antraege(request, semester_id, status_id=None):
+def suche(request, suchbegriff=None):
+	try: # teste auf Antrag-ID
+		antrag_id = int(suchbegriff)
+		
+		antrag = Antrag.objects.get(pk=antrag_id)
+		
+		return redirect('antragbackend', antrag_id=antrag_id)
+	
+	except (ValueError, ObjectDoesNotExist): # suche nach Name
+		
+		result = Antrag.objects.filter(user__user__first_name__icontains=suchbegriff) | Antrag.objects.filter(user__user__last_name__icontains=suchbegriff)
+		
+		result = result.filter(semester__gruppe__in=request.user.groups.values_list('id',flat=True))
+		
+		result = result.order_by('-semester', '-id')
+		
+		context = {'antraege':result, 'suchbegriff':suchbegriff}
+		
+		return render(request, 'backend/suche.html', context)
+
+@staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
+def antraege(request, semester_id, status_id=None, messages=None):
 	semester_id = int(semester_id)
 	if(status_id != None):
 		status_id = int(status_id)
@@ -101,7 +129,7 @@ def antraege(request, semester_id, status_id=None):
 		else:
 			antraege_sortiert[grund] = Antrag.objects.filter(semester__id=semester_id).filter(grund=grund)
 	
-	context = { 'message' : message, 'current_page' : 'dashboard', 'semester' : semester, 'antraege_sortiert':antraege_sortiert, 'statusse':statusse, 'status_id':status_id}
+	context = { 'message' : message, 'current_page' : 'antraege', 'semester' : semester, 'antraege_sortiert':antraege_sortiert, 'statusse':statusse, 'status_id':status_id, 'messages':messages}
 	
 	return render(request, 'backend/antraege.html', context)
 
@@ -294,6 +322,7 @@ def antrag(request, antrag_id):
 	return render(request, 'backend/antrag.html', context)
 
 @staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
+@group_required('Bearbeitung')
 def ueberweisungsbetrag(request, antrag_id, aktion_id):
 	antrag_id = int(antrag_id)
 	aktion_id = int(aktion_id)
@@ -643,6 +672,7 @@ def history(request, antrag_id=None):
 	return render(request, 'backend/history.html', context)
 
 @staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
+@group_required('Bearbeitung')
 def markieren(request, dokument_id, markierung):
 	dokument_id = int(dokument_id)
 	dokument = None
@@ -668,6 +698,7 @@ def markieren(request, dokument_id, markierung):
 
 
 @staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
+@group_required('Bearbeitung')
 def undo(request, history_id):
 	history = get_object_or_404(History, pk=history_id)
 	
@@ -676,7 +707,7 @@ def undo(request, history_id):
 		raise Http404
 	
 	if(history.ist_undo):
-		response = redirect('history', antrag_id=history.antrag.id)
+		response = redirect('backend:history', antrag_id=history.antrag.id)
 		response['Location'] += '?m=aktion_nicht_zulaessig'
 		return response
 	
@@ -701,16 +732,80 @@ def undo(request, history_id):
 		new_history.ist_undo = True
 		new_history.save()
 		
-		response = redirect('history', antrag_id=history.antrag.id)
+		response = redirect('backend:history', antrag_id=history.antrag.id)
 		response['Location'] += '?m=aktion_erfolgreich'
 		return response
 		
 	else:
 		# Aktion kann nicht rückgängig gemacht werden
-		response = redirect('history', antrag_id=history.antrag.id)
+		response = redirect('backend:history', antrag_id=history.antrag.id)
 		response['Location'] += '?m=aktion_nicht_zulaessig'
 		return response
 
 @staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
+@group_required('Bearbeitung')
+def bulk_als_ueberwiesen_markieren(request, semester_id):
+	semester_id=int(semester_id)
+	messages = []
+	temp = ''
+	
+	semester = get_object_or_404(Semester, pk=semester_id)
+	
+	# Hat der User Zugriff auf dieses Semester?
+	if(semester.gruppe not in request.user.groups.all()):
+		raise Http404
+	
+	antragsgruende = Antragsgrund.objects.all().order_by('sort')
+	
+	ueberweisungsaktion = (GlobalSettings.objects.get()).aktion_als_ueberwiesen_markieren
+	uebergaenge_ueberweisung = Uebergang.objects.filter(aktion=ueberweisungsaktion)
+	statusse = Status.objects.filter(pk__in=uebergaenge_ueberweisung.values_list('status_start', flat=True))
+	
+	antraege = Antrag.objects.filter(semester__id=semester_id, status__id__in=statusse).order_by('grund__sort', 'id')
+
+	form = BulkAlsUeberwiesenMarkierenForm(antraege)
+	
+	if request.method == 'POST':
+		# create a form instance and populate it with data from the request:
+		form = BulkAlsUeberwiesenMarkierenForm(antraege, request.POST)
+		# check whether it's valid:
+		if form.is_valid():
+			modifiziert_counter = 0
+			for antrag in form.cleaned_data['antraege']:
+				try:
+					uebergang = Uebergang.objects.get(status_start=antrag.status, aktion=ueberweisungsaktion)
+					antrag.status = uebergang.status_end
+					antrag.save()
+					
+					history = History()
+					history.akteur = request.user
+					history.antrag = antrag
+					history.uebergang = uebergang
+					history.save()
+					
+					modifiziert_counter += 1
+					
+				except Uebergang.DoesNotExist:
+					messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Antrag {0} konnte nicht als überwiesen markiert werden, da der Status-Übergang nicht zulässig war.'.format(str(antrag))})
+			
+			if(modifiziert_counter > 0):
+				messages.append({'klassen':'alert-success','text':'<strong>Erfolg!</strong> {0} Anträge wurden als überwiesen markiert.'.format(modifiziert_counter)})
+			else:
+				messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Kein Antrag wurde als überwiesen markiert.'})
+			
+			form = BulkAlsUeberwiesenMarkierenForm(antraege)
+		else:
+			messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte fülle das Formular korrekt aus.'})
+	else:
+		form = BulkAlsUeberwiesenMarkierenForm(antraege)
+		
+	context = {'current_page' : 'bulk_als_ueberwiesen_markieren', 'messages':messages, 'form':form, 'semester':semester, 'temp':temp}
+	return render(request, 'backend/bulk_als_ueberwiesen_markieren.html', context)
+	
+
+@staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
 def konfiguration(request):
 	return HttpResponse("Hello, world. You're at the konfiguration page.")
+
+def resetpassword(request):
+	return HttpResponse("Bitte kontaktieren Sie das IT-Referat Ihres Vertrauens.")

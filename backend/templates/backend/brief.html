@@ -12,7 +12,7 @@
 </div>
 {% endfor %}
 
-<p>Wir schreiben einen Brief ({{briefvorlage.name}}) für <a href="{% url 'antragbackend' antrag_id=antrag.id %}">Antrag {{antrag.grund.identifier}} {{antrag.id}}</a>.</p>
+<p>Wir schreiben einen Brief ({{briefvorlage.name}}) für <a href="{% url 'backend:antrag' antrag_id=antrag.id %}">Antrag {{antrag.grund.identifier}} {{antrag.id}}</a>.</p>
 
 <div class="briefform">
 <form method="POST">

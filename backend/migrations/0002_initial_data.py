@@ -663,10 +663,10 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	u_tg_uw.save()
 	
 	u_g_uw = Uebergang()
-	u_ag_ag.aktion = a_als_ueberwiesen_markieren
-	u_ag_ag.status_start = s_genehmigung_verschickt
-	u_ag_ag.status_end = s_ueberwiesen
-	u_ag_ag.save()
+	u_g_uw.aktion = a_als_ueberwiesen_markieren
+	u_g_uw.status_start = s_genehmigung_verschickt
+	u_g_uw.status_end = s_ueberwiesen
+	u_g_uw.save()
 	
 	
 	# GLOBALSETTINGS #
@@ -678,6 +678,7 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	gs.aktion_antrag_stellen = a_antrag_stellen
 	gs.aktion_hochladen = a_dokument_hochladen
 	gs.aktion_zurueckziehen = a_zurueckziehen
+	gs.aktion_als_ueberwiesen_markieren = a_als_ueberwiesen_markieren
 	gs.brief_tex = r"""\documentclass[
 fontsize=12pt,
 paper=a4,
@@ -797,6 +798,37 @@ ngerman]{scrlttr2}
 BRIEFTEXT
 
 \end{letter}
+\end{document}"""
+
+	gs.liste_tex = r"""\documentclass[a4paper]{scrartcl}
+\usepackage[headsepline]{scrpage2}
+
+\usepackage[utf8]{inputenc}
+\usepackage{eurosym}
+
+\usepackage{lastpage}
+ 
+\pagestyle{scrheadings}
+\ihead{TITEL} \chead{ZEITSTEMPEL} \ohead{Semesterticket-Rückerstattung}
+\ifoot{Titel: \rule{2cm}{2pt} rechn. richtig: \rule{4.7cm}{2pt} sachl. richtig: \rule{4.7cm}{2pt} angeordnet: \rule{4.7cm}{2pt}} \cfoot{} \ofoot{Seite \pagemark~von \pageref{LastPage}}
+
+
+\usepackage[a4paper,top=2cm, bottom=2cm, left=1cm, right=1cm,landscape]{geometry}
+
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\fontfamily{phv}\selectfont
+
+\usepackage{longtable}
+
+\begin{document}
+
+%\begin{table}[h] 
+%\centering
+\def\arraystretch{1.5}
+
+TABELLEN
+
 \end{document}"""
 	gs.save()
 

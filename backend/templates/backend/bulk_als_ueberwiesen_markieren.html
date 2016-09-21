@@ -1,0 +1,31 @@
+{% extends 'backend/base.html' %}
+
+{% block title%}Semesterticket-Rückerstattung - Als überwiesen markieren{% endblock %}
+
+{% block content %}
+
+{% for message in messages %}
+<div class="alert {{message.klassen}}" role="alert">
+  {{message.text|safe}}
+</div>
+{% endfor %}
+
+{{temp}}
+
+<div class="card">
+	<div class="card-block">
+		<h4 class="card-title">Anträge im <a href="{% url 'backend:antraege' semester_id=semester.id %}">{{semester.get_semestertyp_display}} {{semester.jahr}}</a> als überwiesen markieren</h4>
+
+		<form method="POST">
+		{% csrf_token %}
+		<table class="table">
+		{{form}}
+		</table>
+
+		<input class="btn btn-primary" type="submit" value="Markierte Anträge als überwiesen markieren" />
+		</form>
+
+	</div>
+</div>
+
+{% endblock %}

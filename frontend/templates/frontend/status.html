@@ -41,16 +41,16 @@
 			{% if sem.antrag %}
 			<td>Ja</td>
 			<td class="{{sem.klassen}}">{{sem.status}}</td>
-			<td><a href="{% url 'antragfrontend' antrag_id=sem.antrag %}">Antrag öffnen{% if sem.antrag in neue_antraege %} und Nachweise hochladen{% endif %}</a></td>
+			<td><a href="{% url 'frontend:antrag' antrag_id=sem.antrag %}">Antrag öffnen{% if sem.antrag in neue_antraege %} und Nachweise hochladen{% endif %}</a></td>
 			{% else %}
 			<td>Nein</td>
 			<td></td>
 			<td>
 			{% if sem.antrag_moeglich and not sem.frist_abgelaufen%}
-			<a href="{% url 'antragstellung' semester_id=sem.id %}">Antrag stellen</a>
+			<a href="{% url 'frontend:antragstellung' semester_id=sem.id %}">Antrag stellen</a>
 			{% endif %}
 			{% if sem.antrag_moeglich and sem.frist_abgelaufen%}
-			<a href="{% url 'antragstellung' semester_id=sem.id %}">Antrag stellen*</a>
+			<a href="{% url 'frontend:antragstellung' semester_id=sem.id %}">Antrag stellen*</a>
 			{% endif %}
 			</td>
 			{% endif %}
@@ -77,7 +77,7 @@
 	</tbody>
 	</table>
 	
-	<a href="{% url 'account' %}">Daten ändern</a>
+	<a href="{% url 'frontend:account' %}">Daten ändern</a>
 	</div>
 </div>
 

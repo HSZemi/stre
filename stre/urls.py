@@ -18,8 +18,8 @@ from django.conf.urls import include, url
 from django.contrib import admin
 
 urlpatterns = [
-    url(r'^', include('frontend.urls')),
-    url(r'^backend/', include('backend.urls')),
-    url(r'^datei/', include('dokumente.urls')),
+    url(r'^', include('frontend.urls', namespace='frontend')),
+    url(r'^backend/', include('backend.urls', namespace='backend')),
+    url(r'^datei/', include('dokumente.urls', namespace='dokumente')),
     url(r'^admin/', admin.site.urls),
 ]

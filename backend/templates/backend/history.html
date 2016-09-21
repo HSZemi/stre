@@ -15,7 +15,7 @@
 <div class="card">
 	<div class="card-block">
 		<h4 class="card-title">Bearbeitungsverlauf</h4>
-		<p class="card-text">Die letzten ausgeführten Aktionen{% if antrag %} für <a href="{% url 'antragbackend' antrag_id=antrag.id %}">Antrag {{antrag}}</a>{% endif %}, sortiert von neu nach alt.</p>
+		<p class="card-text">Die letzten ausgeführten Aktionen{% if antrag %} für <a href="{% url 'backend:antrag' antrag_id=antrag.id %}">Antrag {{antrag}}</a>{% endif %}, sortiert von neu nach alt.</p>
 	</div>
 	<div class="card-block">
 	<table class="table">
@@ -36,8 +36,8 @@
 			<td>{% if h.akteur.is_staff %}Staff{% endif %}</td>
 			<td>{{h.antrag}}</td>
 			<td>{% if h.ist_undo %}<span class="tag tag-default">RÜCKNAHME</span> {% endif %}{{h.uebergang.aktion}}</td>
-			{% if antrag %}
-			<td><a href="{% url 'undo' history_id=h.id %}">zurücknehmen</a></td>
+			{% if antrag and not h.ist_undo %}
+			<td><a href="{% url 'backend:undo' history_id=h.id %}">zurücknehmen</a></td>
 			{% endif %}
 			
 		</tr>

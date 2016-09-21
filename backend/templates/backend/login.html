@@ -1,6 +1,6 @@
 {% extends 'backend/base.html' %}
 
-{% block title%}Semesterticket-Rückerstattung - Index{% endblock %}
+{% block title%}Semesterticket-Rückerstattung - Login{% endblock %}
 
 {% block content %}
 
@@ -14,12 +14,12 @@
 <form class="form-signin" method="POST">
 	{% csrf_token %}
 	<h2 class="form-signin-heading">Bitte melde dich an, um fortzufahren</h2>
-	<label for="inputUsername" class="sr-only">Login-Name</label>
-	<input type="text" id="inputUsername" class="form-control" placeholder="Login-Name" name="username" required autofocus>
-	<label for="inputPassword" class="sr-only">Password</label>
-	<input type="password" id="inputPassword" class="form-control" placeholder="Passwort" name="passwort" required>
+	<label for="{{form.username.id_for_label}}" class="sr-only">{{form.username.label}}</label>
+	<input type="text" id="{{form.username.id_for_label}}" class="form-control" placeholder="Login-Name" name="{{form.username.html_name}}" required autofocus>
+	<label for="{{form.password.id_for_label}}" class="sr-only">Password</label>
+	<input type="password" id="{{form.password.id_for_label}}" class="form-control" placeholder="Passwort" name="{{form.password.html_name}}" required>
 	<button class="btn btn-lg btn-primary btn-block" type="submit">Anmelden</button>
-	<small><a href="{%url 'resetpassword'%}">Ich weiß mein Passwort nicht mehr! Zu Hülf!</a></small>
+	<small><a href="{%url 'backend:resetpassword'%}">Ich weiß mein Passwort nicht mehr! Zu Hülf!</a></small>
 </form>
 
 {% endblock %}

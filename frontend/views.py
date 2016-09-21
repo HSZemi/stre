@@ -9,7 +9,8 @@ from django.shortcuts import redirect
 from django.contrib.auth.password_validation import validate_password, ValidationError
 from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History, Uebergang
 from django.db import IntegrityError
-from .forms import PasswordChangeForm, AntragForm, DokumentForm, DokumentUebertragenForm, RegistrierungForm, AccountForm
+from .forms import PasswordChangeForm, AntragForm, DokumentForm, DokumentUebertragenForm, RegistrierungForm, AccountForm, LoginForm
+from axes.decorators import watch_login
 import uuid
 import os
 import shutil
@@ -60,7 +61,7 @@ def statuspage(request):
 					
 					# passwort erfolgreich geändert
 					# login user again
-					response = redirect('loginpage')
+					response = redirect('frontend:loginpage')
 					response['Location'] += '?m=passwort_erfolgreich_geaendert'
 					return response
 					
@@ -103,7 +104,7 @@ def index(request):
 
 def logoutpage(request):
 	logout(request)
-	return redirect('index')
+	return redirect('frontend:index')
 
 def registrierung(request):
 	user = None
@@ -146,7 +147,7 @@ def registrierung(request):
 						login(request, user)
 						if(user.groups.filter(name='Antragstellung').exists()):
 							# Redirect auf Seite 2
-							response = redirect('antragstellung', semester_id=semester.id)
+							response = redirect('frontend:antragstellung', semester_id=semester.id)
 							response['Location'] += '?m=initialantrag'
 							return response
 						else:
@@ -180,9 +181,12 @@ def registrierung(request):
 def resetpassword(request):
 	return HttpResponse("Hello, world. You're at the password reset page. Unfortunately, there is nothing we can do for you.")
 
+@watch_login
 def loginpage(request):
 	messages=[]
 	matnr=None
+	form = LoginForm()
+	
 	if('m' in request.GET):
 		message = request.GET['m']
 		if(message == "passwort_erfolgreich_geaendert"):
@@ -193,15 +197,16 @@ def loginpage(request):
 		except ValueError:
 			pass
 	
-	next_page = 'index'
+	next_page = 'frontend:index'
 	if('next' in request.GET and len(request.GET['next']) > 0 and request.GET['next'][0] == '/'):
 		next_page = request.GET['next']
-		
+	
 	if request.method == 'POST':
-		if('matrikelnummer' in request.POST and 'passwort' in request.POST):
-			matrikelnummer = request.POST['matrikelnummer']
-			passwort = request.POST['passwort']
-			user = authenticate(username=matrikelnummer, password=passwort)
+		form = LoginForm(request.POST)
+		if form.is_valid():
+			username = form.cleaned_data['username']
+			passwort = form.cleaned_data['password']
+			user = authenticate(username=username, password=passwort)
 			if user is not None:
 				if user.is_active:
 					login(request, user)
@@ -209,7 +214,7 @@ def loginpage(request):
 						# Redirect to a success page.
 						return redirect(next_page)
 					elif(user.is_staff):
-						return redirect('dashboard')
+						return redirect('backend:dashboard')
 					else:
 						# falsche_gruppe
 						messages.append({'klassen':'alert-danger','text':'falsche_gruppe'})
@@ -221,8 +226,10 @@ def loginpage(request):
 			else:
 				# Return an 'invalid login' error message.
 				messages.append({'klassen':'alert-danger','text':'<strong>Herrje!</strong> Das hat nicht funktioniert. Hast du Matrikelnummer und Passwort auch wirklich korrekt eingegeben?'})
+		else:
+			messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte fülle das Formular korrekt aus.'})
 	
-	context = { 'messages' : messages, 'current_page' : 'loginpage', 'matrikelnummer':matnr}
+	context = { 'messages' : messages, 'current_page' : 'loginpage', 'matrikelnummer':matnr, 'form':form}
 	return render(request, 'frontend/login.html', context)
 
 def info(request):
@@ -287,7 +294,7 @@ def antragstellung(request, semester_id):
 				history.uebergang = uebergang
 				history.save()
 				
-				response = redirect('antragfrontend', antrag_id=neu_antrag.id)
+				response = redirect('frontend:antrag', antrag_id=neu_antrag.id)
 				response['Location'] += '?m=antrag_erstellt'
 				return response
 			else:

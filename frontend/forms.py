@@ -4,6 +4,9 @@ from django.forms import ModelForm, ValidationError
 from localflavor.generic.forms import BICFormField, IBANFormField
 from datetime import date
 
+class LoginForm(forms.Form):
+	username = forms.IntegerField(label='Loginname:')
+	password = forms.CharField(label='Passwort:', widget=forms.PasswordInput)
 
 class PasswordChangeForm(forms.Form):
 	passwort_alt = forms.CharField(label='Aktuelles Passwort:', widget=forms.PasswordInput)
@@ -79,7 +82,7 @@ class RegistrierungForm(forms.Form):
 	semester = forms.ModelChoiceField(queryset=Semester.objects.filter(anzeigefrist__gte=date.today()).order_by('-jahr'), label="Semester*", help_text="Für welches Semester soll der Antrag gestellt werden?")
 	matrikelnummer = forms.IntegerField(label="Matrikelnummer*", min_value=1000)
 	passwort = forms.CharField(label="Passwort wählen*", widget=forms.PasswordInput(), help_text="Dieses Passwort benötigst du, um deinen Antragsstatus einzusehen, Nachweise hochzuladen und weitere Anträge zu stellen. Wer deine Matrikelnummer und dein Passwort errät, hat Zugriff auf all deine Daten und Dokumente. Wähle deshalb ein sicheres Passwort!")
-	vorname = forms.CharField(label="Vorname(n)*")
-	nachname = forms.CharField(label="Nachname(n)*")
-	email = forms.EmailField(label="E-Mail-Adresse",required=False, help_text="Ohne Angabe einer gültigen E-Mail-Adresse stehen einige Funktionen nicht zur Verfügung.")
+	vorname = forms.CharField(label="Vorname(n)*", max_length=30)
+	nachname = forms.CharField(label="Nachname(n)*", max_length=30)
+	email = forms.EmailField(label="E-Mail-Adresse",required=False, help_text="Ohne Angabe einer gültigen E-Mail-Adresse stehen einige Funktionen nicht zur Verfügung.", max_length=254)
 	adresse = forms.CharField(widget=forms.Textarea, label="Anschrift*", help_text="Besteht in der Regel aus Straße, Hausnummer, PLZ und Ort.")

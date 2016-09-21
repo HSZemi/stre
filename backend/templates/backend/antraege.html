@@ -15,13 +15,18 @@
 	<div class="card-block">
 		<h4 class="card-title">Anträge im {{semester.get_semestertyp_display}} {{semester.jahr}}</h4>
 		<p class="card-text">Die Liste der im {{semester.get_semestertyp_display}} {{semester.jahr}} gestellten Anträge.</p>
+		<p class="card-text">
+			<a href="{% url 'dokumente:export_ueberweisung' semester_id=semester.id %}" target="_blank">Überweisungsliste exportieren</a>
+			|
+			<a href="{% url 'backend:bulk_als_ueberwiesen_markieren' semester_id=semester.id %}" target="_blank">Anträge als überwiesen markieren</a>
+		</p>
 	</div>
 	
 	<div class="card-block">
 	Nach Status filtern: 
-	<a href="{% url 'antraege' semester_id=semester.id %}"><span class="statusselektor tag {% if status_id %}tag-default{% else %}tag-primary{% endif %}">Alle</span></a><br>
+	<a href="{% url 'backend:antraege' semester_id=semester.id %}"><span class="statusselektor tag {% if status_id %}tag-default{% else %}tag-primary{% endif %}">Alle</span></a><br>
 	{% for status in statusse %}
-	<a href="{% url 'antraege' semester_id=semester.id status_id=status.id %}"><span class="statusselektor tag {% if status_id and status_id == status.id %}tag-primary{% else %}tag-default{% endif %}">{{status}}</span></a> 
+	<a href="{% url 'backend:antraege' semester_id=semester.id status_id=status.id %}"><span class="statusselektor tag {% if status_id and status_id == status.id %}tag-primary{% else %}tag-default{% endif %}">{{status}}</span></a> 
 	{% endfor %}
 	</div>
 	
@@ -47,7 +52,7 @@
 			<td>{{antrag.grund.identifier}} {{antrag.id}}</td>
 			<td>{{antrag.user.user.first_name}} {{antrag.user.user.last_name}}</td>
 			<td><span class="{{antrag.status.klassen}}">{{antrag.status.name}}</span></td>
-			<td><a href="{% url 'antragbackend' antrag.id %}">Öffnen</a></td>
+			<td><a href="{% url 'backend:antrag' antrag.id %}">Öffnen</a></td>
 			
 		</tr>
 	{% endfor %}

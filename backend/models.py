@@ -226,7 +226,9 @@ class GlobalSettings(models.Model):
 	aktion_antrag_stellen = models.ForeignKey(Aktion, related_name='aktion_antrag_stellen')
 	aktion_hochladen = models.ForeignKey(Aktion, related_name='aktion_hochladen')
 	aktion_zurueckziehen = models.ForeignKey(Aktion, related_name='aktion_zurueckziehen')
+	aktion_als_ueberwiesen_markieren = models.ForeignKey(Aktion, related_name='aktion_als_ueberwiesen_markieren')
 	brief_tex = models.TextField()
+	liste_tex = models.TextField()
 	
 	def save(self, *args, **kwargs):
 		self.__class__.objects.exclude(id=self.id).delete()

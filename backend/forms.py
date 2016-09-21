@@ -3,6 +3,9 @@ from backend.models import Antrag, Dokument
 from django.forms import ModelForm, ValidationError
 import datetime
 
+class LoginForm(forms.Form):
+	username = forms.CharField(label='Loginname:')
+	password = forms.CharField(label='Passwort:', widget=forms.PasswordInput)
 
 class PasswordChangeForm(forms.Form):
 	passwort_alt = forms.CharField(label='Aktuelles Passwort:', widget=forms.PasswordInput)
@@ -85,3 +88,8 @@ class BriefErstellenForm(forms.Form):
 	betreff = forms.CharField()
 	anrede = forms.CharField()
 	brieftext = forms.CharField(widget=forms.Textarea)
+
+class BulkAlsUeberwiesenMarkierenForm(forms.Form):
+	def __init__(self, antraege, *args, **kwargs):
+		super(BulkAlsUeberwiesenMarkierenForm, self).__init__(*args, **kwargs)
+		self.fields['antraege'] = forms.ModelMultipleChoiceField(queryset=antraege, help_text="", label="Als überwiesen markieren:", widget=forms.CheckboxSelectMultiple)

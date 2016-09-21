@@ -60,6 +60,10 @@ form {
 	margin-bottom: 2rem;
 }
 
+.form-inline{
+	margin-bottom: 0rem;
+}
+
 .briefform input[type=text],
 .briefform textarea {
 	width: 100%;

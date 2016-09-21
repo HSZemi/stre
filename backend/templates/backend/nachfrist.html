@@ -13,12 +13,12 @@
 {{message}}
 {% if message == 'nachfrist_gesetzt' %}
 <div class="alert alert-success" role="alert">
-  <strong>Die Nachfrist wurde gesetzt.</strong> Zurück zum <a href="{% url 'antragbackend' antrag_id=antrag.id %}">Antrag</a>
+  <strong>Die Nachfrist wurde gesetzt.</strong> Zurück zum <a href="{% url 'backend:antrag' antrag_id=antrag.id %}">Antrag</a>
 </div>
 {% endif %}
 {% endif %}
 
-<p>Hier kannst du eine Nachfrist für <a href="{% url 'antragbackend' antrag_id=antrag.id %}">Antrag {{antrag}}</a> setzen. Gib das gewünschte Datum ein, und klicke dann auf »Nachfrist setzen«.</p>
+<p>Hier kannst du eine Nachfrist für <a href="{% url 'backend:antrag' antrag_id=antrag.id %}">Antrag {{antrag}}</a> setzen. Gib das gewünschte Datum ein, und klicke dann auf »Nachfrist setzen«.</p>
 
 <form method="POST">
 {% csrf_token %}

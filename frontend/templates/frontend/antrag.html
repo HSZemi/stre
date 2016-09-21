@@ -32,7 +32,7 @@
 	{{nachweis.name}}
 	<ul>
 	{% for dokument in nachweis.dokumente %}
-		<li><span class="tag tag-default dokument"><a href="{% url 'datei' dokument_id=dokument.id %}" target="_blank">Dokument #{{dokument.id}}</a></span> <a href="{% url 'datei' dokument_id=dokument.id %}" target="_blank">anzeigen</a> <small>(hochgeladen am {{dokument.timestamp}})</small></li>
+		<li><span class="tag tag-default dokument"><a href="{% url 'dokumente:datei' dokument_id=dokument.id %}" target="_blank">Dokument #{{dokument.id}}</a></span> <a href="{% url 'dokumente:datei' dokument_id=dokument.id %}" target="_blank">anzeigen</a> <small>(hochgeladen am {{dokument.timestamp}})</small></li>
 	{% endfor %}
 	</ul>
 	</li>
@@ -72,7 +72,7 @@
 <h3>Antrag zurückziehen</h3>
 <p>Wenn du deinen Antrag zurückziehst, wird er nicht weiter bearbeitet. Du kannst auch keinen neuen Antrag über das System stellen.</p>
 
-<a href="{% url 'antragzurueckziehen' antrag_id=antrag.id %}">Antrag zurückziehen</a>
+<a href="{% url 'frontend:antragzurueckziehen' antrag_id=antrag.id %}">Antrag zurückziehen</a>
 
 {% endif %}
 

@@ -1,0 +1,55 @@
+{% extends 'backend/base.html' %}
+
+{% block title%}Semesterticket-Rückerstattung - Suche{% endblock %}
+
+{% block content %}
+
+{% for message in messages %}
+<div class="alert {{message.klassen}}" role="alert">
+  {{message.text|safe}}
+</div>
+{% endfor %}
+
+
+<div class="card">
+	<div class="card-block">
+		<h4 class="card-title">Suchergebnisse</h4>
+		<p class="card-text">Suchbegriff: {{suchbegriff}}</p>
+	</div>
+	
+	<div class="card-block">
+
+	{% if antraege %}
+	
+	<table class="table">
+	<thead>
+		<tr>
+			<th>ID</th>
+			<th>Semester</th>
+			<th>Antragsteller/in</th>
+			<th>Status</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for antrag in antraege %}
+		<tr>
+			<td>{{antrag.grund.identifier}} {{antrag.id}}</td>
+			<td>{{antrag.semester}}</td>
+			<td>{{antrag.user.user.first_name}} {{antrag.user.user.last_name}}</td>
+			<td><span class="{{antrag.status.klassen}}">{{antrag.status.name}}</span></td>
+			<td><a href="{% url 'antragbackend' antrag.id %}">Öffnen</a></td>
+			
+		</tr>
+	{% endfor %}
+	</tbody>
+	</table>
+	
+	{% else %}
+	<p>Keine Anträge gefunden.</p>
+	{% endif %}
+	
+	</div>
+</div>
+
+{% endblock %}
