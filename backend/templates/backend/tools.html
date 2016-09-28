@@ -1,0 +1,34 @@
+{% extends 'backend/base.html' %}
+
+{% block title%}Semesterticket-Rückerstattung - Suche{% endblock %}
+
+{% block content %}
+{% load l10n %}
+
+{% for message in messages %}
+<div class="alert {{message.klassen}}" role="alert">
+  {{message.text|safe}}
+</div>
+{% endfor %}
+
+
+<div class="card">
+	<div class="card-block">
+		<h4 class="card-title">Passwort zurücksetzen</h4>
+		<p class="card-text">Mit diesem Formular kann einer Matrikelnummer ein neues, zufällig erzeugtes Passwort zugewiesen werden.</p>
+	</div>
+	<div class="card-block">
+
+	<form method="POST">
+	{% csrf_token %}
+	<table class="table">
+	{{form}}
+	</table>
+
+	<input class="btn btn-primary" type="submit" value="Passwort zurücksetzen" />
+	</form>
+	
+	</div>
+</div>
+
+{% endblock %}

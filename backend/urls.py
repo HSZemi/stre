@@ -22,4 +22,5 @@ urlpatterns = [
     url(r'^markieren/(?P<dokument_id>[0-9]+)/(?P<markierung>[a-z-]+)$', views.markieren, name='markieren'),
     url(r'^suche/$', views.suche, name='suche'),
     url(r'^suche/(?P<suchbegriff>.+)$', views.suche, name='suche'),
+    url(r'^tools/$', views.tools, name='tools'),
 ]

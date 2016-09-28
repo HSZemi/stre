@@ -1,5 +1,9 @@
-from django.http import HttpResponse, FileResponse, Http404, HttpResponseForbidden
+from django.http import HttpResponse, FileResponse, Http404, HttpResponseForbidden, HttpRequest
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.core.urlresolvers import reverse
+from django.core.mail import send_mail
 from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
@@ -9,12 +13,13 @@ from django.shortcuts import redirect
 from django.contrib.auth.password_validation import validate_password, ValidationError
 from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History, Uebergang
 from django.db import IntegrityError
-from .forms import PasswordChangeForm, AntragForm, DokumentForm, DokumentUebertragenForm, RegistrierungForm, AccountForm, LoginForm
+from .forms import PasswordChangeForm, AntragForm, DokumentForm, DokumentUebertragenForm, RegistrierungForm, AccountForm, LoginForm, PasswortResetForm
 from axes.decorators import watch_login
 import uuid
 import os
 import shutil
 import mimetypes
+import datetime
 
 BASE_DIR = settings.BASE_DIR
 
@@ -146,6 +151,17 @@ def registrierung(request):
 					if user.is_active:
 						login(request, user)
 						if(user.groups.filter(name='Antragstellung').exists()):
+							# Willkommens-E-Mail senden
+							
+							if(user.email):
+								send_mail(
+									'[STRE] Willkommen im Semesterticketrückerstattungssystem!',
+									'Hallo {vorname} {nachname}!\n\nDu hast dich gerade erfolgreich im Semesterticketrückerstattungssystem registriert.\nMit deiner Matrikelnummer ({matrikelnummer}) und dem von dir gewählten Passwort kannst du dich im System anmelden, Nachweise hochladen und deinen Antragsstatus verfolgen.\n\n{timestamp}\n\n------------------\n~>Signatur<~'.format(vorname=user.first_name, nachname=user.last_name, matrikelnummer=user.username, timestamp=datetime.datetime.now()),
+									'STRE-Bot<sz-bot@asta.uni-bonn.de>',
+									[user.email],
+									fail_silently=False,
+								)
+							
 							# Redirect auf Seite 2
 							response = redirect('frontend:antragstellung', semester_id=semester.id)
 							response['Location'] += '?m=initialantrag'
@@ -162,7 +178,7 @@ def registrierung(request):
 				
 			except IntegrityError as ie:
 				# user existiert bereits
-				login_url = reverse('loginpage')
+				login_url = reverse('frontend:loginpage')
 				messages.append({'klassen':'alert-info','text':'<strong>Hoppla!</strong> Für diese Matrikelnummer existiert bereist ein Konto. <a href="{0}?u={1}">Melde dich bitte an</a> und stelle dann den Antrag.'.format(login_url, form.cleaned_data['matrikelnummer'])})
 			except ValidationError as e:
 				validation_errors = e
@@ -178,8 +194,81 @@ def registrierung(request):
 	context = { 'current_page' : 'registrierung', 'form':form, 'user':user, 'messages':messages }
 	return render(request, 'frontend/registrierung.html', context)
 
+@watch_login
 def resetpassword(request):
-	return HttpResponse("Hello, world. You're at the password reset page. Unfortunately, there is nothing we can do for you.")
+	user = None
+	messages = []
+	form = None
+	if request.method == 'POST':
+		# create a form instance and populate it with data from the request:
+		form = PasswortResetForm(request.POST)
+		# check whether it's valid:
+		if form.is_valid():
+			
+			matrikelnummer = form.cleaned_data['matrikelnummer']
+			
+			try:
+				user = User.objects.get(username=matrikelnummer)
+				
+				if(user.email):
+					
+					uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+					token = default_token_generator.make_token(user)
+					
+					reseturl = request.build_absolute_uri(reverse('frontend:resetpasswordconfirm', kwargs={'uidb64':uidb64, 'token':token}))
+					
+					send_mail(
+						'[STRE] Passwort zurücksetzen',
+						'Hallo {vorname} {nachname}!\n\nDu möchtest offenbar dein Passwort für das Semesterticketrückerstattungssystem zurücksetzen.\nKlicke hierzu auf den folgenden Link:\n\n{reseturl}\n\n{timestamp}\n\n------------------\n~>Signatur<~'.format(vorname=user.first_name, nachname=user.last_name, reseturl=reseturl, timestamp=datetime.datetime.now()),
+						'STRE-Bot<sz-bot@asta.uni-bonn.de>',
+						[user.email],
+						fail_silently=False,
+					)
+			
+			except User.DoesNotExist:
+				pass
+			messages.append({'klassen':'alert-success','text':'<h3>E-Mail versendet.</h3><p>An deine hinterlegte E-Mail-Adresse wurde ein Link gesendet, mit dem du dein Passwort zurücksetzen kannst.</p><p>Falls du keine E-Mail erhalten hast, hast du entweder eine falsche Matrikelnummer eingegeben oder keine E-Mail-Adresse hinterlegt.</p>'})
+				
+			
+			
+		else:
+			# form invalid
+			pass
+	else:
+		form = PasswortResetForm()
+	context = { 'current_page' : 'reset', 'form':form, 'messages':messages }
+	return render(request, 'frontend/reset.html', context)
+
+@watch_login
+def resetpasswordconfirm(request, uidb64, token):
+	user = None
+	messages = []
+	
+	try:
+		uid = urlsafe_base64_decode(uidb64)
+		user = User.objects.get(pk=uid)
+	except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+		user = None
+		messages.append({'klassen':'alert-danger','text':'<strong>Hoppla!</strong> Das hat leider nicht funktioniert. Falls der Fehler nicht verschwindet, kontaktiere bitte den Ausschuss für das Semesterticket.'})
+		
+	if user is not None and default_token_generator.check_token(user, token):
+		if(user.email):
+			passwort_neu = User.objects.make_random_password()
+			user.set_password(passwort_neu)
+			user.save()
+			send_mail(
+			'[STRE] Dein Passwort wurde zurückgesetzt',
+			'Hallo {vorname} {nachname}!\n\nDein neues Passwort lautet:\n{passwort}\n\n{timestamp}\n\n------------------\n~>Signatur<~'.format(vorname=user.first_name, nachname=user.last_name, matrikelnummer=user.username, passwort=passwort_neu, timestamp=datetime.datetime.now()),
+			'STRE-Bot<sz-bot@asta.uni-bonn.de>',
+			[user.email],
+			fail_silently=False,
+		)
+		messages.append({'klassen':'alert-success','text':'<strong>Formidabel!</strong> Dein neues Passwort wurde dir per E-Mail zugeschickt.'})
+	else:
+		messages.append({'klassen':'alert-danger','text':'<strong>Hoppla!</strong> Das hat leider nicht funktioniert. Falls der Fehler nicht verschwindet, kontaktiere bitte den Ausschuss für das Semesterticket.'})
+	
+	context = { 'current_page' : 'resetconfirm', 'messages':messages }
+	return render(request, 'frontend/resetconfirm.html', context)
 
 @watch_login
 def loginpage(request):
@@ -293,6 +382,15 @@ def antragstellung(request, semester_id):
 				history.antrag = neu_antrag
 				history.uebergang = uebergang
 				history.save()
+				
+				if(person.user.email):
+					send_mail(
+						'[STRE] Dein Antrag wurde gestellt',
+						'Hallo {vorname} {nachname}!\n\nDu hast gerade im Semesterticketrückerstattungssystem einen Antrag für das {semester} gestellt.\nVergiss nicht, die notwendigen Nachweise hochzuladen!\n\n{timestamp}\n\n------------------\n~>Signatur<~'.format(vorname=person.user.first_name, nachname=person.user.last_name, semester=semester, timestamp=datetime.datetime.now()),
+						'STRE-Bot<sz-bot@asta.uni-bonn.de>',
+						[person.user.email],
+						fail_silently=False,
+					)
 				
 				response = redirect('frontend:antrag', antrag_id=neu_antrag.id)
 				response['Location'] += '?m=antrag_erstellt'

@@ -3,6 +3,7 @@ from django.shortcuts import render, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import redirect
@@ -10,7 +11,7 @@ from  django.contrib.auth.password_validation import validate_password, Validati
 from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History, Briefvorlage, Brief, Status, Uebergang, Begruendung
 from django.db.models import Count
 from django.core.exceptions import ObjectDoesNotExist
-from .forms import DokumentForm, DokumentUebertragenForm, UeberweisungsbetragForm, BriefErstellenForm, BriefBegruendungForm, NachfristForm, LoginForm, BulkAlsUeberwiesenMarkierenForm, AccountForm
+from .forms import DokumentForm, DokumentUebertragenForm, UeberweisungsbetragForm, BriefErstellenForm, BriefBegruendungForm, NachfristForm, LoginForm, BulkAlsUeberwiesenMarkierenForm, AccountForm, PasswortZuruecksetzenForm
 from axes.decorators import watch_login
 import uuid
 import os
@@ -139,6 +140,10 @@ def account(request, person_id):
 	person_id = int(person_id)
 	
 	person = get_object_or_404(Person, pk=person_id)
+	
+	antraege_count = Antrag.objects.filter(user=person, semester__in=Semester.objects.filter(gruppe__in=request.user.groups.all())).count()
+	if(antraege_count == 0):
+		raise Http404
 	
 	semester = Semester.objects.raw("""SELECT s.id, s.semestertyp, s.betrag, s.jahr, s.antragsfrist, s.anzeigefrist, a.id AS antrag, a.status AS status, a.klassen AS klassen
 					FROM backend_semester s LEFT OUTER JOIN (SELECT ba.id AS id, ba.semester_id AS semester_id, bs.name AS status, bs.klassen AS klassen FROM backend_antrag ba JOIN backend_status bs ON ba.status_id = bs.id WHERE user_id = %s) a ON s.id = a.semester_id WHERE s.gruppe_id in (SELECT group_id FROM auth_user_groups WHERE user_id=%s) 
@@ -850,3 +855,34 @@ def account_bearbeiten(request, person_id):
 	
 	context = {'current_page' : 'account', 'form':form, 'messages':messages, 'person':person}
 	return render(request, 'backend/account_bearbeiten.html', context)
+
+@staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
+@group_required('Bearbeitung')
+def tools(request):
+	messages = []
+	passwort_neu = None
+	matrikelnummer = None
+	if request.method == 'POST':
+		# create a form instance and populate it with data from the request:
+		form = PasswortZuruecksetzenForm(request.POST)
+		# check whether it's valid:
+		if form.is_valid():
+			matrikelnummer = form.cleaned_data['matrikelnummer']
+			
+			try:
+				user = User.objects.get(username=matrikelnummer)
+				passwort_neu = User.objects.make_random_password()
+				user.set_password(passwort_neu)
+				user.save()
+				messages.append({'klassen':'alert-success','text':'<p><strong>Hurra!</strong> Das Passwort wurde auf ein zufällig generiertes Passwort geändert.</p><p style="font-size:200%;">Neues Passwort für Matrikelnummer {matrikelnummer}: <b>{passwort_neu}</b></p>'.format(matrikelnummer=matrikelnummer, passwort_neu=passwort_neu)})
+			except User.DoesNotExist:
+				messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Es existiert keine Person mit dieser Matrikelnummer im System.'})
+			
+		else:
+			messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte fülle das Formular korrekt aus.'})
+	else:
+		form = PasswortZuruecksetzenForm()
+		
+	
+	context = {'current_page' : 'tools', 'form':form, 'messages':messages, 'matrikelnummer':matrikelnummer, 'passwort_neu':passwort_neu}
+	return render(request, 'backend/tools.html', context)

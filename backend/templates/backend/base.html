@@ -28,6 +28,9 @@
 		<li class="nav-item{% if current_page == 'history'%} active{% endif %}">
 			<a class="nav-link" href="{% url 'backend:history' %}">Bearbeitungsverlauf</a>
 		</li>
+		<li class="nav-item{% if current_page == 'tools'%} active{% endif %}">
+			<a class="nav-link" href="{% url 'backend:tools' %}">Tools</a>
+		</li>
 {% if request.user.is_authenticated and request.user.is_staff %}<li class="nav-item{% if current_page == 'logoutpage'%} active{% endif %}">
 			<a class="nav-link" href="{% url 'frontend:logout' %}">Logout</a>
 		</li>
@@ -40,7 +43,7 @@
 	
 		<div class="form-inline pull-xs-right">
 			<input class="form-control" type="text" id="input_suche" placeholder="ID oder Name">
-			<button class="btn btn-outline-success" id="btn_suche">Suchen</button>
+			<button class="btn btn-outline-success" id="btn_suche">Antrag suchen</button>
 		</div>
 </nav>
 

@@ -7,6 +7,7 @@ urlpatterns = [
     url(r'^registrierung$', views.registrierung, name='registrierung'),
     url(r'^login$', views.loginpage, name='loginpage'),
     url(r'^login/reset$', views.resetpassword, name='resetpassword'),
+    url(r'^login/reset_confirm/(?P<uidb64>[0-9A-Za-z]+)/(?P<token>.+)/$', views.resetpasswordconfirm, name='resetpasswordconfirm'),
     url(r'^logout$', views.logoutpage, name='logout'),
     url(r'^info$', views.info, name='info'),
     url(r'^impressum', views.impressum, name='impressum'),

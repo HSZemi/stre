@@ -86,3 +86,6 @@ class RegistrierungForm(forms.Form):
 	nachname = forms.CharField(label="Nachname(n)*", max_length=30)
 	email = forms.EmailField(label="E-Mail-Adresse",required=False, help_text="Ohne Angabe einer gültigen E-Mail-Adresse stehen einige Funktionen nicht zur Verfügung.", max_length=254)
 	adresse = forms.CharField(widget=forms.Textarea, label="Anschrift*", help_text="Besteht in der Regel aus Straße, Hausnummer, PLZ und Ort.")
+
+class PasswortResetForm(forms.Form):
+	matrikelnummer = forms.IntegerField(label="Matrikelnummer", min_value=1000)

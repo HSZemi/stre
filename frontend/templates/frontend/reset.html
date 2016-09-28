@@ -1,0 +1,24 @@
+{% extends 'frontend/base.html' %}
+
+{% block title%}Semesterticket-Rückerstattung - Passwort zurücksetzen{% endblock %}
+
+{% block content %}
+
+{% for message in messages %}
+<div class="alert {{message.klassen}}" role="alert">
+  {{message.text|safe}}
+</div>
+{% endfor %}
+
+
+<form class="form-signin" method="POST">
+	<h2 class="form-signin-heading">Passwort zurücksetzen</h2>
+	{% csrf_token %}
+	<table>
+	{{form}}
+	</table>
+	<br>
+	<button class="btn btn-primary" type="submit">E-Mail zur Passwortrücksetzung senden</button>
+</form>
+
+{% endblock %}

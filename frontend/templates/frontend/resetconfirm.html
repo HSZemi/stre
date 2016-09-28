@@ -1,0 +1,15 @@
+{% extends 'frontend/base.html' %}
+
+{% block title%}Semesterticket-Rückerstattung - Passwort zurücksetzen{% endblock %}
+
+{% block content %}
+
+{% for message in messages %}
+<div class="alert {{message.klassen}}" role="alert">
+  {{message.text|safe}}
+</div>
+{% endfor %}
+
+<a href="{% url 'frontend:loginpage' %}">Zur Login-Seite</a>
+
+{% endblock %}
