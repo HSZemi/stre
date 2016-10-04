@@ -367,13 +367,14 @@ def ueberweisungsbetrag(request, antrag_id, aktion_id):
 			antrag.ueberweisungsbetrag = form.cleaned_data['ueberweisungsbetrag']
 			antrag.save()
 			
-			history = History()
-			history.akteur = request.user
-			history.antrag = antrag
-			history.uebergang = uebergang
-			history.save()
+			# Hier wird kein Übergang vollzogen
+			#history = History()
+			#history.akteur = request.user
+			#history.antrag = antrag
+			#history.uebergang = uebergang
+			#history.save()
 			
-			response = redirect('antragaktion', antrag_id=antrag.id, aktion_id=aktion.id)
+			response = redirect('backend:antragaktion', antrag_id=antrag.id, aktion_id=aktion.id)
 			response['Location'] += '?m=betrag_gespeichert'
 			return response
 		else:
@@ -423,7 +424,7 @@ def nachfrist(request, antrag_id, aktion_id):
 			#history.uebergang = uebergang
 			#history.save()
 			
-			response = redirect('antragaktion', antrag_id=antrag.id, aktion_id=aktion.id)
+			response = redirect('backend:antragaktion', antrag_id=antrag.id, aktion_id=aktion.id)
 			response['Location'] += '?m=nachfrist_gesetzt'
 			return response
 		else:
@@ -523,7 +524,7 @@ def brief(request, antrag_id, briefvorlage_id, aktion_id):
 						brief.datei = pdffilepath
 						brief.save()
 						
-						response = redirect('antragaktion', antrag_id=antrag.id, aktion_id=aktion.id, brief_id=brief.id)
+						response = redirect('backend:antragaktion', antrag_id=antrag.id, aktion_id=aktion.id, brief_id=brief.id)
 						response['Location'] += '?m=brief_wurde_erstellt'
 						return response
 					else:
@@ -632,9 +633,9 @@ def antragaktion(request, antrag_id, aktion_id, brief_id=None):
 		
 		if(aktion.setzt_ueberweisungsbetrag and antrag.ueberweisungsbetrag <= 0):
 			return ueberweisungsbetrag(request, antrag.id, aktion.id)
-		if(aktion.setzt_nachfrist1 and (antrag.nachfrist1 == None or not ('m' in request.GET and request.GET['m'] == 'nachfrist_gesetzt'))):
+		if(aktion.setzt_nachfrist1 and (antrag.nachfrist1 == None or not (('m' in request.GET and request.GET['m'] == 'nachfrist_gesetzt') or (brief_id != None)))):
 			return nachfrist(request, antrag.id, aktion.id)
-		if(aktion.setzt_nachfrist2 and (antrag.nachfrist2 == None or not ('m' in request.GET and request.GET['m'] == 'nachfrist_gesetzt'))):
+		if(aktion.setzt_nachfrist2 and (antrag.nachfrist2 == None or not (('m' in request.GET and request.GET['m'] == 'nachfrist_gesetzt') or (brief_id != None)))):
 			return nachfrist(request, antrag.id, aktion.id)
 		
 		if(aktion.briefvorlage != None):
@@ -736,7 +737,7 @@ def undo(request, history_id):
 		
 		# Aktion umgekehrt ausführen
 		if(history.uebergang.aktion.setzt_ueberweisungsbetrag):
-			history.antrag.betrag = 0
+			history.antrag.ueberweisungsbetrag = 0.0
 		if(history.uebergang.aktion.setzt_nachfrist1):
 			history.antrag.nachfrist1 = None
 		if(history.uebergang.aktion.setzt_nachfrist2):
