@@ -326,6 +326,11 @@ def info(request):
 	context = { 'gruende' : gruende, 'current_page' : 'info' }
 	return render(request, 'frontend/info.html', context)
 
+def rechner(request):
+	semester = Semester.objects.all().order_by('jahr')
+	context = { 'semester' : semester, 'current_page' : 'rechner' }
+	return render(request, 'frontend/rechner.html', context)
+
 def impressum(request):
 	context = {'current_page' : 'impressum' }
 	return render(request, 'frontend/impressum.html', context)

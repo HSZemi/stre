@@ -21,6 +21,8 @@ def erstelle_semester(apps, schema_editor):
 	ss16.betrag = 169.6
 	ss16.antragsfrist =  date(2016, 5, 10)
 	ss16.anzeigefrist = date(2016, 10, 1)
+	ss16.erster_tag =  date(2016, 4, 1)
+	ss16.letzter_tag = date(2016, 9, 30)
 	ss16.gruppe_id = gruppe_ss16.id
 	ss16.save()
 	
@@ -30,6 +32,8 @@ def erstelle_semester(apps, schema_editor):
 	ws16.betrag = 173.0
 	ws16.antragsfrist =  date(2016, 11, 10)
 	ws16.anzeigefrist = date(2017, 4, 1)
+	ws16.erster_tag =  date(2016, 10, 1)
+	ws16.letzter_tag = date(2017, 3, 31)
 	ws16.gruppe_id = gruppe_ws16.id
 	ws16.save()
 	
@@ -39,6 +43,8 @@ def erstelle_semester(apps, schema_editor):
 	ss17.betrag = 174.4
 	ss17.antragsfrist =  date(2017, 5, 10)
 	ss17.anzeigefrist = date(2017, 10, 1)
+	ss17.erster_tag =  date(2017, 4, 1)
+	ss17.letzter_tag = date(2017, 9, 30)
 	ss17.gruppe_id = gruppe_ss17.id
 	ss17.save()
 

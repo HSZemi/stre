@@ -1,0 +1,321 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html lang="en" ng-app="observatory">
+<head>
+    <title>Rückerstattungs-Rechner</title>
+    <meta charset="utf8" />
+    <link rel="shortcut icon" href="favicon.ico">
+    {% load staticfiles %}
+    {% load l10n %}
+    <link rel="stylesheet" href="{% static 'frontend/style.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'frontend/bootstrap.min.css' %}"/>
+    <link rel="icon" href="{% static 'frontend/favicon.ico' %}" type="image/vnd.microsoft.icon">
+    <style type="text/css"></style>
+</head>
+<body>
+    <div class="container" style="padding-top: 20px;">
+        
+
+<h1>Rückerstattungs-Rechner</h1>
+
+<fieldset class="form-group">
+	<label for="selectSemester">Semester für die Rückerstattung wählen</label>
+	<select class="form-control" id="selectSemester">
+	{% for s in semester %}
+		<option value="{{s.id}}">{{s}}</option>
+	{% endfor %}
+	</select>
+</fieldset>
+
+<ul class="nav nav-tabs" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" data-toggle="tab" href="#sozialer_haertefall" role="tab">Sozialer Härtefall</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-toggle="tab" href="#anteilige_rueckerstattung" role="tab">Anteilige Rückerstattung</a>
+  </li>
+</ul>
+<div class="tab-content">
+
+<div class="tab-pane active" id="sozialer_haertefall" role="tabpanel">
+
+<h4 style="margin-top: 1em;">Sozialer Härtefall</h4>
+
+<p>Das Ergebnis dieses Rechners ist selbstverständlich hochgradig unverbindlich.</p>
+<p>Alle Werte verbleiben auf deinem Rechner. Es findet keine Übertragung über das Internet statt.</p>
+
+<div>
+	<div class="col-md-8">
+		<div class="card">
+			<div class="card-block text-center">
+				<h4 class="card-title">Deine Werte:</h4>
+			</div>
+			<div class="card-block">
+				<div class="col-md-6">
+					<fieldset class="form-group">
+						<label for="monatliche_einkuenfte">monatliche Einkünfte</label>
+						<div class="input-group">
+							<input type="number" class="form-control" id="monatliche_einkuenfte" placeholder="" step="0.01">
+							<span class="input-group-addon" id="basic-addon1">€</span>
+						</div>
+					</fieldset>
+					<fieldset class="form-group">
+						<label for="monatliche_ausgaben">monatliche Ausgaben</label>
+						<div class="input-group">
+							<input type="number" class="form-control" id="monatliche_ausgaben" placeholder="" step="0.01">
+							<span class="input-group-addon" id="basic-addon2">€</span>
+						</div>
+					</fieldset>
+					<fieldset class="form-group">
+						<label for="miete_warm">Miete (warm)</label>
+						<div class="input-group">
+							<input type="number" class="form-control" id="miete_warm" placeholder="" step="0.01">
+							<span class="input-group-addon" id="basic-addon3">€</span>
+						</div>
+					</fieldset>
+					<fieldset class="form-group">
+						<label for="anzahl_kinder">Anzahl Kinder</label>
+						<input type="number" class="form-control" id="anzahl_kinder" placeholder="" step="1">
+					</fieldset>
+				</div>
+				<div class="col-md-6">
+					<fieldset class="form-group">
+						<label for="schulden">Schulden</label>
+						<div class="input-group">
+							<input type="number" class="form-control" id="schulden" placeholder="" step="0.01">
+							<span class="input-group-addon" id="basic-addon5">€</span>
+						</div>
+					</fieldset>
+					<fieldset class="form-group">
+						<label for="vermoegen">Vermögen</label>
+						<div class="input-group">
+							<input type="number" class="form-control" id="vermoegen" placeholder="" step="0.01">
+							<span class="input-group-addon" id="basic-addon6">€</span>
+						</div>
+					</fieldset>
+					<fieldset class="form-group">
+						<label for="bisherige_studiendauer">bisherige Studiendauer</label>
+						<div class="input-group">
+							<input type="number" class="form-control" id="bisherige_studiendauer" placeholder="">
+							<span class="input-group-addon" id="basic-addon8">Monate</span>
+						</div>
+					</fieldset>
+					<fieldset class="form-group">
+						<label for="durchschnittliche_studiendauer">durchschnittliche Studiendauer im Studiengang in Bonn</label>
+						<div class="input-group">
+							<input type="number" class="form-control" id="durchschnittliche_studiendauer" placeholder="" value=600>
+							<span class="input-group-addon" id="basic-addon9">Monate</span>
+						</div>
+					</fieldset>
+				</div>
+				<div class="radio">
+					<label>
+						<input class="staatsburger" type="radio" name="staatsburger" id="staatsbuerger_deutsch_eu" value="option1" checked>
+						deutscher oder EU-Staatsbürger
+					</label>
+				</div>
+				<div class="radio">
+					<label>
+						<input class="staatsburger" type="radio" name="staatsburger" id="staatsbuerger_nicht_eu" value="option2">
+						Nicht EU-Staatsbürger
+					</label>
+				</div>
+				<fieldset class="form-group" id="optionalbox1">
+					<label for="betrag_auf_sperrkonto">Betrag auf einem Sperrkonto für das Studium in Deutschland</label>
+					<div class="input-group">
+						<input type="number" class="form-control" id="betrag_auf_sperrkonto" placeholder="" step="0.01">
+						<span class="input-group-addon" id="basic-addon7">€</span>
+					</div>
+				</fieldset>
+				<button id="rechne" class="btn btn-primary btn-lg btn-block">Berechnen</button>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-4">
+		<div class="card">
+			<div class="card-block text-center">
+				<h4 class="card-title">Dein Ergebnis:</h4>
+			</div>
+			<div class="card-block" style="height:100px;">
+				<button id="resultat" class="btn btn-primary btn-lg btn-block">0 €</button>
+			</div>
+		</div>
+	</div>
+</div>
+</div>
+
+<div class="tab-pane" id="anteilige_rueckerstattung" role="tabpanel">
+
+<h4 style="margin-top: 1em;">Anteilige Rückerstattung</h4>
+<div>
+	<div class="col-md-8">
+		<div class="card">
+			<div class="card-block text-center">
+				<h4 class="card-title">Deine Werte:</h4>
+			</div>
+			<div class="card-block">
+				<div class="row">
+					<div class="col-md-6">
+						<fieldset class="form-group">
+							<label for="erster_tag">Erster Tag des Semesters</label>
+							<input type="date" class="form-control" id="erster_tag_semester" placeholder="" value="2016-04-01">
+						</fieldset>
+					</div>
+					<div class="col-md-6">
+						<fieldset class="form-group">
+							<label for="letzter_tag">Letzter Tag des Semesters</label>
+							<input type="date" class="form-control" id="letzter_tag_semester" placeholder="" value="2016-09-30">
+						</fieldset>
+					</div>
+				</div>
+				<hr>
+					<fieldset class="form-group">
+						<label for="erster_tag">Erster Tag, an dem das Ticket nicht genutzt wird</label>
+						<input type="date" class="form-control" id="erster_tag" placeholder="" value="">
+					</fieldset>
+					<fieldset class="form-group">
+						<label for="letzter_tag">Letzter Tag, an dem das Ticket nicht genutzt wird</label>
+						<input type="date" class="form-control" id="letzter_tag" placeholder="" value="">
+					</fieldset>
+					<button id="rechne2" class="btn btn-primary btn-lg btn-block">Berechnen</button>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-4">
+		<div class="card">
+			<div class="card-block text-center">
+				<h4 class="card-title">Dein Ergebnis:</h4>
+			</div>
+			<div class="card-block" style="height:100px;">
+				<button id="resultat2" class="btn btn-primary btn-lg btn-block">0 €</button>
+			</div>
+		</div>
+	</div>
+</div>
+</div>
+</div>
+
+    <script type="text/javascript" src="{% static 'frontend/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'frontend/bootstrap.min.js' %}"></script>
+    <script type="text/javascript">
+    $(function(){
+	semesters = {
+	{% for s in semester %}
+ 		"{{s.id}}":{"name":"{{s}}", "erster_tag": new Date("{{s.erster_tag|unlocalize}}"), "letzter_tag": new Date("{{s.letzter_tag|unlocalize}}"), "gesamtbetrag":{{s.betrag|unlocalize}}},
+	{% endfor %}
+	};
+    
+	$('#optionalbox1').hide();
+	$('.staatsburger').click(function(){
+		if($('#staatsbuerger_nicht_eu').prop('checked')){
+			$('#optionalbox1').show(200);
+		} else {
+			$('#optionalbox1').hide(200);
+		
+		}
+	});
+	
+	$('#rechne').click(function(){
+		var gesamtbetrag = semesters[$('#selectSemester').val()].gesamtbetrag;
+		monatliche_einkuenfte = $('#monatliche_einkuenfte').val();
+		if(monatliche_einkuenfte == ""){monatliche_einkuenfte = 0;} else {monatliche_einkuenfte = parseFloat(monatliche_einkuenfte);}
+		monatliche_ausgaben = $('#monatliche_ausgaben').val();
+		if(monatliche_ausgaben == ""){monatliche_ausgaben = 0;} else {monatliche_ausgaben = parseFloat(monatliche_ausgaben);}
+		miete_warm = $('#miete_warm').val();
+		if(miete_warm == ""){miete_warm = 0;} else {miete_warm = parseFloat(miete_warm);}
+		anzahl_kinder = $('#anzahl_kinder').val();
+		if(anzahl_kinder == ""){anzahl_kinder = 0;} else {anzahl_kinder = parseFloat(anzahl_kinder);}
+		schulden = $('#schulden').val();
+		if(schulden == ""){schulden = 0;} else {schulden = parseFloat(schulden);}
+		vermoegen = $('#vermoegen').val();
+		if(vermoegen == ""){vermoegen = 0;} else {vermoegen = parseFloat(vermoegen);}
+		betrag_auf_sperrkonto = $('#betrag_auf_sperrkonto').val();
+		if(betrag_auf_sperrkonto == ""){betrag_auf_sperrkonto = 0;} else {betrag_auf_sperrkonto = parseFloat(betrag_auf_sperrkonto);}
+		bisherige_studiendauer = $('#bisherige_studiendauer').val();
+		if(bisherige_studiendauer == ""){bisherige_studiendauer = 0;} else {bisherige_studiendauer = parseFloat(bisherige_studiendauer);}
+		durchschnittliche_studiendauer = $('#durchschnittliche_studiendauer').val();
+		if(durchschnittliche_studiendauer == ""){durchschnittliche_studiendauer = 0;} else {durchschnittliche_studiendauer = parseFloat(durchschnittliche_studiendauer);}
+		
+		var freibetrag = 325 + Math.min(345, (miete_warm / (1+anzahl_kinder)) );
+		var erstattung = true;
+		
+		if(schulden > 0){
+				$('#resultat').removeClass("btn-primary");
+				$('#resultat').addClass("btn-warning");
+				$('#resultat').text("Individualentscheidung.");
+				erstattung = false;
+		}
+		
+		if(erstattung){
+			if($('#staatsbuerger_deutsch_eu').prop('checked')){
+				if(vermoegen > 1500){
+					monatliche_einkuenfte += Math.min(0,(vermoegen - 1500)) / (durchschnittliche_studiendauer - bisherige_studiendauer);
+				}
+			}else{
+				vermoegen = (vermoegen - betrag_auf_sperrkonto);
+				if(vermoegen > 3000){
+					monatliche_einkuenfte += Math.min(0,(vermoegen - 3000)) / (durchschnittliche_studiendauer - bisherige_studiendauer);
+				}
+			}
+		
+			var x = monatliche_einkuenfte - monatliche_ausgaben - (freibetrag * (1+anzahl_kinder));
+			if(x*6 >= gesamtbetrag){
+				$('#resultat').removeClass("btn-primary");
+				$('#resultat').addClass("btn-danger");
+				$('#resultat').text("Keine Erstattung.");
+				erstattung = false;
+			} else {
+				$('#resultat').removeClass("btn-danger");
+				$('#resultat').addClass("btn-primary");
+				$('#resultat').text("Erstattung: " + (gesamtbetrag - Math.max(0, x*6)).toFixed(2).replace('\.',',') + " €");
+				erstattung = true;
+			}
+		}
+	});
+	
+	updateSemesterData();
+	
+	if((typeof document.getElementById('erster_tag').valueAsDate) != "undefined"){
+	
+		$('#rechne2').click(function(){
+			var gesamtbetrag = semesters[$('#selectSemester').val()].gesamtbetrag;
+			var sdate1 = document.getElementById('erster_tag_semester').valueAsDate;
+			var sdate2 = document.getElementById('letzter_tag_semester').valueAsDate;
+			var date1 = document.getElementById('erster_tag').valueAsDate;
+			var date2 = document.getElementById('letzter_tag').valueAsDate;
+			
+			date1 = Math.max(date1, sdate1);
+			date2 = Math.min(date2, sdate2);
+			
+			
+			if(date2 == 0){
+				date2 = sdate2;
+			}
+			
+			var tage_semester = (sdate2-sdate1)/(3600*24*1000)+1;
+			var tage_absenz = (date2-date1)/(3600*24*1000)+1;
+			
+			
+			var x = (tage_absenz/tage_semester*gesamtbetrag);
+			$('#resultat2').text("Erstattung: " + (Math.max(0, x)).toFixed(2).replace('\.',',') + " €");
+			
+		});
+
+	
+	} else {
+		$('#anteilige_rueckerstattung').html("<div class='alert alert-danger' style='margin-top:1em;'>Diese Funktion ist derzeit leider nur in Google Chrome verfügbar.</div>")
+	}
+	
+	function updateSemesterData(){
+		s = semesters[$('#selectSemester').val()];
+		document.getElementById('erster_tag_semester').valueAsDate = s.erster_tag;
+		document.getElementById('letzter_tag_semester').valueAsDate = s.letzter_tag;
+	}
+	
+	$('#selectSemester').change(function(){
+		updateSemesterData();
+	});
+	
+    });
+    </script>
+</body>
+</html>

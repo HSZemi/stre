@@ -4,6 +4,8 @@
 
 {% block content %}
 
+<p>Für den Erstattungsgrund »[S] Sozialer Härtefall« sowie für alle Fälle, in denen das Ticket für einen bestimmten Zeitraum im Semester nicht genutzt wird (Auslandsaufenthalt, Jobticket etc.), gibt es einen <a href="{% url 'frontend:rechner' %}" target="_blank">Erstattungsrechner</a>, mit dem der Erstattungsbetrag vorab geschätzt werden kann.</p>
+
 {% for grund in gruende %}
     <h4>{{ grund }}</h4>
     <p>{{grund.beschreibung}}</p>

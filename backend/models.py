@@ -29,6 +29,8 @@ class Semester(models.Model):
 	
 	antragsfrist = models.DateField()
 	anzeigefrist = models.DateField()
+	erster_tag = models.DateField()
+	letzter_tag = models.DateField()
 	
 	gruppe = models.ForeignKey(Group)
 	
