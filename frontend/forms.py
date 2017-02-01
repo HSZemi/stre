@@ -41,7 +41,7 @@ class AntragForm(ModelForm):
 		self.fields['grund'] = forms.ModelChoiceField(queryset=gruende, label="Antragsgrund", help_text="Bitte wähle aus, weshalb du den Antrag auf Rückerstattung stellst.<br>Im nächsten Schritt kannst du dann die benötigten Nachweise hochladen.", widget=forms.Select)	
 		self.fields['freitext'] = forms.CharField(widget=forms.Textarea, label='Hinweise zum Antrag', help_text='Weitere Hinweise zum Antrag wie z. B. der Verweis auf einen früheren (auf Papier gestellten) Antrag, aus dem Nachweise übernommen werden sollen, oder die Erläuterung eines sonstigen Grundes.', required=False)	
 		
-	iban = IBANFormField(label="IBAN", help_text="Auf dieses Konto wird der Rückerstattungsbetrag überwiesen, falls dein Antrag erfolg hat.")
+	iban = IBANFormField(label="IBAN", help_text="Auf dieses Konto wird der Rückerstattungsbetrag überwiesen, falls dein Antrag Erfolg hat.")
 	bic = BICFormField(label="BIC")
 	
 class DokumentForm(ModelForm):
