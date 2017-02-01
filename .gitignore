@@ -1,3 +1,7 @@
+#backup
+backup/*.gpg
+backup/*.zip
+
 # nachweise
 nachweise/*
 

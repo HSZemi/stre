@@ -142,3 +142,5 @@ USE_THOUSAND_SEPARATOR = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
+
+GPG_TARGET_ID = 'user@example.com'
