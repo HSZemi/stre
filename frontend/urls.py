@@ -12,6 +12,7 @@ urlpatterns = [
     url(r'^info$', views.info, name='info'),
     url(r'^rechner$', views.rechner, name='rechner'),
     url(r'^impressum', views.impressum, name='impressum'),
+    url(r'^datenschutz', views.datenschutz, name='datenschutz'),
     url(r'^antragstellung/(?P<semester_id>[0-9]+)$', views.antragstellung, name='antragstellung'),
     url(r'^antrag/(?P<antrag_id>[0-9]+)$', views.antrag, name='antrag'),
     url(r'^antrag/(?P<antrag_id>[0-9]+)/zurueckziehen$', views.antragzurueckziehen, name='antragzurueckziehen'),

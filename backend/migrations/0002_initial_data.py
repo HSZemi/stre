@@ -830,6 +830,24 @@ BRIEFTEXT
 TABELLEN
 
 \end{document}"""
+	gs.impressum_html = """<p id="impressum">
+<b>Impressum</b><br>
+Ausschuss für das Semesterticket<br>
+des Studierendenparlamentes der<br>
+Rheinischen Friedrich-Wilhelms-Universität Bonn<br>
+c/o AStA Bonn<br>
+Nassestraße 11<br>
+53113 Bonn (Deutschland)<br>
+stre@asta.uni-bonn.de<br>
+<br>
+Vorsitzender: ???<br>
+Weitere ordentliche Mitglieder: ???<br>
+Stellvertretende Mitglieder: ???<br>
+</p>"""
+	gs.datenschutz_html = """<p id="datenschutz">
+<b>Datenschutz</b><br>
+(...)
+</p>"""
 	gs.save()
 
 def erstelle_antragsgruende_nachweise(apps, schema_editor):

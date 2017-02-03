@@ -1,5 +1,5 @@
 from django import forms
-from backend.models import Antrag, Dokument
+from backend.models import Antrag, Dokument, Person
 from django.forms import ModelForm, ValidationError
 import datetime
 
@@ -100,6 +100,7 @@ class AccountForm(forms.Form):
 	nachname = forms.CharField(label="Nachname(n)*", max_length=30)
 	email = forms.EmailField(label="E-Mail-Adresse",required=False, help_text="Ohne Angabe einer gültigen E-Mail-Adresse stehen einige Funktionen nicht zur Verfügung.", max_length=254)
 	adresse = forms.CharField(widget=forms.Textarea, label="Anschrift*", help_text="Besteht in der Regel aus Straße, Hausnummer, PLZ und Ort.<br><span style='color:red'><b>Achtung!</b> Eine Änderung dieser Adresse ändert <b>NICHT</b>, an welche Anschrift die Bescheide verschickt werden!</span>")
+	daten_sofort_loeschen = forms.ChoiceField(label="Datenspeicherung*", choices=Person.DATEN_SOFORT_LOESCHEN_CHOICES, widget=forms.RadioSelect())
 
 class PasswortZuruecksetzenForm(forms.Form):
 	matrikelnummer = forms.IntegerField(label="Matrikelnummer", min_value=1000)

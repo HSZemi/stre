@@ -24,6 +24,7 @@
 	<tr><td>Nachname</td><td>{{person.user.last_name}}</td></tr>
 	<tr><td>E-Mail-Adresse</td><td>{% if person.user.email %}{{person.user.email}}{% else %}(keine){% endif %}</td></tr>
 	<tr><td>Anschrift</td><td>{{person.adresse|linebreaks}}</td></tr>
+	<tr><td>Datenspeicherung</td><td>{{person.get_daten_sofort_loeschen_display}}</td></tr>
 	</tbody>
 	</table>
 	

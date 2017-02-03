@@ -5,10 +5,26 @@ from datetime import date
 class Person(models.Model):
 	user = models.OneToOneField(User, on_delete=models.CASCADE)
 	adresse = models.TextField()
-	daten_sofort_loeschen = models.BooleanField()
+	
+	NICHT_SOFORT_LOESCHEN = 'nicht_sofort_loeschen'
+	SOFORT_LOESCHEN = 'sofort_loeschen'
+	
+	DATEN_SOFORT_LOESCHEN_CHOICES = (
+		(NICHT_SOFORT_LOESCHEN, 'Nachweise werden für zwei Semester nach Antragstellung gespeichert und können in diesem Zeitraum für Folgeanträge genutzt werden. Das Nutzerkonto wird zwei Semester nach der letzten Antragstellung deaktiviert.'),
+		(SOFORT_LOESCHEN, 'Nachweise werden gelöscht, sobald sie nicht mehr für die Bearbeitung oder Prüfung benötigt werden. Sie können danach nicht mehr für Folgeanträge genutzt werden. Das Nutzerkonto wird nach vollständiger Bearbeitung aller Anträge deaktiviert.')
+	)
+	
+	daten_sofort_loeschen = models.CharField(
+		max_length=25,
+		choices=DATEN_SOFORT_LOESCHEN_CHOICES,
+		default=SOFORT_LOESCHEN
+	)
 	
 	def __str__(self):
-		return self.user.username
+		retval = "{} {}".format(self.user.first_name, self.user.last_name)
+		if(retval == " "):
+			retval = self.user.username
+		return retval
     
 class Semester(models.Model):
 	WISE = 'WISE'
@@ -168,7 +184,7 @@ class Antrag(models.Model):
 		unique_together = ('semester', 'user',)
 	
 	def __str__(self):
-		return "{0} {1}".format(self.grund.identifier, self.id)
+		return "{0} {1} - {2}".format(self.grund.identifier, self.id, self.user)
 
 class Dokument(models.Model):
 	
@@ -232,6 +248,8 @@ class GlobalSettings(models.Model):
 	aktion_als_ueberwiesen_markieren = models.ForeignKey(Aktion, related_name='aktion_als_ueberwiesen_markieren')
 	brief_tex = models.TextField()
 	liste_tex = models.TextField()
+	impressum_html = models.TextField()
+	datenschutz_html = models.TextField()
 	
 	def save(self, *args, **kwargs):
 		self.__class__.objects.exclude(id=self.id).delete()

@@ -1,5 +1,5 @@
 from django import forms
-from backend.models import Antrag, Dokument, Semester
+from backend.models import Antrag, Dokument, Semester, Person
 from django.forms import ModelForm, ValidationError
 from localflavor.generic.forms import BICFormField, IBANFormField
 from datetime import date
@@ -98,12 +98,7 @@ class RegistrierungForm(forms.Form):
 	nachname = forms.CharField(label="Nachname(n)*", max_length=30)
 	email = forms.EmailField(label="E-Mail-Adresse",required=False, help_text="Ohne Angabe einer gültigen E-Mail-Adresse stehen einige Funktionen nicht zur Verfügung.", max_length=254)
 	adresse = forms.CharField(widget=forms.Textarea, label="Anschrift*", help_text="Besteht in der Regel aus Straße, Hausnummer, PLZ und Ort.")
-	
-	CHOICES=[
-		('nicht_sofort_loeschen','Nachweise werden für zwei Semester nach Antragstellung gespeichert und können in diesem Zeitraum für Folgeanträge genutzt werden. Das Nutzerkonto wird zwei Semester nach der letzten Antragstellung deaktiviert.'),
-		('sofort_loeschen','Nachweise werden gelöscht, sobald sie nicht mehr für die Bearbeitung oder Prüfung benötigt werden. Sie können danach nicht mehr für Folgeanträge genutzt werden. Das Nutzerkonto wird nach vollständiger Bearbeitung aller Anträge deaktiviert.'),
-	]
-	daten_sofort_loeschen = forms.ChoiceField(label="Datenspeicherung", choices=CHOICES, widget=forms.RadioSelect())
+	daten_sofort_loeschen = forms.ChoiceField(label="Datenspeicherung*", choices=Person.DATEN_SOFORT_LOESCHEN_CHOICES, widget=forms.RadioSelect())
 	
 	def clean(self):
 		cleaned_data = super(RegistrierungForm, self).clean()

@@ -130,7 +130,7 @@ def antraege(request, semester_id, status_id=None, messages=None):
 		else:
 			antraege_sortiert[grund] = Antrag.objects.filter(semester__id=semester_id).filter(grund=grund)
 	
-	context = { 'message' : message, 'current_page' : 'antraege', 'semester' : semester, 'antraege_sortiert':antraege_sortiert, 'statusse':statusse, 'status_id':status_id, 'messages':messages}
+	context = { 'message' : message, 'current_page' : 'antraege', 'semester' : semester, 'antraege_sortiert':antraege_sortiert, 'statusse':statusse, 'status_id':status_id, 'messages':messages, 'breadcrumbs':[{'class':'','target':reverse('backend:dashboard'),'label':'Dashboard'},{'class':'active','target':None,'label':semester}]}
 	
 	return render(request, 'backend/antraege.html', context)
 
@@ -149,7 +149,7 @@ def account(request, person_id):
 					FROM backend_semester s LEFT OUTER JOIN (SELECT ba.id AS id, ba.semester_id AS semester_id, bs.name AS status, bs.klassen AS klassen FROM backend_antrag ba JOIN backend_status bs ON ba.status_id = bs.id WHERE user_id = %s) a ON s.id = a.semester_id WHERE s.gruppe_id in (SELECT group_id FROM auth_user_groups WHERE user_id=%s) 
 					ORDER BY s.jahr""", [person.id, request.user.id])
 	
-	context = {'current_page' : 'account', 'semester' : semester, 'person':person}
+	context = {'current_page' : 'account', 'semester' : semester, 'person':person, 'breadcrumbs':[{'class':'','target':reverse('backend:dashboard'),'label':'Dashboard'},{'class':'active','target':None,'label':'Account'}]}
 	
 	return render(request, 'backend/account.html', context)
 
@@ -338,7 +338,7 @@ def antrag(request, antrag_id):
 	
 	markierungen = Dokument._meta.get_field('markierung').choices
 	
-	context = {'current_page' : 'antrag', 'antrag' : antrag, 'form':form, 'form_uebertragen':form_uebertragen, 'messages':messages, 'nachweise':nachweise, 'aktionen':aktionen, 'briefe':briefe, 'markierungen':markierungen}
+	context = {'current_page' : 'antrag', 'antrag' : antrag, 'form':form, 'form_uebertragen':form_uebertragen, 'messages':messages, 'nachweise':nachweise, 'aktionen':aktionen, 'briefe':briefe, 'markierungen':markierungen, 'breadcrumbs':[{'class':'','target':reverse('backend:dashboard'),'label':'Dashboard'},{'class':'','target':reverse('backend:antraege', kwargs={'semester_id': antrag.semester.id}),'label':antrag.semester},{'class':'active','target':None,'label':antrag}]}
 	return render(request, 'backend/antrag.html', context)
 
 @staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
@@ -670,6 +670,7 @@ def antragaktion(request, antrag_id, aktion_id, brief_id=None):
 def history(request, antrag_id=None):
 	antrag = None
 	messages = []
+	breadcrumbs = None
 	
 	if(antrag_id != None):
 		antrag_id = int(antrag_id)
@@ -686,10 +687,15 @@ def history(request, antrag_id=None):
 			raise Http404
 		
 		history = History.objects.filter(antrag=antrag_id).order_by('-timestamp')
+		
+		breadcrumbs = [{'class':'','target':reverse('backend:dashboard'),'label':'Dashboard'},{'class':'','target':reverse('backend:antraege', kwargs={'semester_id' : antrag.semester.id}),'label':antrag.semester},{'class':'', 'target':reverse('backend:antrag', kwargs={'antrag_id' : antrag.id}),'label':antrag},{'class':'active','target':None,'label':'History'}]
+		
 	else:
 		history = History.objects.filter(antrag__semester__gruppe__in=request.user.groups.values_list('id',flat=True)).order_by('-timestamp')
+		
+		breadcrumbs = [{'class':'','target':reverse('backend:dashboard'),'label':'Dashboard'},{'class':'active','target':None,'label':'History'}]
 	
-	context = {'current_page' : 'history', 'history' : history, 'antrag':antrag, 'messages':messages}
+	context = {'current_page' : 'history', 'history' : history, 'antrag':antrag, 'messages':messages, 'breadcrumbs' : breadcrumbs}
 	return render(request, 'backend/history.html', context)
 
 @staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
@@ -820,7 +826,7 @@ def bulk_als_ueberwiesen_markieren(request, semester_id):
 	else:
 		form = BulkAlsUeberwiesenMarkierenForm(antraege)
 		
-	context = {'current_page' : 'bulk_als_ueberwiesen_markieren', 'messages':messages, 'form':form, 'semester':semester, 'temp':temp}
+	context = {'current_page' : 'bulk_als_ueberwiesen_markieren', 'messages':messages, 'form':form, 'semester':semester, 'temp':temp, 'breadcrumbs':[{'class':'','target':reverse('backend:dashboard'),'label':'Dashboard'},{'class':'','target':reverse('backend:antraege', kwargs={'semester_id' : semester_id}),'label':semester},{'class':'active','target':None,'label':'Anträge als überwiesen markieren'}]}
 	return render(request, 'backend/bulk_als_ueberwiesen_markieren.html', context)
 	
 
@@ -845,16 +851,17 @@ def account_bearbeiten(request, person_id):
 			person.user.email = form.cleaned_data['email']
 			person.user.save()
 			person.adresse = form.cleaned_data['adresse']
+			person.daten_sofort_loeschen = form.cleaned_data['daten_sofort_loeschen']
 			person.save()
 			messages.append({'klassen':'alert-success','text':'<strong>Hurra!</strong> Die Daten dieser Person wurden geändert.'})
 			
 		else:
 			messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte fülle das Formular korrekt aus.'})
 	else:
-		form = AccountForm(initial={'matrikelnummer':person.user.username, 'vorname':person.user.first_name, 'nachname':person.user.last_name, 'email':person.user.email, 'adresse':person.adresse})
+		form = AccountForm(initial={'matrikelnummer':person.user.username, 'vorname':person.user.first_name, 'nachname':person.user.last_name, 'email':person.user.email, 'adresse':person.adresse, 'daten_sofort_loeschen':person.daten_sofort_loeschen})
 		
 	
-	context = {'current_page' : 'account', 'form':form, 'messages':messages, 'person':person}
+	context = {'current_page' : 'account', 'form':form, 'messages':messages, 'person':person, 'breadcrumbs':[{'class':'','target':reverse('backend:dashboard'),'label':'Dashboard'},{'class':'','target':reverse('backend:account', kwargs={'person_id': person_id}),'label':'Account'},{'class':'active','target':None,'label':'bearbeiten'}]}
 	return render(request, 'backend/account_bearbeiten.html', context)
 
 @staff_member_required(login_url=settings.BACKEND_LOGIN_URL)

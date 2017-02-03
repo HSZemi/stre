@@ -61,6 +61,11 @@ form {
 	margin-bottom: 2rem;
 }
 
+form ul {
+	list-style: none;
+	padding-left: 0em;
+}
+
 .form-signin {
 	max-width: 330px;
 	padding: 15px;

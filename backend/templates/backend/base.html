@@ -47,9 +47,17 @@
 		</div>
 </nav>
 
+{% if breadcrumbs %}
+<ol class="breadcrumb">
+	{% for item in breadcrumbs %}
+	<li class="breadcrumb-item {{item.class}}">{% if item.target %}<a href="{{item.target}}">{{item.label}}</a>{% else %}{{item.label}}{% endif %}</li>
+	{% endfor %}
+</ol>
+{% endif %}
+
 {% block content %}{% endblock %}
 
-<div id="footer"><a href="{% url 'frontend:index' %}">Frontend</a> · <a href="{% url 'frontend:impressum' %}">Impressum</a></div>
+<div id="footer"><a href="{% url 'frontend:index' %}">Frontend</a> · <a href="{% url 'frontend:datenschutz' %}">Datenschutz</a> · <a href="{% url 'frontend:impressum' %}">Impressum</a></div>
 </div>
 <script src="{% static 'frontend/jquery.min.js' %}"></script>
 <script src="{% static 'frontend/bootstrap.min.js' %}"></script>

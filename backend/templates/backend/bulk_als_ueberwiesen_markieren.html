@@ -22,7 +22,8 @@
 		{{form}}
 		</table>
 
-		<input class="btn btn-primary" type="submit" value="Markierte Anträge als überwiesen markieren" />
+		<input class="btn btn-primary" type="submit" value="Ausgewählte Anträge als überwiesen markieren" />
+		<a href="{% url 'backend:antraege' semester_id=semester.id %}" class="btn btn-secondary">Abbrechen</a>
 		</form>
 
 	</div>
