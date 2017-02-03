@@ -130,6 +130,8 @@ def registrierung(request):
 			vorname = form.cleaned_data['vorname']
 			nachname = form.cleaned_data['nachname']
 			adresse = form.cleaned_data['adresse']
+			daten_sofort_loeschen = form.cleaned_data['daten_sofort_loeschen']
+			daten_sofort_loeschen_bool = True if daten_sofort_loeschen == 'sofort_loeschen' else False
 			
 			try:
 				validate_password(form.cleaned_data['passwort'])
@@ -143,6 +145,7 @@ def registrierung(request):
 				person = Person()
 				person.user = user
 				person.adresse = adresse
+				person.daten_sofort_loeschen = daten_sofort_loeschen_bool
 				person.save()
 				
 				# User einloggen und Seite 2 aufrufen

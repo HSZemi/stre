@@ -10,8 +10,19 @@ class LoginForm(forms.Form):
 
 class PasswordChangeForm(forms.Form):
 	passwort_alt = forms.CharField(label='Aktuelles Passwort:', widget=forms.PasswordInput)
-	passwort_neu1 = forms.CharField(label='Neues Passwort:', widget=forms.PasswordInput)
+	passwort_neu1 = forms.CharField(label='Neues Passwort:', widget=forms.PasswordInput, help_text="Das Passwort muss mindestens 8 Zeichen haben und darf nicht zu einfach sein (mindestens 8 Zeichen, z.B. nicht ausschließlich Zahlen). Dieses Passwort benötigst du, um deinen Antragsstatus einzusehen, Nachweise hochzuladen und weitere Anträge zu stellen. Wer deine Matrikelnummer und dein Passwort errät, hat Zugriff auf all deine Daten und Dokumente. Wähle deshalb ein sicheres Passwort!")
 	passwort_neu2 = forms.CharField(label='Neues Passwort (noch einmal):', widget=forms.PasswordInput)
+	
+	def clean(self):
+		cleaned_data = super(PasswordChangeForm, self).clean()
+		passwort_neu1 = cleaned_data.get("passwort")
+		passwort_neu2 = cleaned_data.get("passwort2")
+		
+		if passwort_neu1 and passwort_neu2:
+			if passwort_neu1 != passwort_neu2:
+				raise forms.ValidationError(
+					"Die eingegebenen Passwörter stimmen nicht überein."
+				)
 
 class AccountForm(forms.Form):
 	email = forms.EmailField(label="E-Mail-Adresse",required=False, help_text="Ohne Angabe einer gültigen E-Mail-Adresse stehen einige Funktionen nicht zur Verfügung.")
@@ -81,11 +92,29 @@ class DokumentUebertragenForm(ModelForm):
 class RegistrierungForm(forms.Form):
 	semester = forms.ModelChoiceField(queryset=Semester.objects.filter(anzeigefrist__gte=date.today()).order_by('-jahr'), label="Semester*", help_text="Für welches Semester soll der Antrag gestellt werden?")
 	matrikelnummer = forms.IntegerField(label="Matrikelnummer*", min_value=1000)
-	passwort = forms.CharField(label="Passwort wählen*", widget=forms.PasswordInput(), help_text="Dieses Passwort benötigst du, um deinen Antragsstatus einzusehen, Nachweise hochzuladen und weitere Anträge zu stellen. Wer deine Matrikelnummer und dein Passwort errät, hat Zugriff auf all deine Daten und Dokumente. Wähle deshalb ein sicheres Passwort!")
+	passwort = forms.CharField(label="Passwort wählen*", widget=forms.PasswordInput(), help_text="Das Passwort muss mindestens 8 Zeichen haben und darf nicht zu einfach sein (mindestens 8 Zeichen, z.B. nicht ausschließlich Zahlen). Dieses Passwort benötigst du, um deinen Antragsstatus einzusehen, Nachweise hochzuladen und weitere Anträge zu stellen. Wer deine Matrikelnummer und dein Passwort errät, hat Zugriff auf all deine Daten und Dokumente. Wähle deshalb ein sicheres Passwort!")
+	passwort2 = forms.CharField(label="Passwort wiederholen*", widget=forms.PasswordInput(), help_text="")
 	vorname = forms.CharField(label="Vorname(n)*", max_length=30)
 	nachname = forms.CharField(label="Nachname(n)*", max_length=30)
 	email = forms.EmailField(label="E-Mail-Adresse",required=False, help_text="Ohne Angabe einer gültigen E-Mail-Adresse stehen einige Funktionen nicht zur Verfügung.", max_length=254)
 	adresse = forms.CharField(widget=forms.Textarea, label="Anschrift*", help_text="Besteht in der Regel aus Straße, Hausnummer, PLZ und Ort.")
+	
+	CHOICES=[
+		('nicht_sofort_loeschen','Nachweise werden für zwei Semester nach Antragstellung gespeichert und können in diesem Zeitraum für Folgeanträge genutzt werden. Das Nutzerkonto wird zwei Semester nach der letzten Antragstellung deaktiviert.'),
+		('sofort_loeschen','Nachweise werden gelöscht, sobald sie nicht mehr für die Bearbeitung oder Prüfung benötigt werden. Sie können danach nicht mehr für Folgeanträge genutzt werden. Das Nutzerkonto wird nach vollständiger Bearbeitung aller Anträge deaktiviert.'),
+	]
+	daten_sofort_loeschen = forms.ChoiceField(label="Datenspeicherung", choices=CHOICES, widget=forms.RadioSelect())
+	
+	def clean(self):
+		cleaned_data = super(RegistrierungForm, self).clean()
+		passwort = cleaned_data.get("passwort")
+		passwort2 = cleaned_data.get("passwort2")
+
+		if passwort and passwort2:
+			if passwort != passwort2:
+				raise forms.ValidationError(
+					"Die eingegebenen Passwörter stimmen nicht überein."
+				)
 
 class PasswortResetForm(forms.Form):
 	matrikelnummer = forms.IntegerField(label="Matrikelnummer", min_value=1000)

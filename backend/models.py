@@ -5,6 +5,7 @@ from datetime import date
 class Person(models.Model):
 	user = models.OneToOneField(User, on_delete=models.CASCADE)
 	adresse = models.TextField()
+	daten_sofort_loeschen = models.BooleanField()
 	
 	def __str__(self):
 		return self.user.username
