@@ -36,6 +36,22 @@ class AntragForm(ModelForm):
 			'versandanschrift': 'An diese Adresse werden die Bescheide versandt.',
 			'grund': 'Bitte wähle aus, weshalb du den Antrag auf Rückerstattung stellst.<br>Im nächsten Schritt kannst du dann die benötigten Nachweise hochladen.',
 		}
+		
+class AntragBearbeitenForm(ModelForm):
+	class Meta:
+		model = Antrag
+		fields = ['semester','versandanschrift', 'grund', 'kontoinhaber_in', 'iban', 'bic']
+		
+		labels = {
+			'grund': 'Antragsgrund',
+			'kontoinhaber_in': 'Kontoinhaber/in',
+			'iban': 'IBAN',
+			'bic': 'BIC',
+		}
+		
+		help_texts = {
+			'versandanschrift': 'An diese Adresse werden die Bescheide versandt.',
+		}
 
 class DokumentForm(ModelForm):
 	class Meta:

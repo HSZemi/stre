@@ -11,7 +11,7 @@ from  django.contrib.auth.password_validation import validate_password, Validati
 from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History, Briefvorlage, Brief, Status, Uebergang, Begruendung
 from django.db.models import Count
 from django.core.exceptions import ObjectDoesNotExist
-from .forms import DokumentForm, DokumentUebertragenForm, UeberweisungsbetragForm, BriefErstellenForm, BriefBegruendungForm, NachfristForm, LoginForm, BulkAlsUeberwiesenMarkierenForm, AccountForm, PasswortZuruecksetzenForm
+from .forms import DokumentForm, DokumentUebertragenForm, UeberweisungsbetragForm, BriefErstellenForm, BriefBegruendungForm, NachfristForm, LoginForm, BulkAlsUeberwiesenMarkierenForm, AccountForm, PasswortZuruecksetzenForm, AntragBearbeitenForm
 from axes.decorators import watch_login
 import uuid
 import os
@@ -863,6 +863,37 @@ def account_bearbeiten(request, person_id):
 	
 	context = {'current_page' : 'account', 'form':form, 'messages':messages, 'person':person, 'breadcrumbs':[{'class':'','target':reverse('backend:dashboard'),'label':'Dashboard'},{'class':'','target':reverse('backend:account', kwargs={'person_id': person_id}),'label':'Account'},{'class':'active','target':None,'label':'bearbeiten'}]}
 	return render(request, 'backend/account_bearbeiten.html', context)
+
+@staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
+@group_required('Bearbeitung')
+def antrag_bearbeiten(request, antrag_id):
+	antrag_id = int(antrag_id)
+	messages = []
+	antrag = get_object_or_404(Antrag, pk=antrag_id)
+	if request.method == 'POST':
+		# create a form instance and populate it with data from the request:
+		form = AntragBearbeitenForm(request.POST)
+		# check whether it's valid:
+		if form.is_valid():
+			
+			antrag.semester = form.cleaned_data['semester']
+			antrag.versandanschrift = form.cleaned_data['versandanschrift']
+			antrag.grund = form.cleaned_data['grund']
+			antrag.kontoinhaber_in = form.cleaned_data['kontoinhaber_in']
+			antrag.iban = form.cleaned_data['iban']
+			antrag.bic = form.cleaned_data['bic']
+			antrag.save()
+			
+			messages.append({'klassen':'alert-success','text':'<strong>Hurra!</strong> Der Antrag wurde geändert.'})
+			
+		else:
+			messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte fülle das Formular korrekt aus.'})
+	else:
+		form = AntragBearbeitenForm(initial={'semester':antrag.semester,'versandanschrift':antrag.versandanschrift, 'grund':antrag.grund, 'kontoinhaber_in':antrag.kontoinhaber_in, 'iban':antrag.iban, 'bic':antrag.bic})
+		
+	
+	context = {'current_page' : 'account', 'form':form, 'messages':messages, 'antrag':antrag, 'breadcrumbs':[{'class':'','target':reverse('backend:dashboard'),'label':'Dashboard'},{'class':'','target':reverse('backend:antraege', kwargs={'semester_id' : antrag.semester.id}),'label':antrag.semester},{'class':'', 'target':reverse('backend:antrag', kwargs={'antrag_id' : antrag.id}),'label':antrag},{'class':'active','target':None,'label':'bearbeiten'}]}
+	return render(request, 'backend/antrag_bearbeiten.html', context)
 
 @staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
 @group_required('Bearbeitung')

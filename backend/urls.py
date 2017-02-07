@@ -10,6 +10,7 @@ urlpatterns = [
     url(r'^antraege/(?P<semester_id>[0-9]+)/status/(?P<status_id>[0-9]+)$', views.antraege, name='antraege'),
     url(r'^antraege/(?P<semester_id>[0-9]+)/bulk_als_ueberwiesen_markieren$', views.bulk_als_ueberwiesen_markieren, name='bulk_als_ueberwiesen_markieren'),
     url(r'^antrag/(?P<antrag_id>[0-9]+)$', views.antrag, name='antrag'),
+    url(r'^antrag/(?P<antrag_id>[0-9]+)/edit$', views.antrag_bearbeiten, name='antrag_bearbeiten'),
     url(r'^antrag/(?P<antrag_id>[0-9]+)/aktion/(?P<aktion_id>[0-9]+)$', views.antragaktion, name='antragaktion'),
     url(r'^antrag/(?P<antrag_id>[0-9]+)/aktion/(?P<aktion_id>[0-9]+)/(?P<brief_id>[0-9]+)$', views.antragaktion, name='antragaktion'),
     url(r'^antrag/(?P<antrag_id>[0-9]+)/brief/(?P<briefvorlage_id>[0-9]+)$', views.brief, name='brieferstellen'),
