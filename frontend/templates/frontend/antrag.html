@@ -33,7 +33,7 @@
 	{{nachweis.name}}
 	<ul>
 	{% for dokument in nachweis.dokumente %}
-		<li><span class="tag tag-default dokument"><a href="{% url 'dokumente:datei' dokument_id=dokument.id %}" target="_blank">Dokument #{{dokument.id}}</a></span> <a href="{% url 'dokumente:datei' dokument_id=dokument.id %}" target="_blank">anzeigen</a> <small>(hochgeladen am {{dokument.timestamp}})</small></li>
+		<li><span class="badge badge-default dokument"><a href="{% url 'dokumente:datei' dokument_id=dokument.id %}" target="_blank">Dokument #{{dokument.id}}</a></span> <a href="{% url 'dokumente:datei' dokument_id=dokument.id %}" target="_blank">anzeigen</a> <small>(hochgeladen am {{dokument.timestamp}})</small></li>
 	{% endfor %}
 	</ul>
 	</li>

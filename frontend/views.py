@@ -13,7 +13,7 @@ from django.shortcuts import redirect
 from django.contrib.auth.password_validation import validate_password, ValidationError
 from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History, Uebergang
 from django.db import IntegrityError
-from .forms import PasswordChangeForm, AntragForm, DokumentForm, DokumentUebertragenForm, RegistrierungForm, AccountForm, LoginForm, PasswortResetForm
+from .forms import PasswordChangeForm, AntragForm, DokumentForm, DokumentUebertragenForm, RegistrierungForm, AccountForm, LoginForm, PasswortResetForm, AntragZurueckziehenForm
 from axes.decorators import watch_login
 import uuid
 import os
@@ -488,6 +488,8 @@ def antrag(request, antrag_id):
 		message = request.GET['m']
 		if(message == 'antrag_erstellt'):
 			messages.append({'klassen':'alert-info','text':'<strong>Glückwunsch!</strong> Dein Antrag auf Semesterticketrückerstattung wurde erstellt. Lade nun die benötigten Nachweise hoch!<br>Das Formular hierzu findest du auf dieser Seite etwas weiter unten.'})
+		if(message == 'antrag_zurueckgezogen'):
+			messages.append({'klassen':'alert-info','text':'<strong>Nun denn!</strong> Du hast deinen Antrag auf Semesterticketrückerstattung erfolgreich zurückgezogen.'})
 			
 	
 	form = DokumentForm()
@@ -602,6 +604,7 @@ def antrag(request, antrag_id):
 def account(request):
 	messages = []
 	person = get_object_or_404(Person, user=request.user.id)
+	form = None
 	if request.method == 'POST':
 		# create a form instance and populate it with data from the request:
 		form = AccountForm(request.POST)
@@ -625,7 +628,43 @@ def account(request):
 @login_required
 @group_required('Antragstellung')
 def antragzurueckziehen(request, antrag_id):
+	messages = []
 	antrag = get_object_or_404(Antrag, pk=antrag_id)
+	form = None
 	if(antrag.user.user != request.user):
 		return HttpResponseForbidden()
-	return HttpResponse("Dies ist aktuell nicht implementiert. Bitte wenden Sie sich an den Semesterticketausschuss Ihres Vertrauens.")
+	
+	
+	aktion = (GlobalSettings.objects.get()).aktion_zurueckziehen
+	uebergang = get_object_or_404(Uebergang, status_start=antrag.status, aktion=aktion)
+	
+	if request.method == 'POST':
+		# create a form instance and populate it with data from the request:
+		form = AntragZurueckziehenForm(request.POST)
+		# check whether it's valid:
+		if form.is_valid():
+			if form.cleaned_data['will_zurueckziehen']:
+				history = History()
+				history.akteur = request.user
+				history.antrag = antrag
+				history.uebergang = uebergang
+				history.save()
+				
+				antrag.status = uebergang.status_end
+				antrag.save()
+				
+				response = redirect('frontend:antrag', antrag_id=antrag.id)
+				response['Location'] += '?m=antrag_zurueckgezogen'
+				return response
+				
+			else:
+				messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Falls du dir wirklich sicher bist, musst du die Checkbox aktivieren.'})
+		else:
+			messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Falls du dir wirklich sicher bist, musst du die Checkbox aktivieren.'})
+	else:
+		form = AntragZurueckziehenForm()
+			
+		
+	#return HttpResponse("Dies ist aktuell nicht implementiert. Bitte wenden Sie sich an den Semesterticketausschuss Ihres Vertrauens.")
+	context = {'current_page' : 'zurueckziehen', 'form':form, 'messages':messages, 'antrag':antrag}
+	return render(request, 'frontend/zurueckziehen.html', context)

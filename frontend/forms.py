@@ -113,3 +113,6 @@ class RegistrierungForm(forms.Form):
 
 class PasswortResetForm(forms.Form):
 	matrikelnummer = forms.IntegerField(label="Matrikelnummer", min_value=1000)
+	
+class AntragZurueckziehenForm(forms.Form):
+	will_zurueckziehen = forms.BooleanField(label="Ja, ich möchte den Antrag zurückziehen.")
