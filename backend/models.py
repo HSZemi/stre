@@ -72,6 +72,7 @@ class Semester(models.Model):
 class Nachweis(models.Model):
 	name = models.CharField(max_length=200)
 	beschreibung = models.TextField(blank=True)
+	datei = models.CharField(max_length=255, default=None)
 	hochzuladen = models.BooleanField(default=True)
 	sort = models.IntegerField()
 	

@@ -3,6 +3,7 @@
 {% block title%}Semesterticket-Rückerstattung - Index{% endblock %}
 
 {% block content %}
+{% load staticfiles %}
 
 <p>Für den Erstattungsgrund »[S] Sozialer Härtefall« sowie für alle Fälle, in denen das Ticket für einen bestimmten Zeitraum im Semester nicht genutzt wird (Auslandsaufenthalt, Jobticket etc.), gibt es einen <a href="{% url 'frontend:rechner' %}" target="_blank">Erstattungsrechner</a>, mit dem der Erstattungsbetrag vorab geschätzt werden kann.</p>
 
@@ -12,7 +13,7 @@
     <h5>Benötigte Nachweise:</h5>
     <ul>
     {% for nachweis in grund.nachweise.all %}
-    <li>{{nachweis.name}}{% if nachweis.beschreibung != '' %}({{nachweis.beschreibung}}){% endif %}</li>
+    <li>{{nachweis.name}}{% if nachweis.datei and nachweis.datei != '' %} <a href="{% static 'frontend/dokumente/' %}{{nachweis.datei}}">» Formular herunterladen «</a>{% endif %}{% if nachweis.beschreibung != '' %} ({{nachweis.beschreibung}}){% endif %}</li>
     {% endfor %}
     </ul>
 {% endfor %}

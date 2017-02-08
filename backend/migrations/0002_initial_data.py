@@ -950,6 +950,7 @@ def erstelle_antragsgruende_nachweise(apps, schema_editor):
 	n_anhang_2a = Nachweis()
 	n_anhang_2a.name = "Anhang 2a)"
 	n_anhang_2a.beschreibung = "Erklärung über das Einkommen, Vermögen, die notwendigen Ausgaben und ggf. Schulden"
+	n_anhang_2a.datei = "Formular_2a_sozialer_Haertefall.pdf"
 	n_anhang_2a.hochzuladen = True
 	n_anhang_2a.sort = 0
 	n_anhang_2a.save()
@@ -964,6 +965,7 @@ def erstelle_antragsgruende_nachweise(apps, schema_editor):
 	n_anhang_2b = Nachweis()
 	n_anhang_2b.name = "Anhang 2b)"
 	n_anhang_2b.beschreibung = "Universitäre Bescheinigung über Aufenthalt, seine studienbedingte Natur und den Zeitraum"
+	n_anhang_2b.datei = "Formular_2b_studienbedingter_Aufenthalt_ausserhalb_Vertragsgebiet.pdf"
 	n_anhang_2b.hochzuladen = True
 	n_anhang_2b.sort = 0
 	n_anhang_2b.save()
@@ -971,6 +973,7 @@ def erstelle_antragsgruende_nachweise(apps, schema_editor):
 	n_anhang_3a = Nachweis()
 	n_anhang_3a.name = "Anhang 3a)"
 	n_anhang_3a.beschreibung = "Bescheinigung des/der verantwortlichen Dozent/in über die Anfertigung der Abschlussarbeit, die nicht-notwendige Anwesenheit sowie der Scheinfreiheit"
+	n_anhang_3a.datei = "Formular_3a_Abschlussarbeit_außerhalb_des_Vertragsgebietes.pdf"
 	n_anhang_3a.hochzuladen = True
 	n_anhang_3a.sort = 0
 	n_anhang_3a.save()
@@ -978,6 +981,7 @@ def erstelle_antragsgruende_nachweise(apps, schema_editor):
 	n_anhang_3b = Nachweis()
 	n_anhang_3b.name = "Anhang 3b)"
 	n_anhang_3b.beschreibung = "Bescheinigung des/der Doktorvaters/Doktormutter über die Promotion und die nicht-notwendige Anwesenheit im Vertragsgebiet im besagten Semester"
+	n_anhang_3b.datei = "Formular_3b_Promotion_außerhalb_des_Vertragsgebietes.pdf"
 	n_anhang_3b.hochzuladen = True
 	n_anhang_3b.sort = 0
 	n_anhang_3b.save()
