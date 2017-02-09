@@ -7,12 +7,13 @@
     {% load staticfiles %}
     {% load l10n %}
     <link rel="stylesheet" href="{% static 'frontend/style.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'frontend/tether.min.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'frontend/bootstrap.min.css' %}"/>
     <link rel="icon" href="{% static 'frontend/favicon.ico' %}" type="image/vnd.microsoft.icon">
     <style type="text/css"></style>
 </head>
 <body>
-    <div class="container" style="padding-top: 20px;">
+<div class="container" style="padding-top: 20px;">
         
 
 <h1>Rückerstattungs-Rechner</h1>
@@ -43,70 +44,150 @@
 <p>Das Ergebnis dieses Rechners ist selbstverständlich hochgradig unverbindlich.</p>
 <p>Alle Werte verbleiben auf deinem Rechner. Es findet keine Übertragung über das Internet statt.</p>
 
-<div>
+<div class="row">
 	<div class="col-md-8">
 		<div class="card">
 			<div class="card-block text-center">
 				<h4 class="card-title">Deine Werte:</h4>
 			</div>
 			<div class="card-block">
-				<div class="col-md-6">
-					<fieldset class="form-group">
-						<label for="monatliche_einkuenfte">monatliche Einkünfte</label>
-						<div class="input-group">
-							<input type="number" class="form-control" id="monatliche_einkuenfte" placeholder="" step="0.01">
-							<span class="input-group-addon" id="basic-addon1">€</span>
-						</div>
-					</fieldset>
-					<fieldset class="form-group">
-						<label for="monatliche_ausgaben">monatliche Ausgaben</label>
-						<div class="input-group">
-							<input type="number" class="form-control" id="monatliche_ausgaben" placeholder="" step="0.01">
-							<span class="input-group-addon" id="basic-addon2">€</span>
-						</div>
-					</fieldset>
-					<fieldset class="form-group">
-						<label for="miete_warm">Miete (warm)</label>
-						<div class="input-group">
-							<input type="number" class="form-control" id="miete_warm" placeholder="" step="0.01">
-							<span class="input-group-addon" id="basic-addon3">€</span>
-						</div>
-					</fieldset>
-					<fieldset class="form-group">
-						<label for="anzahl_kinder">Anzahl Kinder</label>
-						<input type="number" class="form-control" id="anzahl_kinder" placeholder="" step="1">
-					</fieldset>
+				<div class="row">
+					<div class="col">
+						<fieldset class="form-group">
+							<label for="monatliche_einkuenfte">monatliche Einkünfte</label>
+							<div class="input-group">
+								<input type="number" class="form-control" id="monatliche_einkuenfte" placeholder="" step="0.01">
+								<span class="input-group-addon" id="basic-addon1">€</span>
+							</div>
+						</fieldset>
+						<fieldset class="form-group">
+							<label for="monatliche_ausgaben">monatliche Ausgaben</label>
+							<div class="input-group">
+								<input type="number" class="form-control" id="monatliche_ausgaben" placeholder="" step="0.01">
+								<span class="input-group-addon" id="basic-addon2">€</span>
+							</div>
+						</fieldset>
+						<fieldset class="form-group">
+							<label for="miete_warm">Miete (warm)</label>
+							<div class="input-group">
+								<input type="number" class="form-control" id="miete_warm" placeholder="" step="0.01">
+								<span class="input-group-addon" id="basic-addon3">€</span>
+							</div>
+						</fieldset>
+						<fieldset class="form-group">
+							<label for="anzahl_kinder">Anzahl Kinder</label>
+							<input type="number" class="form-control" id="anzahl_kinder" placeholder="" step="1">
+						</fieldset>
+					</div>
+					<div class="col">
+						<fieldset class="form-group">
+							<label for="schulden">Schulden</label>
+							<div class="input-group">
+								<input type="number" class="form-control" id="schulden" placeholder="" step="0.01">
+								<span class="input-group-addon" id="basic-addon5">€</span>
+							</div>
+						</fieldset>
+						<fieldset class="form-group">
+							<label for="vermoegen">Vermögen</label>
+							<div class="input-group">
+								<input type="number" class="form-control" id="vermoegen" placeholder="" step="0.01">
+								<span class="input-group-addon" id="basic-addon6">€</span>
+							</div>
+						</fieldset>
+						<fieldset class="form-group">
+							<label for="bisherige_studiendauer">bisherige Studiendauer</label>
+							<div class="input-group">
+								<input type="number" class="form-control" id="bisherige_studiendauer" placeholder="">
+								<span class="input-group-addon" id="basic-addon8">Monate</span>
+							</div>
+						</fieldset>
+						<fieldset class="form-group">
+							<label for="durchschnittliche_studiendauer">durchschnittliche Studiendauer in Bonn</label>
+							<div class="input-group">
+								<input type="number" class="form-control" id="durchschnittliche_studiendauer" placeholder="" value="" disabled>
+								<span class="input-group-addon" id="basic-addon9">Monate</span>
+							</div>
+						</fieldset>
+						
+					</div>
 				</div>
-				<div class="col-md-6">
-					<fieldset class="form-group">
-						<label for="schulden">Schulden</label>
-						<div class="input-group">
-							<input type="number" class="form-control" id="schulden" placeholder="" step="0.01">
-							<span class="input-group-addon" id="basic-addon5">€</span>
-						</div>
-					</fieldset>
-					<fieldset class="form-group">
-						<label for="vermoegen">Vermögen</label>
-						<div class="input-group">
-							<input type="number" class="form-control" id="vermoegen" placeholder="" step="0.01">
-							<span class="input-group-addon" id="basic-addon6">€</span>
-						</div>
-					</fieldset>
-					<fieldset class="form-group">
-						<label for="bisherige_studiendauer">bisherige Studiendauer</label>
-						<div class="input-group">
-							<input type="number" class="form-control" id="bisherige_studiendauer" placeholder="">
-							<span class="input-group-addon" id="basic-addon8">Monate</span>
-						</div>
-					</fieldset>
-					<fieldset class="form-group">
-						<label for="durchschnittliche_studiendauer">durchschnittliche Studiendauer im Studiengang in Bonn</label>
-						<div class="input-group">
-							<input type="number" class="form-control" id="durchschnittliche_studiendauer" placeholder="" value=600>
-							<span class="input-group-addon" id="basic-addon9">Monate</span>
-						</div>
-					</fieldset>
-				</div>
+				<fieldset class="form-group">
+					<label for="selectAbschluss">Studienabschluss (für durchschnittliche Studiendauer)</label>
+					<select class="form-control" id="selectAbschluss">
+						<option value="999.0">Bitte wählen...</option>
+						<option value="69.0">Fakultät 1 - Katholisch-Theologische Fakultät  -  Katholische Theologie  -  Kirchl. Ex./Mag. Theol.  -  69</option>
+						<option value="46.2">Fakultät 2 - Evangelisch-Theologische Fakultät  -  Evangelische Theologie  -  Bachelor Kernfach  -  46,2</option>
+						<option value="88.2">Fakultät 2 - Evangelisch-Theologische Fakultät  -  Evangelische Theologie  -  Kirchl. Ex./Mag. Theol.  -  88,2</option>
+						<option value="14.4">Fakultät 2 - Evangelisch-Theologische Fakultät  -  Evangelische Theologie  -  Master  -  14,4</option>
+						<option value="22.2">Fakultät 3 - Rechts- und Staatswissenschaftliche Fakultät  -  Rechtswissenschaft  -  Master  -  22,2</option>
+						<option value="78.6">Fakultät 3 - Rechts- und Staatswissenschaftliche Fakultät  -  Rechtswissenschaft  -  Staatsexamen  -  78,6</option>
+						<option value="46.8">Fakultät 3 - Rechts- und Staatswissenschaftliche Fakultät  -  Wirtschaftswissenschaften  -  Bachelor Vollstudiengang  -  46,8</option>
+						<option value="28.8">Fakultät 3 - Rechts- und Staatswissenschaftliche Fakultät  -  Wirtschaftswissenschaften  -  Master  -  28,8</option>
+						<option value="28.2">Fakultät 4 - Medizinische Fakultät  -  Medizin  -  Master  -  28,2</option>
+						<option value="80.4">Fakultät 4 - Medizinische Fakultät  -  Medizin  -  Staatsexamen  -  80,4</option>
+						<option value="78.6">Fakultät 4 - Medizinische Fakultät  -  Zahnmedizin  -  Staatsexamen  -  78,6</option>
+						<option value="40.2">Fakultät 5 - Philosophische Fakultät  -  Anglistik  -  Bachelor Kernfach  -  40,2</option>
+						<option value="34.2">Fakultät 5 - Philosophische Fakultät  -  Anglistik  -  Bachelor Lehramt  -  34,2</option>
+						<option value="28.8">Fakultät 5 - Philosophische Fakultät  -  Anglistik  -  Master  -  28,8</option>
+						<option value="40.2">Fakultät 5 - Philosophische Fakultät  -  Archäologie  -  Bachelor Vollstudiengang  -  40,2</option>
+						<option value="28.8">Fakultät 5 - Philosophische Fakultät  -  Archäologie  -  Master  -  28,8</option>
+						<option value="45.0">Fakultät 5 - Philosophische Fakultät  -  Asienwissenschaften  -  Bachelor Vollstudiengang  -  45</option>
+						<option value="29.4">Fakultät 5 - Philosophische Fakultät  -  Asienwissenschaften  -  Master  -  29,4</option>
+						<option value="41.4">Fakultät 5 - Philosophische Fakultät  -  Germanistik  -  Bachelor Kernfach  -  41,4</option>
+						<option value="33.6">Fakultät 5 - Philosophische Fakultät  -  Germanistik  -  Bachelor Lehramt  -  33,6</option>
+						<option value="29.4">Fakultät 5 - Philosophische Fakultät  -  Germanistik  -  Master  -  29,4</option>
+						<option value="39.6">Fakultät 5 - Philosophische Fakultät  -  Geschichte  -  Bachelor Kernfach  -  39,6</option>
+						<option value="34.2">Fakultät 5 - Philosophische Fakultät  -  Geschichte  -  Bachelor Lehramt  -  34,2</option>
+						<option value="28.2">Fakultät 5 - Philosophische Fakultät  -  Geschichte  -  Master  -  28,2</option>
+						<option value="35.4">Fakultät 5 - Philosophische Fakultät  -  Klassische Philologie  -  Bachelor Lehramt  -  35,4</option>
+						<option value="43.8">Fakultät 5 - Philosophische Fakultät  -  Kunstgeschichte  -  Bachelor Kernfach  -  43,8</option>
+						<option value="40.8">Fakultät 5 - Philosophische Fakultät  -  Kunstgeschichte  -  Bachelor Vollstudiengang  -  40,8</option>
+						<option value="27.0">Fakultät 5 - Philosophische Fakultät  -  Kunstgeschichte  -  Master  -  27</option>
+						<option value="45.0">Fakultät 5 - Philosophische Fakultät  -  Medienwissenschaft  -  Bachelor Kernfach  -  45</option>
+						<option value="43.2">Fakultät 5 - Philosophische Fakultät  -  Medienwissenschaft  -  Bachelor Vollstudiengang  -  43,2</option>
+						<option value="32.4">Fakultät 5 - Philosophische Fakultät  -  Medienwissenschaft  -  Master  -  32,4</option>
+						<option value="35.4">Fakultät 5 - Philosophische Fakultät  -  Musikwissenschaft  -  Master  -  35,4</option>
+						<option value="43.8">Fakultät 5 - Philosophische Fakultät  -  Philosophie  -  Bachelor Kernfach  -  43,8</option>
+						<option value="28.8">Fakultät 5 - Philosophische Fakultät  -  Philosophie  -  Master  -  28,8</option>
+						<option value="37.8">Fakultät 5 - Philosophische Fakultät  -  Psychologie  -  Bachelor Vollstudiengang  -  37,8</option>
+						<option value="25.8">Fakultät 5 - Philosophische Fakultät  -  Psychologie  -  Master  -  25,8</option>
+						<option value="40.8">Fakultät 5 - Philosophische Fakultät  -  Romanistik  -  Bachelor Kernfach  -  40,8</option>
+						<option value="32.4">Fakultät 5 - Philosophische Fakultät  -  Romanistik  -  Bachelor Lehramt  -  32,4</option>
+						<option value="31.2">Fakultät 5 - Philosophische Fakultät  -  Romanistik  -  Bachelor Vollstudiengang  -  31,2</option>
+						<option value="26.4">Fakultät 5 - Philosophische Fakultät  -  Romanistik  -  Master  -  26,4</option>
+						<option value="40.8">Fakultät 5 - Philosophische Fakultät  -  Sozialwissenschaften  -  Bachelor Vollstudiengang  -  40,8</option>
+						<option value="29.4">Fakultät 5 - Philosophische Fakultät  -  Sozialwissenschaften  -  Master  -  29,4</option>
+						<option value="27.6">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Astronomie  -  Master  -  27,6</option>
+						<option value="39.6">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Biologie  -  Bachelor Vollstudiengang  -  39,6</option>
+						<option value="29.4">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Biologie  -  Master  -  29,4</option>
+						<option value="42.0">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Chemie  -  Bachelor Vollstudiengang  -  42</option>
+						<option value="26.4">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Chemie  -  Master  -  26,4</option>
+						<option value="43.2">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Geographie  -  Bachelor Vollstudiengang  -  43,2</option>
+						<option value="31.2">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Geographie  -  Master  -  31,2</option>
+						<option value="39.0">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Geowissenschaften  -  Bachelor Vollstudiengang  -  39</option>
+						<option value="28.2">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Geowissenschaften  -  Master  -  28,2</option>
+						<option value="48.6">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Informatik  -  Bachelor Vollstudiengang  -  48,6</option>
+						<option value="35.4">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Informatik  -  Master  -  35,4</option>
+						<option value="36.6">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Life and Medical Sciences (LIMES)  -  Bachelor Vollstudiengang  -  36,6</option>
+						<option value="25.8">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Life and Medical Sciences (LIMES)  -  Master  -  25,8</option>
+						<option value="35.4">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Mathematik  -  Bachelor Lehramt  -  35,4</option>
+						<option value="40.2">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Mathematik  -  Bachelor Vollstudiengang  -  40,2</option>
+						<option value="27.6">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Mathematik  -  Master  -  27,6</option>
+						<option value="42.6">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Meteorologie  -  Bachelor Vollstudiengang  -  42,6</option>
+						<option value="27.6">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Meteorologie  -  Master  -  27,6</option>
+						<option value="19.2">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Pharmazie  -  Master  -  19,2</option>
+						<option value="60.0">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Pharmazie  -  Staatsexamen  -  60</option>
+						<option value="43.2">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Physik  -  Bachelor Vollstudiengang  -  43,2</option>
+						<option value="28.2">Fakultät 6 - Mathematisch-Naturwissenschaftliche Fakultät  -  Physik  -  Master  -  28,2</option>
+						<option value="31.8">Fakultät 7 - Landwirtschaftliche Fakultät  -  Agrar-, Forst- und Ernährungswissenschaften  -  Bachelor Lehramt  -  31,8</option>
+						<option value="41.4">Fakultät 7 - Landwirtschaftliche Fakultät  -  Agrar-, Forst- und Ernährungswissenschaften  -  Bachelor Vollstudiengang  -  41,4</option>
+						<option value="30.0">Fakultät 7 - Landwirtschaftliche Fakultät  -  Agrar-, Forst- und Ernährungswissenschaften  -  Master  -  30</option>
+						<option value="73.2">Fakultät 7 - Landwirtschaftliche Fakultät  -  Lebensmittelchemie  -  Staatsexamen  -  73,2</option>
+						<option value="45.6">Fakultät 7 - Landwirtschaftliche Fakultät  -  Vermessungswesen  -  Bachelor Vollstudiengang  -  45,6</option>
+						<option value="30.0">Fakultät 7 - Landwirtschaftliche Fakultät  -  Vermessungswesen  -  Master  -  30</option>
+						<option value="35.4">Senat  -  Bonn-Aachen International Center for Information Technology (B-IT)  -  Master  -  35,4</option>
+					</select>
+				</fieldset>
 				<div class="radio">
 					<label>
 						<input class="staatsburger" type="radio" name="staatsburger" id="staatsbuerger_deutsch_eu" value="option1" checked>
@@ -154,13 +235,13 @@
 			</div>
 			<div class="card-block">
 				<div class="row">
-					<div class="col-md-6">
+					<div class="col">
 						<fieldset class="form-group">
 							<label for="erster_tag">Erster Tag des Semesters</label>
 							<input type="date" class="form-control" id="erster_tag_semester" placeholder="" value="2016-04-01">
 						</fieldset>
 					</div>
-					<div class="col-md-6">
+					<div class="col">
 						<fieldset class="form-group">
 							<label for="letzter_tag">Letzter Tag des Semesters</label>
 							<input type="date" class="form-control" id="letzter_tag_semester" placeholder="" value="2016-09-30">
@@ -195,6 +276,7 @@
 </div>
 
     <script type="text/javascript" src="{% static 'frontend/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'frontend/tether.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'frontend/bootstrap.min.js' %}"></script>
     <script type="text/javascript">
     $(function(){
@@ -215,8 +297,13 @@
 	});
 	
 	$('#rechne').click(function(){
+		var haertefallgrenze = 357;
+		var hoechstanrechenbare_warmmiete = 385;
+		var ruecklage_eu = 1500;
+		var ruecklage_non_eu_ewr_sui = 3000;
+	
 		var gesamtbetrag = semesters[$('#selectSemester').val()].gesamtbetrag;
-		monatliche_einkuenfte = $('#monatliche_einkuenfte').val();
+		var monatliche_einkuenfte = $('#monatliche_einkuenfte').val();
 		if(monatliche_einkuenfte == ""){monatliche_einkuenfte = 0;} else {monatliche_einkuenfte = parseFloat(monatliche_einkuenfte);}
 		monatliche_ausgaben = $('#monatliche_ausgaben').val();
 		if(monatliche_ausgaben == ""){monatliche_ausgaben = 0;} else {monatliche_ausgaben = parseFloat(monatliche_ausgaben);}
@@ -235,11 +322,12 @@
 		durchschnittliche_studiendauer = $('#durchschnittliche_studiendauer').val();
 		if(durchschnittliche_studiendauer == ""){durchschnittliche_studiendauer = 0;} else {durchschnittliche_studiendauer = parseFloat(durchschnittliche_studiendauer);}
 		
-		var freibetrag = 325 + Math.min(345, (miete_warm / (1+anzahl_kinder)) );
+		var freibetrag = haertefallgrenze + Math.min(hoechstanrechenbare_warmmiete, (miete_warm / (1+anzahl_kinder)) );
 		var erstattung = true;
 		
 		if(schulden > 0){
 				$('#resultat').removeClass("btn-primary");
+				$('#resultat').removeClass("btn-danger");
 				$('#resultat').addClass("btn-warning");
 				$('#resultat').text("Individualentscheidung.");
 				erstattung = false;
@@ -247,24 +335,29 @@
 		
 		if(erstattung){
 			if($('#staatsbuerger_deutsch_eu').prop('checked')){
-				if(vermoegen > 1500){
-					monatliche_einkuenfte += Math.min(0,(vermoegen - 1500)) / (durchschnittliche_studiendauer - bisherige_studiendauer);
+				if(vermoegen > ruecklage_eu){
+					monatliche_einkuenfte += Math.max(0,(vermoegen - ruecklage_eu)) / (durchschnittliche_studiendauer - bisherige_studiendauer);
+					alert(monatliche_einkuenfte);
 				}
 			}else{
 				vermoegen = (vermoegen - betrag_auf_sperrkonto);
-				if(vermoegen > 3000){
-					monatliche_einkuenfte += Math.min(0,(vermoegen - 3000)) / (durchschnittliche_studiendauer - bisherige_studiendauer);
+				if(vermoegen > ruecklage_non_eu_ewr_sui){
+					monatliche_einkuenfte += Math.max(0,(vermoegen - ruecklage_non_eu_ewr_sui)) / (durchschnittliche_studiendauer - bisherige_studiendauer);
 				}
 			}
+			
+			alert(monatliche_einkuenfte);
 		
 			var x = monatliche_einkuenfte - monatliche_ausgaben - (freibetrag * (1+anzahl_kinder));
 			if(x*6 >= gesamtbetrag){
 				$('#resultat').removeClass("btn-primary");
+				$('#resultat').removeClass("btn-warning");
 				$('#resultat').addClass("btn-danger");
 				$('#resultat').text("Keine Erstattung.");
 				erstattung = false;
 			} else {
 				$('#resultat').removeClass("btn-danger");
+				$('#resultat').removeClass("btn-warning");
 				$('#resultat').addClass("btn-primary");
 				$('#resultat').text("Erstattung: " + (gesamtbetrag - Math.max(0, x*6)).toFixed(2).replace('\.',',') + " €");
 				erstattung = true;
@@ -313,6 +406,9 @@
 	
 	$('#selectSemester').change(function(){
 		updateSemesterData();
+	});
+	$('#selectAbschluss').change(function(){
+		$('#durchschnittliche_studiendauer').val($('#selectAbschluss').val());
 	});
 	
     });
