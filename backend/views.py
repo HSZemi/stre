@@ -1,15 +1,17 @@
 from django.http import HttpResponse, FileResponse, Http404
 from django.shortcuts import render, get_object_or_404
 from django.core.urlresolvers import reverse
+from django.core.paginator import Paginator,EmptyPage, PageNotAnInteger
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.admin.models import LogEntry
 from django.shortcuts import redirect
 from  django.contrib.auth.password_validation import validate_password, ValidationError
-from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History, Briefvorlage, Brief, Status, Uebergang, Begruendung
-from django.db.models import Count
+from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History, AccountHistory, Briefvorlage, Brief, Status, Uebergang, Begruendung
+from django.db.models import Count, Q
 from django.core.exceptions import ObjectDoesNotExist
 from .forms import DokumentForm, DokumentUebertragenForm, UeberweisungsbetragForm, BriefErstellenForm, BriefBegruendungForm, NachfristForm, LoginForm, BulkAlsUeberwiesenMarkierenForm, AccountForm, PasswortZuruecksetzenForm, AntragBearbeitenForm
 from axes.decorators import watch_login
@@ -85,7 +87,7 @@ def dashboard(request):
 	return render(request, 'backend/dashboard.html', context)
 
 @staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
-def suche(request, suchbegriff=None):
+def suche(request, suchbegriff=''):
 	try: # teste auf Antrag-ID
 		antrag_id = int(suchbegriff)
 		
@@ -313,7 +315,8 @@ def antrag(request, antrag_id):
 					messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Bitte fülle das Formular korrekt aus.'})
 			else:
 				pass # was ist das für ein Formular!?
-		
+	else:
+		messages.append({'klassen':'alert-danger','text':'<strong>Owei!</strong> In diesem Antragsstatus ist kein Upload möglich.'})
 		
 		
 	nachweise_queryset = Nachweis.objects.raw("""SELECT n.id, n.name, n.beschreibung, n.hochzuladen, d.id AS datei_id, d.timestamp AS datei_timestamp, d.markierung AS datei_markierung
@@ -356,7 +359,7 @@ def ueberweisungsbetrag(request, antrag_id, aktion_id):
 	if(antrag.semester.gruppe not in request.user.groups.all()):
             raise Http404
 	
-	if(not aktion.setzt_ueberweisungsbetrag):
+	if(not (aktion.setzt_ueberweisungsbetrag and aktion.setzt_ueberweisungsbetrag_explizit)):
 		raise Http404
 	
 	if request.method == 'POST':
@@ -631,8 +634,13 @@ def antragaktion(request, antrag_id, aktion_id, brief_id=None):
 	# Aktion ist zulässig und explizit aufrufbar?
 	if(aktion in zulaessige_aktionen.filter(staff_explizit=True)):
 		
-		if(aktion.setzt_ueberweisungsbetrag and antrag.ueberweisungsbetrag <= 0):
-			return ueberweisungsbetrag(request, antrag.id, aktion.id)
+		if aktion.setzt_ueberweisungsbetrag:
+			if not aktion.setzt_ueberweisungsbetrag_explizit:
+				antrag.ueberweisungsbetrag = antrag.semester.betrag
+				antrag.save()
+			elif antrag.ueberweisungsbetrag <= 0:
+				return ueberweisungsbetrag(request, antrag.id, aktion.id)
+			
 		if(aktion.setzt_nachfrist1 and (antrag.nachfrist1 == None or not (('m' in request.GET and request.GET['m'] == 'nachfrist_gesetzt') or (brief_id != None)))):
 			return nachfrist(request, antrag.id, aktion.id)
 		if(aktion.setzt_nachfrist2 and (antrag.nachfrist2 == None or not (('m' in request.GET and request.GET['m'] == 'nachfrist_gesetzt') or (brief_id != None)))):
@@ -667,7 +675,7 @@ def antragaktion(request, antrag_id, aktion_id, brief_id=None):
 		return response
 	
 @staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
-def history(request, antrag_id=None):
+def history(request, antrag_id=None, page_id=1):
 	antrag = None
 	messages = []
 	breadcrumbs = None
@@ -695,8 +703,75 @@ def history(request, antrag_id=None):
 		
 		breadcrumbs = [{'class':'','target':reverse('backend:dashboard'),'label':'Dashboard'},{'class':'active','target':None,'label':'History'}]
 	
+	
+	paginator = Paginator(history, settings.PAGINATION_ITEMS_PER_PAGE)
+	
+	try:
+		history = paginator.page(page_id)
+	except PageNotAnInteger:
+		history = paginator.page(1)
+	except EmptyPage:
+		history = paginator.page(paginator.num_pages)
+	
 	context = {'current_page' : 'history', 'history' : history, 'antrag':antrag, 'messages':messages, 'breadcrumbs' : breadcrumbs}
 	return render(request, 'backend/history.html', context)
+
+@staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
+def accounthistory(request, user_id=None, page_id=1):
+	user = None
+	messages = []
+	breadcrumbs = None
+	
+	if(user_id != None):
+		user_id = int(user_id)
+		user = get_object_or_404(User, pk=user_id)
+		
+		# Hat der User Zugriff auf ein Semester, in dem der Account einen Antrag gestellt hat?
+		if not Antrag.objects.filter(semester__gruppe__in=request.user.groups.all()).exists():
+			raise Http404
+		
+		accounthistory = AccountHistory.objects.filter(account=user_id).order_by('-timestamp')
+		
+		breadcrumbs = [{'class':'','target':reverse('backend:dashboard'),'label':'Dashboard'},{'class':'','target':reverse('backend:accounthistory'),'label':'AccountHistory'},{'class':'active','target':None,'label':user}]
+		
+	else:
+		# Nur Staff anzeigen oder Nutzer, die in einem Semester einen Antrag gestellt haben, auf das der User Zugriff hat
+		personen = Antrag.objects.filter(semester__gruppe__in=request.user.groups.all()).values_list('user', flat=True)
+		accounthistory = AccountHistory.objects.filter(Q(account__is_staff=True) | Q(account__user__id__in=personen)).order_by('-timestamp')
+		
+		breadcrumbs = [{'class':'','target':reverse('backend:dashboard'),'label':'Dashboard'},{'class':'active','target':None,'label':'AccountHistory'}]
+	
+	paginator = Paginator(accounthistory, settings.PAGINATION_ITEMS_PER_PAGE)
+	
+	try:
+		accounthistory = paginator.page(page_id)
+	except PageNotAnInteger:
+		accounthistory = paginator.page(1)
+	except EmptyPage:
+		accounthistory = paginator.page(paginator.num_pages)
+	
+	context = {'current_page' : 'accounthistory', 'accounthistory' : accounthistory, 'user':user, 'messages':messages, 'breadcrumbs' : breadcrumbs}
+	return render(request, 'backend/accounthistory.html', context)
+
+@staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
+def adminhistory(request, page_id=1):
+	messages = []
+	
+	adminhistory = LogEntry.objects.all().order_by('-action_time')
+	
+	paginator = Paginator(adminhistory, settings.PAGINATION_ITEMS_PER_PAGE)
+	
+	try:
+		adminhistory = paginator.page(page_id)
+	except PageNotAnInteger:
+		adminhistory = paginator.page(1)
+	except EmptyPage:
+		adminhistory = paginator.page(paginator.num_pages)
+	
+	breadcrumbs = [{'class':'','target':reverse('backend:dashboard'),'label':'Dashboard'},{'class':'active','target':None,'label':'AdminHistory'}]
+	
+	context = {'current_page' : 'adminhistory', 'adminhistory':adminhistory, 'messages':messages, 'breadcrumbs' : breadcrumbs}
+	return render(request, 'backend/adminhistory.html', context)
 
 @staff_member_required(login_url=settings.BACKEND_LOGIN_URL)
 @group_required('Bearbeitung')
@@ -853,6 +928,13 @@ def account_bearbeiten(request, person_id):
 			person.adresse = form.cleaned_data['adresse']
 			person.daten_sofort_loeschen = form.cleaned_data['daten_sofort_loeschen']
 			person.save()
+			
+			accounthistory = AccountHistory()
+			accounthistory.akteur = request.user
+			accounthistory.account = person.user
+			accounthistory.beschreibung = "Accountdaten bearbeitet"
+			accounthistory.save()
+			
 			messages.append({'klassen':'alert-success','text':'<strong>Hurra!</strong> Die Daten dieser Person wurden geändert.'})
 			
 		else:
@@ -875,6 +957,8 @@ def antrag_bearbeiten(request, antrag_id):
 		form = AntragBearbeitenForm(request.POST)
 		# check whether it's valid:
 		if form.is_valid():
+			aktion_antragsdaten_bearbeiten = (GlobalSettings.objects.get()).aktion_antragsdaten_bearbeiten
+			uebergang = get_object_or_404(Uebergang, status_start=antrag.status, aktion=aktion_antragsdaten_bearbeiten)
 			
 			antrag.semester = form.cleaned_data['semester']
 			antrag.versandanschrift = form.cleaned_data['versandanschrift']
@@ -883,6 +967,12 @@ def antrag_bearbeiten(request, antrag_id):
 			antrag.iban = form.cleaned_data['iban']
 			antrag.bic = form.cleaned_data['bic']
 			antrag.save()
+			
+			history = History()
+			history.akteur = request.user
+			history.antrag = antrag
+			history.uebergang = uebergang
+			history.save()
 			
 			messages.append({'klassen':'alert-success','text':'<strong>Hurra!</strong> Der Antrag wurde geändert.'})
 			
@@ -913,6 +1003,13 @@ def tools(request):
 				passwort_neu = User.objects.make_random_password()
 				user.set_password(passwort_neu)
 				user.save()
+				
+				accounthistory = AccountHistory()
+				accounthistory.akteur = request.user
+				accounthistory.account = user
+				accounthistory.beschreibung = "Neues zufälliges Passwort generiert"
+				accounthistory.save()
+				
 				messages.append({'klassen':'alert-success','text':'<p><strong>Hurra!</strong> Das Passwort wurde auf ein zufällig generiertes Passwort geändert.</p><p style="font-size:200%;">Neues Passwort für Matrikelnummer {matrikelnummer}: <b>{passwort_neu}</b></p>'.format(matrikelnummer=matrikelnummer, passwort_neu=passwort_neu)})
 			except User.DoesNotExist:
 				messages.append({'klassen':'alert-warning','text':'<strong>Hoppla!</strong> Es existiert keine Person mit dieser Matrikelnummer im System.'})

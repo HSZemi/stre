@@ -66,6 +66,7 @@ class DokumentForm(ModelForm):
 			'nachweis': 'Zu welchem Nachweis gehört diese Datei?',
 		}
 	userfile = forms.FileField(help_text="Erlaubte Dateitypen: PDF, JPG, PNG", label="Datei:")
+	formname = forms.CharField(widget=forms.HiddenInput(),initial='DokumentForm')
 	
 class DokumentUebertragenForm(ModelForm):
 	class Meta:

@@ -3,7 +3,7 @@ from django.contrib.auth.models import User, Group
 from datetime import date
 
 class Person(models.Model):
-	user = models.OneToOneField(User, on_delete=models.CASCADE)
+	user = models.OneToOneField(User, related_name='user', on_delete=models.CASCADE)
 	adresse = models.TextField()
 	
 	NICHT_SOFORT_LOESCHEN = 'nicht_sofort_loeschen'
@@ -72,7 +72,7 @@ class Semester(models.Model):
 class Nachweis(models.Model):
 	name = models.CharField(max_length=200)
 	beschreibung = models.TextField(blank=True)
-	datei = models.CharField(max_length=255, default=None)
+	datei = models.CharField(max_length=255, default='')
 	hochzuladen = models.BooleanField(default=True)
 	sort = models.IntegerField()
 	
@@ -139,6 +139,7 @@ class Aktion(models.Model):
 	user_explizit = models.BooleanField()
 	staff_explizit = models.BooleanField()
 	setzt_ueberweisungsbetrag = models.BooleanField()
+	setzt_ueberweisungsbetrag_explizit = models.BooleanField(default=False)
 	setzt_nachfrist1 = models.BooleanField()
 	setzt_nachfrist2 = models.BooleanField()
 	sort = models.IntegerField()
@@ -189,11 +190,11 @@ class Antrag(models.Model):
 
 class Dokument(models.Model):
 	
-	GRAU = 'tag-default'
-	ROT = 'tag-danger'
-	GELB = 'tag-warning'
-	GRUEN = 'tag-success'
-	BLAU = 'tag-info'
+	GRAU = 'badge-default'
+	ROT = 'badge-danger'
+	GELB = 'badge-warning'
+	GRUEN = 'badge-success'
+	BLAU = 'badge-info'
 	
 	MARKIERUNG_CHOICES = (
 		(GRAU, 'Grau'),
@@ -204,7 +205,7 @@ class Dokument(models.Model):
 	)
 	
 	markierung = models.CharField(
-		max_length=11,
+		max_length=30,
 		choices=MARKIERUNG_CHOICES,
 		default=GRAU
 	)
@@ -233,6 +234,12 @@ class History(models.Model):
 	uebergang = models.ForeignKey(Uebergang)
 	ist_undo = models.BooleanField(default=False)
 	
+class AccountHistory(models.Model):
+	timestamp = models.DateTimeField(auto_now_add=True)
+	akteur = models.ForeignKey(User, related_name='account_history_akteur')
+	account = models.ForeignKey(User, related_name='account_history_account', default=None)
+	beschreibung = models.TextField()
+	
 class Begruendung(models.Model):
 	name = models.CharField(max_length=200)
 	text = models.TextField()
@@ -247,6 +254,7 @@ class GlobalSettings(models.Model):
 	aktion_hochladen = models.ForeignKey(Aktion, related_name='aktion_hochladen')
 	aktion_zurueckziehen = models.ForeignKey(Aktion, related_name='aktion_zurueckziehen')
 	aktion_als_ueberwiesen_markieren = models.ForeignKey(Aktion, related_name='aktion_als_ueberwiesen_markieren')
+	aktion_antragsdaten_bearbeiten = models.ForeignKey(Aktion, related_name='aktion_antragsdaten_bearbeiten')
 	brief_tex = models.TextField()
 	liste_tex = models.TextField()
 	impressum_html = models.TextField()

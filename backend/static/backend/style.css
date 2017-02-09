@@ -2,6 +2,14 @@ body{
 	padding: 1rem;
 }
 
+button, [type="submit"] {
+	cursor: pointer;
+}
+
+.form-inline a.btn{
+	margin-right: 0.3rem;
+}
+
 #content {
 	min-height: 100%;
 }

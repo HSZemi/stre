@@ -76,10 +76,10 @@
 	{{nachweis.name}}
 	<ul>
 	{% for dokument in nachweis.dokumente %}
-		<li><span class="tag {{dokument.markierung}} dokument"><a href="{% url 'dokumente:datei' dokument_id=dokument.id %}" target="_blank">Dokument #{{dokument.id}}</a></span> <a href="{% url 'dokumente:datei' dokument_id=dokument.id %}" target="_blank">anzeigen</a> <small>(hochgeladen am {{dokument.timestamp}})</small> 
+		<li><span class="badge {{dokument.markierung}} dokument"><a href="{% url 'dokumente:datei' dokument_id=dokument.id %}" target="_blank">Dokument #{{dokument.id}}</a></span> <a href="{% url 'dokumente:datei' dokument_id=dokument.id %}" target="_blank">anzeigen</a> <small>(hochgeladen am {{dokument.timestamp}})</small> 
 		
 		{% for markierung in markierungen %}
-		<a href="{% url 'backend:markieren' dokument_id=dokument.id markierung=markierung.0 %}" title="Dokument {{markierung.1}} markieren"><span class="tag {{markierung.0|safe}}">&nbsp;</span></a>
+		<a href="{% url 'backend:markieren' dokument_id=dokument.id markierung=markierung.0 %}" title="Dokument {{markierung.1}} markieren"><span class="badge {{markierung.0|safe}}">&nbsp;</span></a>
 		{% endfor %}
 		</li>
 	{% endfor %}

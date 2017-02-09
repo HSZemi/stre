@@ -24,9 +24,9 @@
 	
 	<div class="card-block">
 	Nach Status filtern: 
-	<a href="{% url 'backend:antraege' semester_id=semester.id %}"><span class="statusselektor tag {% if status_id %}tag-default{% else %}tag-primary{% endif %}">Alle</span></a><br>
+	<a href="{% url 'backend:antraege' semester_id=semester.id %}"><span class="statusselektor badge {% if status_id %}badge-default{% else %}badge-primary{% endif %}">Alle</span></a><br>
 	{% for status in statusse %}
-	<a href="{% url 'backend:antraege' semester_id=semester.id status_id=status.id %}"><span class="statusselektor tag {% if status_id and status_id == status.id %}tag-primary{% else %}tag-default{% endif %}">{{status}}</span></a> 
+	<a href="{% url 'backend:antraege' semester_id=semester.id status_id=status.id %}"><span class="statusselektor badge {% if status_id and status_id == status.id %}badge-primary{% else %}badge-default{% endif %}">{{status}}</span></a> 
 	{% endfor %}
 	</div>
 	

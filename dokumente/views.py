@@ -103,13 +103,12 @@ def export_ueberweisung(request, semester_id):
 		inhalt = ""
 		
 		for antrag in antraege_g:
-			ueberweisungsbetrag = antrag.ueberweisungsbetrag if antrag.ueberweisungsbetrag > 0 else semester.betrag
 			
 			inhalt += zeile.format(id="{0} {1}".format(antrag.grund.identifier, antrag.id), 
 			  vorname=antrag.user.user.first_name, 
 			  nachname=antrag.user.user.last_name, 
 			  adresse=antrag.versandanschrift.replace("\n","\\newline"), 
-			  betrag=locale.format('%.2f', ueberweisungsbetrag), 
+			  betrag=locale.format('%.2f', antrag.ueberweisungsbetrag), 
 			  iban=antrag.iban, 
 			  bic=antrag.bic)
 		

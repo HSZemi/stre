@@ -11,7 +11,7 @@ from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import redirect
 from django.contrib.auth.password_validation import validate_password, ValidationError
-from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History, Uebergang
+from backend.models import Antragsgrund, Semester, Antrag, Person, GlobalSettings, Nachweis, Dokument, Aktion, History, AccountHistory, Uebergang
 from django.db import IntegrityError
 from .forms import PasswordChangeForm, AntragForm, DokumentForm, DokumentUebertragenForm, RegistrierungForm, AccountForm, LoginForm, PasswortResetForm, AntragZurueckziehenForm
 from axes.decorators import watch_login
@@ -63,6 +63,12 @@ def statuspage(request):
 					validate_password(form.cleaned_data['passwort_neu1'], user=request.user)
 					request.user.set_password(form.cleaned_data['passwort_neu1'])
 					request.user.save()
+					
+					accounthistory = AccountHistory()
+					accounthistory.akteur = request.user
+					accounthistory.account = request.user
+					accounthistory.beschreibung = "Passwort geändert"
+					accounthistory.save()
 					
 					# passwort erfolgreich geändert
 					# login user again
@@ -146,6 +152,12 @@ def registrierung(request):
 				person.adresse = adresse
 				person.daten_sofort_loeschen = daten_sofort_loeschen
 				person.save()
+				
+				accounthistory = AccountHistory()
+				accounthistory.akteur = person.user
+				accounthistory.account = person.user
+				accounthistory.beschreibung = "Account erstellt (Registrierung)"
+				accounthistory.save()
 				
 				# User einloggen und Seite 2 aufrufen
 				user = authenticate(username=matrikelnummer, password=passwort)
@@ -258,6 +270,13 @@ def resetpasswordconfirm(request, uidb64, token):
 			passwort_neu = User.objects.make_random_password()
 			user.set_password(passwort_neu)
 			user.save()
+			
+			accounthistory = AccountHistory()
+			accounthistory.akteur = user
+			accounthistory.account = user
+			accounthistory.beschreibung = "Passwort zurückgesetzt (E-Mail-Link)"
+			accounthistory.save()
+			
 			send_mail(
 			'[STRE] Dein Passwort wurde zurückgesetzt',
 			'Hallo {vorname} {nachname}!\n\nDein neues Passwort lautet:\n{passwort}\n\n{timestamp}\n\n------------------\n~>Signatur<~'.format(vorname=user.first_name, nachname=user.last_name, matrikelnummer=user.username, passwort=passwort_neu, timestamp=datetime.datetime.now()),
@@ -484,7 +503,7 @@ def antrag(request, antrag_id):
 		return HttpResponseForbidden()
 	
 	
-	if('m' in request.GET):
+	if('m' in request.GET and request.method != 'POST'):
 		message = request.GET['m']
 		if(message == 'antrag_erstellt'):
 			messages.append({'klassen':'alert-info','text':'<strong>Glückwunsch!</strong> Dein Antrag auf Semesterticketrückerstattung wurde erstellt. Lade nun die benötigten Nachweise hoch!<br>Das Formular hierzu findest du auf dieser Seite etwas weiter unten.'})
@@ -614,6 +633,13 @@ def account(request):
 			person.user.save()
 			person.adresse = form.cleaned_data['adresse']
 			person.save()
+			
+			accounthistory = AccountHistory()
+			accounthistory.akteur = request.user
+			accounthistory.account = request.user
+			accounthistory.beschreibung = "Accountdaten bearbeitet"
+			accounthistory.save()
+			
 			messages.append({'klassen':'alert-success','text':'<strong>Hurra!</strong> Deine Daten wurden geändert.'})
 			
 		else:

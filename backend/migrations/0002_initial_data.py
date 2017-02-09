@@ -297,6 +297,7 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	a_antrag_stellen.user_explizit = False
 	a_antrag_stellen.staff_explizit = False
 	a_antrag_stellen.setzt_ueberweisungsbetrag = False
+	a_antrag_stellen.setzt_ueberweisungsbetrag_explizit = False
 	a_antrag_stellen.setzt_nachfrist1 = False
 	a_antrag_stellen.setzt_nachfrist2 = False
 	a_antrag_stellen.sort = 100
@@ -308,6 +309,7 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	a_dokument_hochladen.user_explizit = False
 	a_dokument_hochladen.staff_explizit = False
 	a_dokument_hochladen.setzt_ueberweisungsbetrag = False
+	a_dokument_hochladen.setzt_ueberweisungsbetrag_explizit = False
 	a_dokument_hochladen.setzt_nachfrist1 = False
 	a_dokument_hochladen.setzt_nachfrist2 = False
 	a_dokument_hochladen.sort = 200
@@ -319,6 +321,7 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	a_unterlagen_nachfordern.user_explizit = False
 	a_unterlagen_nachfordern.staff_explizit = True
 	a_unterlagen_nachfordern.setzt_ueberweisungsbetrag = False
+	a_unterlagen_nachfordern.setzt_ueberweisungsbetrag_explizit = False
 	a_unterlagen_nachfordern.setzt_nachfrist1 = True
 	a_unterlagen_nachfordern.setzt_nachfrist2 = False
 	a_unterlagen_nachfordern.sort = 300
@@ -330,6 +333,7 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	a_erneut_unterlagen_nachfordern.user_explizit = False
 	a_erneut_unterlagen_nachfordern.staff_explizit = True
 	a_erneut_unterlagen_nachfordern.setzt_ueberweisungsbetrag = False
+	a_erneut_unterlagen_nachfordern.setzt_ueberweisungsbetrag_explizit = False
 	a_erneut_unterlagen_nachfordern.setzt_nachfrist1 = False
 	a_erneut_unterlagen_nachfordern.setzt_nachfrist2 = True
 	a_erneut_unterlagen_nachfordern.sort = 400
@@ -341,6 +345,7 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	a_als_vollstaendig_markieren.user_explizit = False
 	a_als_vollstaendig_markieren.staff_explizit = True
 	a_als_vollstaendig_markieren.setzt_ueberweisungsbetrag = False
+	a_als_vollstaendig_markieren.setzt_ueberweisungsbetrag_explizit = False
 	a_als_vollstaendig_markieren.setzt_nachfrist1 = False
 	a_als_vollstaendig_markieren.setzt_nachfrist2 = False
 	a_als_vollstaendig_markieren.sort = 500
@@ -352,6 +357,7 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	a_als_nicht_vollstaendig_markieren.user_explizit = False
 	a_als_nicht_vollstaendig_markieren.staff_explizit = True
 	a_als_nicht_vollstaendig_markieren.setzt_ueberweisungsbetrag = False
+	a_als_nicht_vollstaendig_markieren.setzt_ueberweisungsbetrag_explizit = False
 	a_als_nicht_vollstaendig_markieren.setzt_nachfrist1 = False
 	a_als_nicht_vollstaendig_markieren.setzt_nachfrist2 = False
 	a_als_nicht_vollstaendig_markieren.sort = 600
@@ -363,6 +369,7 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	a_genehmigen.user_explizit = False
 	a_genehmigen.staff_explizit = True
 	a_genehmigen.setzt_ueberweisungsbetrag = False
+	a_genehmigen.setzt_ueberweisungsbetrag_explizit = False
 	a_genehmigen.setzt_nachfrist1 = False
 	a_genehmigen.setzt_nachfrist2 = False
 	a_genehmigen.sort = 700
@@ -373,7 +380,8 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	a_genehmigung_verschicken.name = "Genehmigung verschicken"
 	a_genehmigung_verschicken.user_explizit = False
 	a_genehmigung_verschicken.staff_explizit = True
-	a_genehmigung_verschicken.setzt_ueberweisungsbetrag = False
+	a_genehmigung_verschicken.setzt_ueberweisungsbetrag = True
+	a_genehmigung_verschicken.setzt_ueberweisungsbetrag_explizit = False
 	a_genehmigung_verschicken.setzt_nachfrist1 = False
 	a_genehmigung_verschicken.setzt_nachfrist2 = False
 	a_genehmigung_verschicken.sort = 750
@@ -385,6 +393,7 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	a_teilweise_genehmigen.user_explizit = False
 	a_teilweise_genehmigen.staff_explizit = True
 	a_teilweise_genehmigen.setzt_ueberweisungsbetrag = True
+	a_teilweise_genehmigen.setzt_ueberweisungsbetrag_explizit = True
 	a_teilweise_genehmigen.setzt_nachfrist1 = False
 	a_teilweise_genehmigen.setzt_nachfrist2 = False
 	a_teilweise_genehmigen.sort = 710
@@ -396,6 +405,7 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	a_teilweise_genehmigung_verschicken.user_explizit = False
 	a_teilweise_genehmigung_verschicken.staff_explizit = True
 	a_teilweise_genehmigung_verschicken.setzt_ueberweisungsbetrag = False
+	a_teilweise_genehmigung_verschicken.setzt_ueberweisungsbetrag_explizit = False
 	a_teilweise_genehmigung_verschicken.setzt_nachfrist1 = False
 	a_teilweise_genehmigung_verschicken.setzt_nachfrist2 = False
 	a_teilweise_genehmigung_verschicken.sort = 760
@@ -407,6 +417,7 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	a_ablehnen.user_explizit = False
 	a_ablehnen.staff_explizit = True
 	a_ablehnen.setzt_ueberweisungsbetrag = False
+	a_ablehnen.setzt_ueberweisungsbetrag_explizit = False
 	a_ablehnen.setzt_nachfrist1 = False
 	a_ablehnen.setzt_nachfrist2 = False
 	a_ablehnen.sort = 720
@@ -418,6 +429,7 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	a_ablehnung_verschicken.user_explizit = False
 	a_ablehnung_verschicken.staff_explizit = True
 	a_ablehnung_verschicken.setzt_ueberweisungsbetrag = False
+	a_ablehnung_verschicken.setzt_ueberweisungsbetrag_explizit = False
 	a_ablehnung_verschicken.setzt_nachfrist1 = False
 	a_ablehnung_verschicken.setzt_nachfrist2 = False
 	a_ablehnung_verschicken.sort = 770
@@ -429,6 +441,7 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	a_als_ueberwiesen_markieren.user_explizit = False
 	a_als_ueberwiesen_markieren.staff_explizit = True
 	a_als_ueberwiesen_markieren.setzt_ueberweisungsbetrag = False
+	a_als_ueberwiesen_markieren.setzt_ueberweisungsbetrag_explizit = False
 	a_als_ueberwiesen_markieren.setzt_nachfrist1 = False
 	a_als_ueberwiesen_markieren.setzt_nachfrist2 = False
 	a_als_ueberwiesen_markieren.sort = 800
@@ -440,11 +453,24 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	a_zurueckziehen.user_explizit = True
 	a_zurueckziehen.staff_explizit = False
 	a_zurueckziehen.setzt_ueberweisungsbetrag = False
+	a_zurueckziehen.setzt_ueberweisungsbetrag_explizit = False
 	a_zurueckziehen.setzt_nachfrist1 = False
 	a_zurueckziehen.setzt_nachfrist2 = False
 	a_zurueckziehen.sort = 900
 	a_zurueckziehen.briefvorlage = None
 	a_zurueckziehen.save()
+	
+	a_antragsdaten_bearbeiten = Aktion()
+	a_antragsdaten_bearbeiten.name = "Antragsdaten bearbeiten"
+	a_antragsdaten_bearbeiten.user_explizit = False
+	a_antragsdaten_bearbeiten.staff_explizit = False
+	a_antragsdaten_bearbeiten.setzt_ueberweisungsbetrag = False
+	a_antragsdaten_bearbeiten.setzt_ueberweisungsbetrag_explizit = False
+	a_antragsdaten_bearbeiten.setzt_nachfrist1 = False
+	a_antragsdaten_bearbeiten.setzt_nachfrist2 = False
+	a_antragsdaten_bearbeiten.sort = 1000
+	a_antragsdaten_bearbeiten.briefvorlage = None
+	a_antragsdaten_bearbeiten.save()
 	
 	
 	# ÜBERGÄNGE #
@@ -668,6 +694,87 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	u_g_uw.status_end = s_ueberwiesen
 	u_g_uw.save()
 	
+	# Übergänge für Bearbeitung
+	u_mod_g_g = Uebergang()
+	u_mod_g_g.aktion = a_antragsdaten_bearbeiten
+	u_mod_g_g.status_start = s_antrag_gestellt
+	u_mod_g_g.status_end = s_antrag_gestellt
+	u_mod_g_g.save()
+	
+	u_mod_p1_p1 = Uebergang()
+	u_mod_p1_p1.aktion = a_antragsdaten_bearbeiten
+	u_mod_p1_p1.status_start = s_warte_auf_pruefung
+	u_mod_p1_p1.status_end = s_warte_auf_pruefung
+	u_mod_p1_p1.save()
+	
+	u_mod_n1_n1 = Uebergang()
+	u_mod_n1_n1.aktion = a_antragsdaten_bearbeiten
+	u_mod_n1_n1.status_start = s_unterlagen_nachgefordert
+	u_mod_n1_n1.status_end = s_unterlagen_nachgefordert
+	u_mod_n1_n1.save()
+	
+	u_mod_p2_p2= Uebergang()
+	u_mod_p2_p2.aktion = a_antragsdaten_bearbeiten
+	u_mod_p2_p2.status_start = s_warte_auf_pruefung2
+	u_mod_p2_p2.status_end = s_warte_auf_pruefung2
+	u_mod_p2_p2.save()
+	
+	u_mod_n2_n2 = Uebergang()
+	u_mod_n2_n2.aktion = a_antragsdaten_bearbeiten
+	u_mod_n2_n2.status_start = s_erneut_unterlagen_nachgefordert
+	u_mod_n2_n2.status_end = s_erneut_unterlagen_nachgefordert
+	u_mod_n2_n2.save()
+	
+	u_mod_p3_p3 = Uebergang()
+	u_mod_p3_p3.aktion = a_antragsdaten_bearbeiten
+	u_mod_p3_p3.status_start = s_warte_auf_pruefung3
+	u_mod_p3_p3.status_end = s_warte_auf_pruefung3
+	u_mod_p3_p3.save()
+	
+	u_mod_v_v = Uebergang()
+	u_mod_v_v.aktion = a_antragsdaten_bearbeiten
+	u_mod_v_v.status_start = s_vollstaendig
+	u_mod_v_v.status_end = s_vollstaendig
+	u_mod_v_v.save()
+	
+	u_mod_nv_nv = Uebergang()
+	u_mod_nv_nv.aktion = a_antragsdaten_bearbeiten
+	u_mod_nv_nv.status_start = s_nicht_vollstaendig
+	u_mod_nv_nv.status_end = s_nicht_vollstaendig
+	u_mod_nv_nv.save()
+	
+	u_mod_a_a = Uebergang()
+	u_mod_a_a.aktion = a_antragsdaten_bearbeiten
+	u_mod_a_a.status_start = s_abgelehnt
+	u_mod_a_a.status_end = s_abgelehnt
+	u_mod_a_a.save()
+	
+	u_mod_gn_gn = Uebergang()
+	u_mod_gn_gn.aktion = a_antragsdaten_bearbeiten
+	u_mod_gn_gn.status_start = s_genehmigt
+	u_mod_gn_gn.status_end = s_genehmigt
+	u_mod_gn_gn.save()
+	
+	u_mod_tg_tg = Uebergang()
+	u_mod_tg_tg.aktion = a_antragsdaten_bearbeiten
+	u_mod_tg_tg.status_start = s_teilweise_genehmigt
+	u_mod_tg_tg.status_end = s_teilweise_genehmigt
+	u_mod_tg_tg.save()
+	
+	u_mod_gv_gv = Uebergang()
+	u_mod_gv_gv.aktion = a_antragsdaten_bearbeiten
+	u_mod_gv_gv.status_start = s_genehmigung_verschickt
+	u_mod_gv_gv.status_end = s_genehmigung_verschickt
+	u_mod_gv_gv.save()
+	
+	u_mod_tgv_tgv = Uebergang()
+	u_mod_tgv_tgv.aktion = a_antragsdaten_bearbeiten
+	u_mod_tgv_tgv.status_start = s_teilweise_genehmigung_verschickt
+	u_mod_tgv_tgv.status_end = s_teilweise_genehmigung_verschickt
+	u_mod_tgv_tgv.save()
+	
+	
+	
 	
 	# GLOBALSETTINGS #
 	
@@ -679,6 +786,7 @@ Gegen diesen Bescheid kann innerhalb eines Monats nach seiner Bekanntgabe Klage 
 	gs.aktion_hochladen = a_dokument_hochladen
 	gs.aktion_zurueckziehen = a_zurueckziehen
 	gs.aktion_als_ueberwiesen_markieren = a_als_ueberwiesen_markieren
+	gs.aktion_antragsdaten_bearbeiten = a_antragsdaten_bearbeiten
 	gs.brief_tex = r"""\documentclass[
 fontsize=12pt,
 paper=a4,

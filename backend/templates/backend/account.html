@@ -14,7 +14,7 @@
 <div class="card">
 	<div class="card-block">
 		<h4 class="card-title">Persönliche Daten</h4>
-		<p class="card-text">Eine Übersicht über die persönlichen Daten.</p>
+		<p class="card-text">Eine Übersicht über die persönlichen Daten | <a href="{% url 'backend:accounthistory' user_id=person.user.id %}">Account-Bearbeitungsverlauf anzeigen</a></p>
 	</div>
 	<div class="card-block">
 	<table class="table">

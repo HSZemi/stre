@@ -14,7 +14,7 @@
 
 <div class="card">
 	<div class="card-block">
-		<h4 class="card-title">Bearbeitungsverlauf</h4>
+		<h4 class="card-title">Bearbeitungsverlauf (Anträge)</h4>
 		<p class="card-text">Die letzten ausgeführten Aktionen{% if antrag %} für <a href="{% url 'backend:antrag' antrag_id=antrag.id %}">Antrag {{antrag}}</a>{% endif %}, sortiert von neu nach alt.</p>
 	</div>
 	<div class="card-block">
@@ -34,10 +34,10 @@
 			<td>{{h.timestamp}}</td>
 			<td>{{h.akteur}}</td>
 			<td>{% if h.akteur.is_staff %}Staff{% endif %}</td>
-			<td>{{h.antrag}}</td>
+			<td><a href="{% url 'backend:history' antrag_id=h.antrag.id %}">{{h.antrag}}</a></td>
 			<td>{% if h.ist_undo %}<span class="tag tag-default">RÜCKNAHME</span> {% endif %}{{h.uebergang.aktion}}</td>
-			{% if antrag and not h.ist_undo %}
-			<td><a href="{% url 'backend:undo' history_id=h.id %}">zurücknehmen</a></td>
+			{% if antrag and not h.ist_undo and not h.uebergang.status_start == h.uebergang.status_end %}
+			<td><a href="{% url 'backend:undo' history_id=h.id %}" title="Setzt den Antrag zurück in den Status '{{h.uebergang.status_start.name}}'">zurücknehmen</a></td>
 			{% endif %}
 			
 		</tr>
@@ -45,6 +45,45 @@
 	</tbody>
 	</table>
 	</div>
+	
+	
+	<nav aria-label="Navigation für Ergebnisse">
+		<ul class="pagination justify-content-center">
+			{% if history.has_previous %}
+				<li class="page-item">
+					{% if antrag %}
+					<a class="page-link" href="{% url 'backend:history' antrag_id=antrag.id page_id=history.previous_page_number %}">« Weiter</a>
+					{% else %}
+					<a class="page-link" href="{% url 'backend:history' page_id=history.previous_page_number %}">« Weiter</a>
+					{% endif %}
+				</li>
+			{% else %}
+				<li class="page-item disabled">
+					<span class="page-link">« Weiter</span>
+				</li>
+			{% endif %}
+			<li class="page-item">
+				<span class="page-link">
+					Seite {{ history.number }} von {{ history.paginator.num_pages }}
+				</span>
+			</li>
+			{% if history.has_next %}
+				<li class="page-item">
+					{% if antrag %}
+						<a class="page-link" href="{% url 'backend:history' antrag_id=antrag.id page_id=history.next_page_number %}">Zurück »</a>
+					{% else %}
+						<a class="page-link" href="{% url 'backend:history' page_id=history.next_page_number %}">Zurück »</a>
+					{% endif %}
+				</li>
+			{% else %}
+				<li class="page-item disabled">
+					<span class="page-link" >Zurück »</span>
+				</li>
+			{% endif %}
+		</ul>
+	</nav>
+	
+	
 </div>
 
 {% endblock %}
