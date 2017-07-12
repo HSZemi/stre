@@ -150,8 +150,8 @@ class Aktion(models.Model):
 
 class Uebergang(models.Model):
 	aktion = models.ForeignKey(Aktion)
-	status_start = models.ForeignKey(Status, related_name='uebergang_from__set')
-	status_end = models.ForeignKey(Status, related_name='uebergang_to__set')
+	status_start = models.ForeignKey(Status, related_name='uebergang_from_set')
+	status_end = models.ForeignKey(Status, related_name='uebergang_to_set')
 	
 	class Meta:
 		unique_together = ('status_start', 'aktion',)
