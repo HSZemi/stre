@@ -22,3 +22,7 @@ Ein Onlinesystem für die Studiticket-Rückerstattung in Entwicklung. Oder auch 
   * Dann im Admin-Interface die Semester anlegen und die zugehörige Gruppe zuweisen
   * Nutzer müssen in der zugehörigen Gruppe sein um ein Semester bearbeiten/ansehen zu dürfen
 
+# Übersetzungen
+
+django-admin makemessages --locale de --locale en
+django-admin compilemessages

@@ -1,0 +1,50 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-07-12 17:36+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: frontend/templates/frontend/base.html:17
+msgid "msg_test_run"
+msgstr "<strong>Testbetrieb, bruh!</strong> Anträge sind derzeit <strong>nur</"
+"strong> auf Papier zu stellen!"
+
+#: frontend/templates/frontend/base.html:20
+msgid "stre_title"
+msgstr "Semesterticket-Rückerstattung"
+
+#: frontend/templates/frontend/base.html:21
+msgid "stre_committee_title"
+msgstr ""
+"Ausschuss für das Semesterticket des Studierendenparlaments der Rheinischen "
+"Friedrich-Wilhelms-Universität Boon"
+
+#: frontend/templates/frontend/base.html:25
+msgid "Hallo"
+msgstr ""
+
+#: frontend/templates/frontend/base.html:33
+msgid "Erstattungsgründe"
+msgstr ""
+
+#: frontend/templates/frontend/base.html:50
+msgid "Datenschutz"
+msgstr ""
+
+#: frontend/templates/frontend/base.html:50
+msgid "Impressum"
+msgstr ""
